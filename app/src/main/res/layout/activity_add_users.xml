@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Home">
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="643dp">
+
+        <!-- עמוד רקע- שתי שורות -->
+        <ImageView
+            android:layout_width="351dp"
+            android:layout_height="557dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="100dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/c2" />
+
+        <!-- כותרת -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="120dp"
+            android:layout_marginTop="100dp"
+            android:shadowColor="#80000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            android:text="הכנסת משתמש"
+            android:textColor="#000000"
+            android:textSize="30sp" />
+
+
+        <Button
+            android:id="@+id/user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60dp"
+            android:layout_marginTop="210dp"
+            android:shadowColor="#80000000"
+            android:background="@android:color/transparent"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            android:text="שם משתמש"
+            android:textColor="#000000"
+            android:textSize="30sp" />
+        <Button
+            android:id="@+id/phone_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60dp"
+            android:layout_marginTop="310dp"
+            android:shadowColor="#80000000"
+            android:background="@android:color/transparent"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            android:text="מספר טלפון"
+            android:textColor="#000000"
+            android:textSize="30sp" />
+
+        <!-- כפתור הוספת משתמש -->
+        <Button
+            android:id="@+id/add_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="100dp"
+            android:layout_marginTop="500dp"
+            android:shadowColor="#80000000"
+            android:backgroundTint="#2d8bba"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            android:text="הוספת משתמש"
+            android:textColor="#000000"
+            android:textSize="30sp" />
+
+    </FrameLayout>
+
+    <!-- שורת משימות -->
+    <!-- שורת משימות -->
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="5"
+        android:orientation="horizontal"
+        android:padding="0dp"
+        android:rowCount="1">
+
+        <ImageButton
+            android:id="@+id/M1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="3dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m1" />
+
+
+        <ImageButton
+            android:id="@+id/M2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dp"
+            android:layout_marginTop="15dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m2" />
+
+        <ImageButton
+            android:id="@+id/M3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
+            android:layout_marginTop="3dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m3" />
+
+        <ImageButton
+            android:id="@+id/M4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="20dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m4" />
+
+        <ImageButton
+            android:id="@+id/M5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dp"
+            android:layout_marginTop="20dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m5" />
+
+
+
+
+
+
+
+    </GridLayout>
+
+
+
+</LinearLayout>
