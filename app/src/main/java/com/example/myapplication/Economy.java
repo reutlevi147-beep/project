@@ -30,5 +30,23 @@ public class Economy extends AppCompatActivity {
             Intent intent = new Intent(Economy.this, Home.class);
             startActivity(intent);
         });
+
+        // כפתור מטרות
+        ImageButton goalsBtn = findViewById(R.id.B5);
+        goalsBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(Economy.this, Display_Purpose.class);
+            startActivity(intent);
+        });
+
+        // כפתור פעולות
+        ImageButton actionsBtn = findViewById(R.id.B6);
+        actionsBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(Economy.this, Display_Purpose.class);
+            startActivity(intent);
+        });
+
+
+
+
     }
 }

@@ -19,6 +19,7 @@
 
         <!-- תמונת רקע- שורה אחת -->
         <ImageView
+            android:id="@+id/c10"
             android:layout_width="349dp"
             android:layout_height="557dp"
             android:layout_marginLeft="40dp"
@@ -27,6 +28,7 @@
             android:src="@drawable/c10" />
 
         <ImageButton
+            android:id="@+id/plos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
@@ -36,6 +38,7 @@
             android:src="@drawable/plos" />
         <!-- כותרת -->
         <TextView
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="120dp"

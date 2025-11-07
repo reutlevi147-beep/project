@@ -23,6 +23,7 @@
 
 
         <ImageButton
+            android:id="@+id/my_shop1"
             android:layout_width="287dp"
             android:layout_height="219dp"
             android:layout_marginLeft="58dp"
@@ -32,6 +33,7 @@
             android:src="@drawable/my_shop1" />
 
     <ImageButton
+        android:id="@+id/my_shop2"
         android:layout_width="287dp"
         android:layout_height="219dp"
         android:layout_marginLeft="58dp"
