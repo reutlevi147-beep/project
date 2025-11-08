@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:columnCount="5"
+        android:orientation="horizontal"
+        android:paddingBottom="0dp"
+        android:layout_marginBottom="0dp"
+        android:rowCount="1">
+
+        <ImageButton
+            android:id="@+id/M1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="39dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m1" />
+
+        <ImageButton
+            android:id="@+id/M2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dp"
+            android:layout_marginTop="43dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m2" />
+
+        <ImageButton
+            android:id="@+id/M3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
+            android:layout_marginTop="39dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m3" />
+
+        <ImageButton
+            android:id="@+id/M4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="52dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m4" />
+
+        <ImageButton
+            android:id="@+id/M5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dp"
+            android:layout_marginTop="52dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/m5" />
+
+    </GridLayout>
+</merge>
