@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,5 +29,12 @@ public class Add_Shopping extends AppCompatActivity {
         addToShoppingBtn.setOnClickListener(v ->
                 startActivity(new Intent(this, Shopping_list.class))
         );
+
+        // 🔹 כפתור "Return" לעמוד Shopping_list
+        ImageButton returnToShoppingList = findViewById(R.id.Return);
+        returnToShoppingList.setOnClickListener(v ->
+                startActivity(new Intent(this, Shopping_list.class))
+        );
+
     }
 }

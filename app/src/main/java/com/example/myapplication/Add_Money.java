@@ -31,6 +31,12 @@ public class Add_Money extends AppCompatActivity {
                 startActivity(new Intent(this, Display_Economy.class))
         );
 
+        // 🔹 כפתור "Return" לעמוד Display_Economy
+        ImageButton returnToEconomy = findViewById(R.id.Return);
+        returnToEconomy.setOnClickListener(v ->
+                startActivity(new Intent(this, Display_Economy.class))
+        );
+
 
     }
 }

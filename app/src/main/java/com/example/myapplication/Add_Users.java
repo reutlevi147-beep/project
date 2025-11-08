@@ -32,5 +32,12 @@ public class Add_Users extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // 🔹 כפתור "Return" לעמוד Display_Purpose
+        ImageButton returnToPurpose = findViewById(R.id.Return);
+        returnToPurpose.setOnClickListener(v ->
+                startActivity(new Intent(this, Display_Purpose.class))
+        );
+
+
     }
 }

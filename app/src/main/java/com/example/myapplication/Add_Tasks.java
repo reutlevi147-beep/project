@@ -32,6 +32,12 @@ public class Add_Tasks extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // 🔹 כפתור "Return" לעמוד Display_Calender_Tasks
+        ImageButton returnToCalendar = findViewById(R.id.Return);
+        returnToCalendar.setOnClickListener(v ->
+                startActivity(new Intent(this, Display_Calender_Tasks.class))
+        );
+
 
     }
 }
