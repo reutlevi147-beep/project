@@ -32,17 +32,5 @@ public class Add_Users extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // 🔹 קישורים לשורת המשימות (ניווט תחתון)
-        ImageButton m1 = findViewById(R.id.M1);
-        ImageButton m2 = findViewById(R.id.M2);
-        ImageButton m3 = findViewById(R.id.M3);
-        ImageButton m4 = findViewById(R.id.M4);
-        ImageButton m5 = findViewById(R.id.M5);
-
-        m1.setOnClickListener(v -> startActivity(new Intent(this, Economy.class)));
-        m2.setOnClickListener(v -> startActivity(new Intent(this, Display_Calender_Tasks.class)));
-        m3.setOnClickListener(v -> startActivity(new Intent(this, Home.class)));
-        m4.setOnClickListener(v -> startActivity(new Intent(this, Shopping.class)));
-        m5.setOnClickListener(v -> startActivity(new Intent(this, Settings.class)));
     }
 }

@@ -25,16 +25,10 @@ public class Settings extends AppCompatActivity {
         });
 
 
-        ImageButton m1 = findViewById(R.id.M1);
-        ImageButton m2 = findViewById(R.id.M2);
-        ImageButton m3 = findViewById(R.id.M3);
-        ImageButton m4 = findViewById(R.id.M4);
-        ImageButton m5 = findViewById(R.id.M5);
+        ImageButton plos = findViewById(R.id.Plos);
+        plos.setOnClickListener(v ->
+                startActivity(new Intent(this, Add_Users.class))
+        );
 
-        m1.setOnClickListener(v -> startActivity(new Intent(this, Economy.class)));
-        m2.setOnClickListener(v -> startActivity(new Intent(this, Display_Calender_Tasks.class)));
-        m3.setOnClickListener(v -> startActivity(new Intent(this, Home.class)));
-        m4.setOnClickListener(v -> startActivity(new Intent(this, Shopping.class)));
-        m5.setOnClickListener(v -> startActivity(new Intent(this, Settings.class)));
     }
 }
