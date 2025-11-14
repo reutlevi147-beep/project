@@ -1,16 +1,28 @@
-package com.example.myapplication;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.myapplication.Add_Shopping;
+import com.example.myapplication.R;
+import com.example.myapplication.ShoppingAdapter;
+import com.example.myapplication.ShoppingItem;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Shopping_list extends AppCompatActivity {
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    RecyclerView recyclerView;
+    ShoppingAdapter adapter;
+    List<ShoppingItem> items = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,20 +30,38 @@ public class Shopping_list extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_shopping_list);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // ממשק
+        recyclerView = findViewById(R.id.shoppingRecycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // כפתור פלוס -> מעבר לעמוד הוספת פריט קניות
+        adapter = new ShoppingAdapter(items);
+        recyclerView.setAdapter(adapter);
+
+        // מאזין בזמן אמת לכל שינוי!
+        loadItems();
+
+        // כפתור פלוס
         ImageButton plos = findViewById(R.id.Plos);
         plos.setOnClickListener(v -> {
             Intent intent = new Intent(Shopping_list.this, Add_Shopping.class);
             startActivity(intent);
         });
+    }
 
+    private void loadItems() {
+        db.collection("shopping_list")
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null || value == null) return;
 
-
+                    items.clear();
+                    for (var doc : value.getDocuments()) {
+                        items.add(new ShoppingItem(
+                                doc.getId(),
+                                doc.getString("name")
+                        ));
+                    }
+                    adapter.notifyDataSetChanged();
+                });
     }
 }

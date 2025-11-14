@@ -26,7 +26,7 @@
             android:clickable="true"
             android:focusable="true"
             android:contentDescription="עמוד כלכלה"
-            android:src="@drawable/m1" />
+            android:src="@drawable/M1" />
 
 
         <ImageButton
@@ -39,7 +39,7 @@
             android:clickable="true"
             android:focusable="true"
             android:contentDescription="עמוד רשימות ויומן"
-            android:src="@drawable/m2" />
+            android:src="@drawable/M2" />
 
         <ImageButton
             android:id="@+id/M3"
@@ -51,7 +51,7 @@
             android:clickable="true"
             android:focusable="true"
             android:contentDescription="עמוד בית"
-            android:src="@drawable/m3" />
+            android:src="@drawable/M3" />
 
         <ImageButton
             android:id="@+id/M4"
@@ -63,7 +63,7 @@
             android:clickable="true"
             android:focusable="true"
             android:contentDescription="עמוד קניות"
-            android:src="@drawable/m4" />
+            android:src="@drawable/M4" />
 
         <ImageButton
             android:id="@+id/M5"

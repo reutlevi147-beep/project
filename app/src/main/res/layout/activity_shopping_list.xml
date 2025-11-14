@@ -35,7 +35,7 @@
             android:layout_marginTop="40dp"
             android:background="@null"
             android:scaleType="centerCrop"
-            android:src="@drawable/plos" />
+            android:src="@drawable/Plos" />
         <!-- כותרת -->
         <TextView
             android:id="@+id/title"
@@ -54,6 +54,13 @@
 
     </FrameLayout>
 
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/shoppingRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="220dp"
+        android:padding="16dp"/>
 
 
     <!-- שורת משימות (Footer Fragment) -->

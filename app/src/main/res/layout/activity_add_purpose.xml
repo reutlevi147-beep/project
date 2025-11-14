@@ -21,7 +21,7 @@
             android:layout_marginLeft="40dp"
             android:layout_marginTop="70dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/c2" />
+            android:src="@drawable/C2" />
 
         <ImageButton
             android:id="@+id/Return"
