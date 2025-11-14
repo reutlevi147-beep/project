@@ -25,11 +25,12 @@
             android:src="@drawable/h_title" />
 
         <!-- פעמון -->
+
         <ImageButton
             android:id="@+id/HBell"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="51dp"
+            android:layout_marginLeft="30dp"
             android:layout_marginTop="10dp"
             android:background="@null"
             android:clickable="true"
@@ -38,6 +39,7 @@
     </LinearLayout>
 
     <!-- כלכלת בית -->
+
     <ImageButton
         android:id="@+id/H_Economy"
         android:layout_width="wrap_content"
