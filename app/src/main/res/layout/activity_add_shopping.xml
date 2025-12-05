@@ -24,7 +24,10 @@
             android:layout_marginLeft="40dp"
             android:layout_marginTop="150dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/C1" />
+            android:src="@drawable/c1"
+            android:clickable="false"
+            android:focusable="false"/>
+
 
         <ImageButton
             android:id="@+id/Return"
@@ -58,14 +61,16 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="60dp"
             android:layout_marginTop="230dp"
-            android:shadowColor="#80000000"
             android:background="@android:color/transparent"
+            android:hint="שם מוצר"
+            android:textColor="#000000"
+            android:textSize="30sp"
+            android:shadowColor="#80000000"
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="4"
-            android:text="שם מוצר"
-            android:textColor="#000000"
-            android:textSize="30sp" />
+
+            />
 
         <!-- כפתור הוספת מוצר -->
         <Button

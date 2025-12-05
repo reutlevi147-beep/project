@@ -60,7 +60,7 @@
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="4"
-            android:text="תאריך"
+            android:hint="תאריך"
             android:textColor="#000000"
             android:textSize="30sp" />
         <EditText
@@ -74,7 +74,7 @@
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="4"
-            android:text="סכום"
+            android:hint="סכום"
             android:textColor="#000000"
             android:textSize="30sp" />
         <EditText
@@ -88,7 +88,7 @@
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="4"
-            android:text="קטגוריה"
+            android:hint="קטגוריה"
             android:textColor="#000000"
             android:textSize="30sp" />
 

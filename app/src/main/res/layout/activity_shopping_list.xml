@@ -18,14 +18,7 @@
         <!-- הטקסט שמעל התמונה -->
 
         <!-- תמונת רקע- שורה אחת -->
-        <ImageView
-            android:id="@+id/c10"
-            android:layout_width="349dp"
-            android:layout_height="557dp"
-            android:layout_marginLeft="40dp"
-            android:layout_marginTop="95dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/c10" />
+
 
         <ImageButton
             android:id="@+id/Plos"
@@ -35,7 +28,7 @@
             android:layout_marginTop="40dp"
             android:background="@null"
             android:scaleType="centerCrop"
-            android:src="@drawable/Plos" />
+            android:src="@drawable/plos" />
         <!-- כותרת -->
         <TextView
             android:id="@+id/title"

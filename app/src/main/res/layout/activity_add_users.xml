@@ -48,7 +48,7 @@
             android:textSize="30sp" />
 
 
-        <Button
+        <EditText
             android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -59,10 +59,10 @@
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="4"
-            android:text="שם משתמש"
+            android:hint="שם משתמש"
             android:textColor="#000000"
             android:textSize="30sp" />
-        <Button
+        <EditText
             android:id="@+id/phone_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="4"
-            android:text="מספר טלפון"
+            android:hint="מספר טלפון"
             android:textColor="#000000"
             android:textSize="30sp" />
 

@@ -1,5 +1,8 @@
+package com.example.myapplication;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
@@ -7,22 +10,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.Add_Shopping;
-import com.example.myapplication.R;
-import com.example.myapplication.ShoppingAdapter;
-import com.example.myapplication.ShoppingItem;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Shopping_list extends AppCompatActivity {
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    RecyclerView recyclerView;
-    ShoppingAdapter adapter;
-    List<ShoppingItem> items = new ArrayList<>();
+    private ShoppingListAdapter mAdapter;
+    private List<ShoppingItem> mItems = new ArrayList<>();
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private RecyclerView mRecyclerView;
+
+    // נתיבים — תואם ל-Add_Shopping
+    private static final String MAIN_COLLECTION = "shopping_lists";
+    private static final String DOCUMENT_ID = "defaultList";
+    private static final String ITEMS_SUB_COLLECTION = "items";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,17 +36,18 @@ public class Shopping_list extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_shopping_list);
 
-        // ממשק
-        recyclerView = findViewById(R.id.shoppingRecycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // RecyclerView
+        mRecyclerView = findViewById(R.id.shoppingRecycler);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new ShoppingAdapter(items);
-        recyclerView.setAdapter(adapter);
+        // Adapter
+        mAdapter = new ShoppingListAdapter(this, mItems);
+        mRecyclerView.setAdapter(mAdapter);
 
-        // מאזין בזמן אמת לכל שינוי!
+        // טעינת פריטים מה־Firestore
         loadItems();
 
-        // כפתור פלוס
+        // כפתור פלוס – מעבר להוספת מוצר
         ImageButton plos = findViewById(R.id.Plos);
         plos.setOnClickListener(v -> {
             Intent intent = new Intent(Shopping_list.this, Add_Shopping.class);
@@ -49,19 +56,35 @@ public class Shopping_list extends AppCompatActivity {
     }
 
     private void loadItems() {
-        db.collection("shopping_list")
-                .orderBy("createdAt", Query.Direction.ASCENDING)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null || value == null) return;
 
-                    items.clear();
-                    for (var doc : value.getDocuments()) {
-                        items.add(new ShoppingItem(
-                                doc.getId(),
-                                doc.getString("name")
-                        ));
+        // טעינה מהנתיב הנכון:
+        // shopping_lists → defaultList → items
+        db.collection(MAIN_COLLECTION)
+                .document(DOCUMENT_ID)
+                .collection(ITEMS_SUB_COLLECTION)
+                .orderBy("name", Query.Direction.ASCENDING)
+                .addSnapshotListener((value, error) -> {
+
+                    if (error != null) {
+                        Log.e("Shopping_list", "Listen failed.", error);
+                        return;
                     }
-                    adapter.notifyDataSetChanged();
+
+                    if (value == null) return;
+
+                    mItems.clear();
+
+                    for (QueryDocumentSnapshot doc : value) {
+                        ShoppingItem item = doc.toObject(ShoppingItem.class);
+
+                        if (item != null) {
+                            item.setDocumentId(doc.getId()); // חשוב למחיקה / עדכון בעתיד
+                            mItems.add(item);
+                        }
+                    }
+
+                    // עדכון ה־RecyclerView
+                    mAdapter.notifyDataSetChanged();
                 });
     }
 }

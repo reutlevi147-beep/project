@@ -60,7 +60,7 @@
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="4"
-            android:text="המשימה"
+            android:hint="המשימה"
             android:textColor="#000000"
             android:textSize="30sp" />
 
