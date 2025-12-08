@@ -1,0 +1,14 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- פינות מעוגלות -->
+    <corners android:radius="12dp" />
+
+    <!-- מסגרת בלבד -->
+    <stroke
+        android:width="2dp"
+        android:color="#D9534F" />  <!-- אדום אלגנטי -->
+
+    <!-- בלי רקע! שקוף -->
+    <solid android:color="@android:color/transparent" />
+</shape>

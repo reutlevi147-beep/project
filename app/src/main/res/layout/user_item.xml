@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:gravity="center_vertical">
+
+    <!-- אייקון משתמש -->
+    <ImageView
+        android:id="@+id/userIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:src="@drawable/ic_user"
+        android:layout_marginRight="12dp" />
+
+    <!-- שם המשתמש -->
+    <TextView
+        android:id="@+id/userNameText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="User Name"
+        android:textSize="20sp"
+        android:textColor="#000000"
+        android:textStyle="bold" />
+
+    <!-- אייקון פח למחיקה -->
+    <ImageView
+        android:id="@+id/deleteIcon"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:src="@drawable/ic_delete"
+        android:layout_marginLeft="12dp" />
+
+</LinearLayout>

@@ -6,29 +6,25 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Home">
+    android:background="#F5F5F5"
+    tools:context=".Shopping_list">
 
-
+    <!-- אזור עליון (פלוס + כותרת) -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="643dp">
+        android:layout_height="180dp">
 
-        <!-- התמונה -->
-
-        <!-- הטקסט שמעל התמונה -->
-
-        <!-- תמונת רקע- שורה אחת -->
-
-
+        <!-- כפתור פלוס -->
         <ImageButton
             android:id="@+id/Plos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="40dp"
-            android:background="@null"
-            android:scaleType="centerCrop"
-            android:src="@drawable/plos" />
+            android:background="@drawable/round_white_button"
+            android:src="@drawable/plos"
+            android:scaleType="centerCrop"/>
+
         <!-- כותרת -->
         <TextView
             android:id="@+id/title"
@@ -36,32 +32,45 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="120dp"
             android:layout_marginTop="100dp"
-            android:shadowColor="#80000000"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="4"
             android:text="רשימת קניות"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
             android:textColor="#000000"
-            android:textSize="30sp" />
-
+            android:shadowColor="#33000000"
+            android:shadowDx="0"
+            android:shadowDy="3"
+            android:shadowRadius="6"/>
 
     </FrameLayout>
 
+    <!-- כפתור מחיקת פריטים מסומנים -->
+    <Button
+        android:id="@+id/deletePurchasedBtn"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="מחיקת פריטים שנקנו"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/red_round_button"
+        android:layout_marginTop="12dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+
+    <!-- רשימת המוצרים -->
+        <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shoppingRecycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="220dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:padding="16dp"/>
 
-
-    <!-- שורת משימות (Footer Fragment) -->
+    <!-- Footer -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_footer"
         android:name="com.example.myapplication.footerFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
-
+        android:layout_height="wrap_content"/>
 </LinearLayout>

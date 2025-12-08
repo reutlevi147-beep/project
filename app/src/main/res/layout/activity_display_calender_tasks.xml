@@ -32,8 +32,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="40dp"
-            android:background="@null"
             android:scaleType="centerCrop"
+            android:background="@drawable/round_white_button"
             android:src="@drawable/plos" />
 
         <!-- כפתור הוספת אירוע ביומן -->
@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="400dp"
-            android:background="@null"
+            android:background="@drawable/round_white_button"
             android:scaleType="centerCrop"
             android:src="@drawable/plos" />
 
