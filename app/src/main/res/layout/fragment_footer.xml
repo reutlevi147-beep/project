@@ -2,88 +2,68 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingBottom="12dp"
     tools:context=".footerFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-
-
-    <GridLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="5"
         android:orientation="horizontal"
-        android:padding="0dp"
-        android:rowCount="1">
+        android:gravity="center"
+        android:weightSum="5">
 
+        <!-- אייקון כלכלה -->
         <ImageButton
             android:id="@+id/M1"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="3dp"
+            android:layout_weight="1"
             android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="עמוד כלכלה"
+            android:padding="6dp"
             android:src="@drawable/ic_stats" />
 
-
+        <!-- אייקון רשימות -->
         <ImageButton
             android:id="@+id/M2"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="1dp"
-            android:layout_marginTop="8dp"
+            android:layout_weight="1"
             android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="עמוד רשימות ויומן"
+            android:padding="6dp"
             android:src="@drawable/ic_list" />
 
+        <!-- אייקון בית -->
         <ImageButton
             android:id="@+id/M3"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="7dp"
-            android:layout_marginTop="3dp"
+            android:layout_weight="1"
             android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="עמוד בית"
+            android:padding="6dp"
             android:src="@drawable/ic_home" />
 
+        <!-- אייקון קניות -->
         <ImageButton
             android:id="@+id/M4"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="15dp"
+            android:layout_weight="1"
             android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="עמוד קניות"
+            android:padding="6dp"
             android:src="@drawable/ic_cart" />
 
+        <!-- אייקון הגדרות -->
         <ImageButton
             android:id="@+id/M5"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="1dp"
-            android:layout_marginTop="15dp"
+            android:layout_weight="1"
             android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="עמוד הגדרות"
+            android:padding="6dp"
             android:src="@drawable/ic_settings" />
 
-
-
-
-
-
-
-    </GridLayout>
-
+    </LinearLayout>
 
 </FrameLayout>
