@@ -14,12 +14,10 @@
         android:paddingBottom="20dp"
         android:gravity="center_horizontal">
 
-
         <!-- ===== רווח עליון ===== -->
         <View
             android:layout_width="match_parent"
             android:layout_height="40dp" />
-
 
         <!-- ====================== משימות הבית ====================== -->
         <RelativeLayout
@@ -27,7 +25,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp">
 
-            <!-- הפלוס בשורה עם הכותרת -->
             <ImageButton
                 android:id="@+id/Plos"
                 android:layout_width="45dp"
@@ -37,7 +34,6 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"/>
 
-            <!-- כותרת משימות הבית -->
             <TextView
                 android:id="@+id/titleTasks"
                 android:layout_width="wrap_content"
@@ -50,15 +46,29 @@
                 android:gravity="center"/>
         </RelativeLayout>
 
-
         <!-- ====================== רשימת משימות (RecyclerView) ====================== -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerTasks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="25dp"/>
+            android:overScrollMode="never"
+            android:nestedScrollingEnabled="false"
+            android:layout_marginBottom="25dp"
+            tools:listitem="@layout/task_item" />
 
-
+        <!-- ====================== כפתור הצגת כל המשימות ====================== -->
+        <TextView
+            android:id="@+id/showMoreTasks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="הצג את כל המשימות"
+            android:textColor="#2D8BBA"
+            android:textSize="18sp"
+            android:padding="10dp"
+            android:layout_marginBottom="25dp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_gravity="center" />
 
         <!-- ====================== יומן ====================== -->
         <RelativeLayout
@@ -87,8 +97,7 @@
                 android:gravity="center"/>
         </RelativeLayout>
 
-
-        <!-- תת כותרת יומן -->
+        <!-- תת כותרת -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -98,8 +107,7 @@
             android:gravity="center"
             android:layout_marginBottom="10dp" />
 
-
-        <!-- 3 בלוקים ביומן -->
+        <!-- בלוקים ביומן -->
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="70dp"
@@ -117,8 +125,6 @@
             android:layout_height="70dp"
             android:layout_marginBottom="30dp"
             android:src="@drawable/task_block"/>
-
-
 
         <!-- פוטר -->
         <androidx.fragment.app.FragmentContainerView

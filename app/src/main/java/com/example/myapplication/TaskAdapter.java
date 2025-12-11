@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
     private List<Task> taskList;
@@ -21,6 +22,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @NonNull
     @Override
+
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.task_item, parent, false);
@@ -29,13 +31,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-
         Task task = taskList.get(position);
 
         holder.txtTaskName.setText(task.getTaskName());
         holder.txtAssignedTo.setText("עבור: " + task.getAssignedTo());
         holder.checkDone.setChecked(task.isCompleted());
-
     }
 
     @Override
@@ -54,6 +54,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             checkDone = itemView.findViewById(R.id.checkDone);
             txtTaskName = itemView.findViewById(R.id.txtTaskName);
             txtAssignedTo = itemView.findViewById(R.id.txtAssignedTo);
+
         }
     }
 }
+
+

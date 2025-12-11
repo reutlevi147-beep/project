@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="20dp"
+    android:paddingBottom="30dp"
+    android:paddingHorizontal="20dp"
+    android:background="#FFFFFF">
+
+    <!-- ידית עליונה -->
+    <View
+        android:layout_width="60dp"
+        android:layout_height="6dp"
+        android:layout_gravity="center"
+        android:background="#C8C8C8"
+        android:layout_marginBottom="15dp"
+        android:alpha="0.7" />
+
+    <!-- כותרת -->
+    <TextView
+        android:id="@+id/bottomSheetTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="כל המשימות"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:layout_marginBottom="15dp" />
+
+    <!-- רשימת משימות -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerAllTasks"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:overScrollMode="never" />
+
+</LinearLayout>
