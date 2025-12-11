@@ -17,55 +17,55 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="39dp"
+            android:layout_marginTop="40dp"
             android:background="@null"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/m1" />
+            android:src="@drawable/ic_stats" />
 
         <ImageButton
             android:id="@+id/M2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="1dp"
-            android:layout_marginTop="43dp"
+            android:layout_marginTop="40dp"
             android:background="@null"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/m2" />
+            android:src="@drawable/ic_list" />
 
         <ImageButton
             android:id="@+id/M3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="7dp"
-            android:layout_marginTop="39dp"
+            android:layout_marginTop="40dp"
             android:background="@null"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/m3" />
+            android:src="@drawable/ic_home" />
 
         <ImageButton
             android:id="@+id/M4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
-            android:layout_marginTop="52dp"
+            android:layout_marginTop="40dp"
             android:background="@null"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/m4" />
+            android:src="@drawable/ic_cart" />
 
         <ImageButton
             android:id="@+id/M5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="1dp"
-            android:layout_marginTop="52dp"
+            android:layout_marginTop="40dp"
             android:background="@null"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/m5" />
+            android:src="@drawable/ic_settings" />
 
     </GridLayout>
 </merge>

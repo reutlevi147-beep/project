@@ -6,11 +6,19 @@
     android:padding="6dp"
     android:gravity="center_vertical">
 
-    <!-- שם המוצר -->
+    <!-- סימון אם הפריט נקנה -->
+    <CheckBox
+        android:id="@+id/checkBoxPreview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false" />
+
+    <!-- שם הפריט -->
     <TextView
         android:id="@+id/textViewNamePreview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:textSize="14sp"
         android:textColor="@android:color/black"
         android:text="שם המוצר" />

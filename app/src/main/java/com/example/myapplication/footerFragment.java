@@ -22,18 +22,18 @@ public class footerFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_footer, container, false);
 
         // חיבור לכפתורים דרך ה-View של הפרגמנט
-        ImageButton m1 = view.findViewById(R.id.M1);
-        ImageButton m2 = view.findViewById(R.id.M2);
-        ImageButton m3 = view.findViewById(R.id.M3);
-        ImageButton m4 = view.findViewById(R.id.M4);
-        ImageButton m5 = view.findViewById(R.id.M5);
+        ImageButton ic_ststs = view.findViewById(R.id.M1);
+        ImageButton ic_list = view.findViewById(R.id.M2);
+        ImageButton ic_home = view.findViewById(R.id.M3);
+        ImageButton ic_cart = view.findViewById(R.id.M4);
+        ImageButton ic_settings = view.findViewById(R.id.M5);
 
         // מאזינים ללחיצות
-        m1.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Economy.class)));
-        m2.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Display_Calender_Tasks.class)));
-        m3.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Home.class)));
-        m4.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Shopping.class)));
-        m5.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Settings.class)));
+        ic_ststs.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Economy.class)));
+        ic_list.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Display_Calender_Tasks.class)));
+        ic_home.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Home.class)));
+        ic_cart.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Shopping.class)));
+        ic_settings.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Settings.class)));
 
         return view; // ✅ חשוב!
     }

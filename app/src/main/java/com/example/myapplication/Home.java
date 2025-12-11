@@ -2,13 +2,25 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Home extends AppCompatActivity {
 
@@ -31,9 +43,9 @@ public class Home extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // כפתור מעבר לעמוד קניות
-        ImageButton shoppingBtn = findViewById(R.id.HShopping);
-        shoppingBtn.setOnClickListener(v -> {
+        // ⭐ כפתור מעבר לעמוד קניות (מתוקן)
+        View shoppingBox = findViewById(R.id.shoppingBox);
+        shoppingBox.setOnClickListener(v -> {
             Intent intent = new Intent(Home.this, Shopping.class);
             startActivity(intent);
         });
@@ -53,10 +65,83 @@ public class Home extends AppCompatActivity {
         });
 
         // כפתור מעבר לעמוד הגדרות
-        ImageButton settingsBtn = findViewById(R.id.HSetting);
-        settingsBtn.setOnClickListener(v -> {
+        LinearLayout settingsBox = findViewById(R.id.settingsBox);
+        settingsBox.setOnClickListener(v -> {
             Intent intent = new Intent(Home.this, Settings.class);
             startActivity(intent);
         });
+
+        // ----------------------------------------------------
+        // ⭐ טעינת המשתמשים לתוך ריבוע "הגדרות"
+        // ----------------------------------------------------
+        RecyclerView rv = findViewById(R.id.settingsUsersList);
+
+        if (rv != null) {
+            rv.setLayoutManager(new LinearLayoutManager(this));
+
+            List<AppUser> users = new ArrayList<>();
+            UsersAdapter adapter = new UsersAdapter(this, users);
+
+            adapter.setHideDeleteIcon(true);
+            rv.setAdapter(adapter);
+
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .get()
+                    .addOnSuccessListener(query -> {
+                        users.clear();
+
+                        for (DocumentSnapshot doc : query) {
+                            AppUser user = doc.toObject(AppUser.class);
+                            user.setDocumentId(doc.getId());
+                            users.add(user);
+                        }
+
+                        adapter.notifyDataSetChanged();
+                    });
+        }
+
+        // ----------------------------------------------------
+        // ⭐ טעינת 4 פריטי הקניות האחרונים לריבוע "קניות"
+        // ----------------------------------------------------
+        RecyclerView shoppingRv = findViewById(R.id.homeShoppingPreview);
+        TextView noItemsText = findViewById(R.id.noItemsText);
+
+        if (shoppingRv != null) {
+            shoppingRv.setLayoutManager(new LinearLayoutManager(this));
+
+            List<ShoppingItem> previewList = new ArrayList<>();
+            HomeShoppingAdapter previewAdapter = new HomeShoppingAdapter(previewList);
+
+            shoppingRv.setAdapter(previewAdapter);
+
+            FirebaseFirestore.getInstance()
+                    .collection("shopping_lists")
+                    .document("defaultList")
+                    .collection("items")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(4)
+                    .addSnapshotListener((querySnapshot, error) -> {
+                        if (error != null || querySnapshot == null) return;
+
+                        previewList.clear();
+
+                        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                            ShoppingItem item = doc.toObject(ShoppingItem.class);
+                            previewList.add(item);
+                        }
+
+                        previewAdapter.notifyDataSetChanged();
+
+                        // ⭐ הצגת / הסתרת "אין פריטים בעגלה"
+                        if (previewList.isEmpty()) {
+                            noItemsText.setVisibility(View.VISIBLE);
+                            shoppingRv.setVisibility(View.GONE);
+                        } else {
+                            noItemsText.setVisibility(View.GONE);
+                            shoppingRv.setVisibility(View.VISIBLE);
+                        }
+                    });
+        }
     }
 }

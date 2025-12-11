@@ -28,7 +28,7 @@ public class Settings extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         // 🔹 כפתור פלוס גדול - מעבר לעמוד הוספת משתמש
-        ImageButton plos = findViewById(R.id.Plos);
+         ImageButton plos = findViewById(R.id.addUserSmall);
         plos.setOnClickListener(v ->
                 startActivity(new Intent(this, Add_Users.class))
         );

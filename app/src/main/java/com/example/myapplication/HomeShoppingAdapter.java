@@ -10,39 +10,40 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class ShoppingAdapter extends RecyclerView.Adapter<ShoppingAdapter.ViewHolder> {
+public class HomeShoppingAdapter extends RecyclerView.Adapter<HomeShoppingAdapter.ViewHolder> {
 
-    private List<ShoppingItem> items;
+    private List<ShoppingItem> list;
 
-    public ShoppingAdapter(List<ShoppingItem> items) {
-        this.items = items;
+    public HomeShoppingAdapter(List<ShoppingItem> list) {
+        this.list = list;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+
         TextView name;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            name = itemView.findViewById(R.id.name);
+            name = itemView.findViewById(R.id.textViewNamePreview);
         }
     }
 
     @NonNull
     @Override
-    public ShoppingAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+    public HomeShoppingAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.shopping_item, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ShoppingAdapter.ViewHolder holder, int position) {
-        ShoppingItem item = items.get(position);
+    public void onBindViewHolder(@NonNull HomeShoppingAdapter.ViewHolder holder, int position) {
+        ShoppingItem item = list.get(position);
         holder.name.setText(item.getName());
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return list.size();
     }
 }

@@ -1,8 +1,8 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="72dp"
     android:height="72dp"
-    android:viewportWidth="100"
-    android:viewportHeight="100">
+    android:viewportWidth="80"
+    android:viewportHeight="80">
 
     <!-- Bars -->
     <path
@@ -28,11 +28,11 @@
         android:strokeColor="#7A8287"
         android:strokeWidth="4"
         android:fillColor="@android:color/transparent"
-        android:pathData="M20,45 L45,35 L65,25 L80,15" />
+        android:pathData="M13,37 L23,33 L43,25 L63,17" />
 
     <!-- Arrow head -->
     <path
         android:strokeColor="#7A8287"
         android:strokeWidth="4"
-        android:pathData="M75,18 L80,15 L77,10" />
+        android:pathData="M50,12 L64,16 L61,25" />
 </vector>

@@ -9,8 +9,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Display_Calender_Tasks extends AppCompatActivity {
+
+    RecyclerView recyclerTasks;
+    TaskAdapter adapter;
+    List<Task> taskList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,5 +46,16 @@ public class Display_Calender_Tasks extends AppCompatActivity {
         );
 
 
+        // ===================== RecyclerView =====================
+        recyclerTasks = findViewById(R.id.recyclerTasks);
+        recyclerTasks.setLayoutManager(new LinearLayoutManager(this));
+
+        // נתוני דמה לבדיקה
+        taskList.add(new Task("1", "לסדר את הסלון", "אמא", false));
+        taskList.add(new Task("2", "להוציא את זואי", "אני", true));
+        taskList.add(new Task("3", "להכין אוכל", "אבא", false));
+
+        adapter = new TaskAdapter(taskList);
+        recyclerTasks.setAdapter(adapter);
     }
 }

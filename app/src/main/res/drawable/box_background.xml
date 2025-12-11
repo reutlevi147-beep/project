@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- צבע הרקע של הריבוע -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- מסגרת אפורה עדינה (כמו בעיצוב שלך) -->
+    <stroke
+        android:width="2dp"
+        android:color="#BFC5C9" />
+
+    <!-- פינות מעוגלות -->
+    <corners android:radius="18dp" />
+
+    <!-- רווח פנימי קטן שלא יחתוך טקסט -->
+    <padding
+        android:left="6dp"
+        android:top="6dp"
+        android:right="6dp"
+        android:bottom="6dp" />
+
+</shape>

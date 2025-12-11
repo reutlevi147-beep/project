@@ -19,7 +19,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     private Context context;
     private List<AppUser> userList;
 
-    // 🎨 צבעים שונים לאייקון המשתמש (לפי הגוונים שביקשת)
+    // ✔ מאפשר להסתיר את אייקון המחיקה בעמוד ההגדרות
+    private boolean hideDeleteIcon = false;
+
+    public void setHideDeleteIcon(boolean hide) {
+        this.hideDeleteIcon = hide;
+    }
+
+    // 🎨 צבעים שונים לאייקון המשתמש
     private int[] userColors = {
             0xFF4AC7D1, // טורקיז בהיר
             0xFF3BA0C3, // טורקיז־כחול
@@ -47,7 +54,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         }
     }
 
-
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -60,29 +66,37 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         AppUser currentUser = userList.get(position);
 
+        // ✔ מציג את שם המשתמש שהוזן מתוך Firestore
         holder.userNameText.setText(currentUser.getName());
 
-        // 🎨 צבע מתחלף לאייקון המשתמש
+        // 🎨 צבע אייקון מתחלף
         int colorIndex = position % userColors.length;
         holder.userIcon.setColorFilter(userColors[colorIndex]);
 
-        // 🗑️ מחיקה בלחיצה על הפח
-        holder.deleteIcon.setOnClickListener(v -> {
+        // ✔ אם hideDeleteIcon = true → מסתירים את הפח
+        if (hideDeleteIcon) {
+            holder.deleteIcon.setVisibility(View.GONE);
+        } else {
+            holder.deleteIcon.setVisibility(View.VISIBLE);
 
-            String docId = currentUser.getDocumentId();
-            if (docId == null || docId.isEmpty()) return;
+            // 🗑️ מחיקה בלחיצה על הפח (קיים כמו שהיה)
+            holder.deleteIcon.setOnClickListener(v -> {
 
-            FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(docId)
-                    .delete()
-                    .addOnSuccessListener(aVoid -> {
+                String docId = currentUser.getDocumentId();
+                if (docId == null || docId.isEmpty()) return;
 
-                        userList.remove(position);
-                        notifyItemRemoved(position);
-                        notifyItemRangeChanged(position, userList.size());
-                    });
-        });
+                FirebaseFirestore.getInstance()
+                        .collection("users")
+                        .document(docId)
+                        .delete()
+                        .addOnSuccessListener(aVoid -> {
+
+                            userList.remove(position);
+                            notifyItemRemoved(position);
+                            notifyItemRangeChanged(position, userList.size());
+                        });
+            });
+        }
     }
 
     @Override
