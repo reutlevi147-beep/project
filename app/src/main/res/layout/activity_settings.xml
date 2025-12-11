@@ -67,11 +67,14 @@
         <!-- ⭐ פלוס מעל התיבה -->
         <ImageButton
             android:id="@+id/addUserSmall"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginTop="300dp"
             android:layout_marginLeft="160dp"
             android:src="@drawable/plos"
+            android:elevation="20dp"
+            android:translationZ="20dp"
+
             android:background="@drawable/round_white_button"
             android:scaleType="fitCenter" />
 
