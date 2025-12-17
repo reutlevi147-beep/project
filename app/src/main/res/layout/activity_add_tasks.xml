@@ -8,14 +8,11 @@
     android:layout_height="match_parent"
     tools:context=".Add_Tasks">
 
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="643dp">
 
-
-        <!-- תמונת רק - שורה אחת -->
-        <!-- כותרת-->
+        <!-- תמונת רקע -->
         <ImageView
             android:layout_width="351dp"
             android:layout_height="557dp"
@@ -48,60 +45,76 @@
             android:textColor="#000000"
             android:textSize="30sp" />
 
-        <!-- כפתור לרשום את המשימה -->
+        <!-- שדה המשימה -->
         <EditText
             android:id="@+id/task"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="60dp"
             android:layout_marginTop="230dp"
-            android:shadowColor="#80000000"
             android:background="@android:color/transparent"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="4"
             android:hint="המשימה"
             android:textColor="#000000"
             android:textSize="30sp" />
 
-        <!-- כפתור הוספת מוצר -->
-        <Spinner
-            android:id="@+id/spinnerUsers"
-            android:layout_width="match_parent"
+        <!-- ✅ בחירת מבצעים – צ׳קבוקסים קבועים -->
+        <LinearLayout
+            android:id="@+id/users_container"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginTop="370dp"
-            android:layout_marginRight="30dp"
-            android:padding="12dp" />
+            android:layout_marginLeft="60dp"
+            android:layout_marginTop="360dp"
+            android:orientation="vertical">
 
+            <CheckBox
+                android:id="@+id/check_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="כולם"
+                android:textSize="20sp" />
+
+            <CheckBox
+                android:id="@+id/check_user1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="דנה"
+                android:textSize="18sp" />
+
+            <CheckBox
+                android:id="@+id/check_user2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="רון"
+                android:textSize="18sp" />
+
+            <CheckBox
+                android:id="@+id/check_user3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="יעל"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <!-- כפתור הוספת משימה -->
         <Button
             android:id="@+id/add_to_task"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="100dp"
-            android:layout_marginTop="500dp"
-            android:shadowColor="#80000000"
+            android:layout_marginTop="540dp"
             android:backgroundTint="#2d8bba"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="4"
             android:text="הוספת משימה"
             android:textColor="#000000"
             android:textSize="30sp" />
 
-
-
-
     </FrameLayout>
 
-    <!-- שורת משימות (Footer Fragment) -->
+    <!-- Footer -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_footer"
         android:name="com.example.myapplication.footerFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom" />
-
-
 
 </LinearLayout>

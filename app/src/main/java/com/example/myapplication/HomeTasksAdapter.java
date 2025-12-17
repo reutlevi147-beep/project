@@ -13,37 +13,35 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
+public class HomeTasksAdapter extends RecyclerView.Adapter<HomeTasksAdapter.TaskViewHolder> {
 
-    private List<Task> taskList;
+    private final List<Task> tasks;
 
-    public TaskAdapter(List<Task> taskList) {
-        this.taskList = taskList;
+    public HomeTasksAdapter(List<Task> tasks) {
+        this.tasks = tasks;
     }
 
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.task_item, parent, false);
+                .inflate(R.layout.item_home_task, parent, false);
         return new TaskViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Task task = taskList.get(position);
+        Task task = tasks.get(position);
 
-        holder.txtTaskName.setText(task.getTaskName());
-        holder.txtAssignedTo.setText(task.getAssignedTo());
+        holder.taskTitle.setText(task.getTaskName());
 
-        // 🔹 חשוב: לנקות Listener לפני setChecked
+        // מניעת טריגר כפול
         holder.checkDone.setOnCheckedChangeListener(null);
+
         holder.checkDone.setChecked(task.isCompleted());
 
-        // 🔹 שמירה ל-Firestore כשמשנים Checkbox
+        // ✅ שלב 1: עדכון Firestore בלחיצה
         holder.checkDone.setOnCheckedChangeListener((buttonView, isChecked) -> {
-
-            task.setCompleted(isChecked);
 
             FirebaseFirestore.getInstance()
                     .collection("home_tasks")
@@ -56,19 +54,17 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public int getItemCount() {
-        return taskList.size();
+        return tasks.size();
     }
 
     static class TaskViewHolder extends RecyclerView.ViewHolder {
 
-        TextView txtTaskName, txtAssignedTo;
+        TextView taskTitle;
         CheckBox checkDone;
 
-        public TaskViewHolder(@NonNull View itemView) {
+        TaskViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            txtTaskName = itemView.findViewById(R.id.txtTaskName);
-            txtAssignedTo = itemView.findViewById(R.id.txtAssignedTo);
+            taskTitle = itemView.findViewById(R.id.txtTaskTitle);
             checkDone = itemView.findViewById(R.id.checkDone);
         }
     }

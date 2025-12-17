@@ -116,18 +116,48 @@
 
 
         <!-- משימות בית -->
-        <ImageButton
-            android:id="@+id/HTasks"
-            android:layout_width="163dp"
-            android:layout_height="wrap_content"
+        <LinearLayout
+            android:id="@+id/tasksBox"
+            android:layout_width="150dp"
+            android:layout_height="151dp"
             android:layout_row="0"
             android:layout_column="1"
-            android:layout_marginTop="8dp"
-            android:layout_marginRight="-5dp"
-            android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/h_tasks" />
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:background="@drawable/box_background"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp">
+
+            <!-- כותרת -->
+            <TextView
+                android:id="@+id/tasksTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="משימות בית"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:layout_gravity="center_horizontal"
+                android:paddingBottom="4dp"/>
+
+            <!-- רשימת 3 משימות -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerHomeTasks"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                tools:listitem="@layout/item_home_task"/>
+
+            <!-- אייקון -->
+            <ImageView
+                android:id="@+id/tasksIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_list"
+                android:layout_gravity="end"/>
+        </LinearLayout>
+
+
+
 
         <!-- יומן -->
         <ImageButton

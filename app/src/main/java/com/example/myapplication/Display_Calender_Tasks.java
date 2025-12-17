@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,7 +25,7 @@ public class Display_Calender_Tasks extends AppCompatActivity {
     RecyclerView recyclerTasks;
     TaskAdapter adapter;
     List<Task> taskList = new ArrayList<>();
-    TextView btnShowAll;   // ← שינוי קטן: TextView כי זה מה שיש ב־XML
+    TextView btnShowAll;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -32,35 +33,32 @@ public class Display_Calender_Tasks extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_calender_tasks);
 
-        // ---------------------- כפתור הוספת משימה ----------------------
+        Log.d("STEP1", "Display_Calender_Tasks onCreate");
+
         ImageButton plosTasks = findViewById(R.id.Plos);
         plosTasks.setOnClickListener(v ->
                 startActivity(new Intent(this, Add_Tasks.class))
         );
 
-        // ---------------------- כפתור הוספת אירוע ליומן ----------------------
         ImageButton plosCalendar = findViewById(R.id.plos);
         plosCalendar.setOnClickListener(v ->
                 startActivity(new Intent(this, Add_Calender.class))
         );
 
-        // ---------------------- "הצג את כל המשימות" ----------------------
-        btnShowAll = findViewById(R.id.showMoreTasks);   // ← תוקן!!
+        btnShowAll = findViewById(R.id.showMoreTasks);
         btnShowAll.setVisibility(View.GONE);
-
         btnShowAll.setOnClickListener(v -> openBottomSheet());
 
-        // ---------------------- RecyclerView ----------------------
         recyclerTasks = findViewById(R.id.recyclerTasks);
         recyclerTasks.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new TaskAdapter(taskList);
         recyclerTasks.setAdapter(adapter);
 
-        // ---------------------- טעינת משימות ----------------------
         loadTasksFromFirestore();
     }
 
+    // ====================== טעינה מ־Firestore (מתוקן) ======================
     private void loadTasksFromFirestore() {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -69,28 +67,36 @@ public class Display_Calender_Tasks extends AppCompatActivity {
                 .document("defaultList")
                 .collection("items")
                 .get()
-                .addOnSuccessListener(query -> {
+                .addOnSuccessListener(queryDocumentSnapshots -> {
 
                     taskList.clear();
 
-                    for (DocumentSnapshot doc : query.getDocuments()) {
-                        String id = doc.getId();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+
                         String title = doc.getString("title");
                         String assignedTo = doc.getString("assignedTo");
-                        Boolean done = doc.getBoolean("isDone");
+                        Boolean isDone = doc.getBoolean("isDone");
 
-                        boolean isDone = (done != null) ? done : false;
+                        Task task = new Task(
+                                doc.getId(),
+                                title != null ? title : "",
+                                assignedTo != null ? assignedTo : "",
+                                isDone != null && isDone
+                        );
 
-                        taskList.add(new Task(id, title, assignedTo, isDone));
+                        taskList.add(task);
                     }
 
                     applyPreviewLimit();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "שגיאה בטעינת משימות", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this,
+                                "שגיאה בטעינת משימות",
+                                Toast.LENGTH_SHORT).show()
                 );
     }
 
+    // ====================== תצוגה מקדימה ======================
     private void applyPreviewLimit() {
 
         List<Task> previewList = new ArrayList<>();
@@ -99,7 +105,6 @@ public class Display_Calender_Tasks extends AppCompatActivity {
             previewList.add(taskList.get(0));
             previewList.add(taskList.get(1));
             previewList.add(taskList.get(2));
-
             btnShowAll.setVisibility(View.VISIBLE);
         } else {
             previewList.addAll(taskList);
@@ -110,14 +115,15 @@ public class Display_Calender_Tasks extends AppCompatActivity {
         recyclerTasks.setAdapter(adapter);
     }
 
+    // ====================== BottomSheet ======================
     private void openBottomSheet() {
 
         BottomSheetDialog bottomSheet = new BottomSheetDialog(this);
-        View sheetView = getLayoutInflater().inflate(R.layout.bottomsheet_all_tasks, null);
+        View sheetView = getLayoutInflater()
+                .inflate(R.layout.bottomsheet_all_tasks, null);
 
         RecyclerView fullList = sheetView.findViewById(R.id.recyclerAllTasks);
         fullList.setLayoutManager(new LinearLayoutManager(this));
-
         fullList.setAdapter(new TaskAdapter(taskList));
 
         bottomSheet.setContentView(sheetView);

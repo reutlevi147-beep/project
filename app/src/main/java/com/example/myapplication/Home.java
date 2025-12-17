@@ -43,15 +43,15 @@ public class Home extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // ⭐ כפתור מעבר לעמוד קניות (מתוקן)
+        // כפתור מעבר לעמוד קניות
         View shoppingBox = findViewById(R.id.shoppingBox);
         shoppingBox.setOnClickListener(v -> {
             Intent intent = new Intent(Home.this, Shopping.class);
             startActivity(intent);
         });
 
-        // כפתור מעבר לעמוד משימות בית
-        ImageButton tasksBtn = findViewById(R.id.HTasks);
+        // ✅ כפתור מעבר לעמוד משימות בית (מתוקן)
+        LinearLayout tasksBtn = findViewById(R.id.tasksBox);
         tasksBtn.setOnClickListener(v -> {
             Intent intent = new Intent(Home.this, Display_Calender_Tasks.class);
             startActivity(intent);
@@ -72,7 +72,7 @@ public class Home extends AppCompatActivity {
         });
 
         // ----------------------------------------------------
-        // ⭐ טעינת המשתמשים לתוך ריבוע "הגדרות"
+        // טעינת המשתמשים לריבוע "הגדרות"
         // ----------------------------------------------------
         RecyclerView rv = findViewById(R.id.settingsUsersList);
 
@@ -81,7 +81,6 @@ public class Home extends AppCompatActivity {
 
             List<AppUser> users = new ArrayList<>();
             UsersAdapter adapter = new UsersAdapter(this, users);
-
             adapter.setHideDeleteIcon(true);
             rv.setAdapter(adapter);
 
@@ -102,7 +101,7 @@ public class Home extends AppCompatActivity {
         }
 
         // ----------------------------------------------------
-        // ⭐ טעינת 4 פריטי הקניות האחרונים לריבוע "קניות"
+        // טעינת 4 פריטי הקניות האחרונים לריבוע "קניות"
         // ----------------------------------------------------
         RecyclerView shoppingRv = findViewById(R.id.homeShoppingPreview);
         TextView noItemsText = findViewById(R.id.noItemsText);
@@ -112,7 +111,6 @@ public class Home extends AppCompatActivity {
 
             List<ShoppingItem> previewList = new ArrayList<>();
             HomeShoppingAdapter previewAdapter = new HomeShoppingAdapter(previewList);
-
             shoppingRv.setAdapter(previewAdapter);
 
             FirebaseFirestore.getInstance()
@@ -133,7 +131,6 @@ public class Home extends AppCompatActivity {
 
                         previewAdapter.notifyDataSetChanged();
 
-                        // ⭐ הצגת / הסתרת "אין פריטים בעגלה"
                         if (previewList.isEmpty()) {
                             noItemsText.setVisibility(View.VISIBLE);
                             shoppingRv.setVisibility(View.GONE);

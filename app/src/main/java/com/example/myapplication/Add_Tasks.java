@@ -5,9 +5,8 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Spinner;
 import android.widget.Toast;
-import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,20 +15,21 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Add_Tasks extends AppCompatActivity {
 
     private EditText taskInput;
-    private Spinner spinnerUsers;
     private FirebaseFirestore db;
+
+    // ✅ צ׳קבוקסים
+    private CheckBox checkAll;
+    private CheckBox checkUser1;
+    private CheckBox checkUser2;
+    private CheckBox checkUser3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +48,18 @@ public class Add_Tasks extends AppCompatActivity {
         // 📝 שדה המשימה
         taskInput = findViewById(R.id.task);
 
-        // 👤 Spinner של המשתמשים
-        spinnerUsers = findViewById(R.id.spinnerUsers);
+        // ✅ חיבור הצ׳קבוקסים
+        checkAll = findViewById(R.id.check_all);
+        checkUser1 = findViewById(R.id.check_user1);
+        checkUser2 = findViewById(R.id.check_user2);
+        checkUser3 = findViewById(R.id.check_user3);
 
-        // 📌 טעינת המשתמשים מ-Firestore לתוך Spinner
-        loadUsersIntoSpinner();
+        // ✅ "כולם" מסמן / מבטל את כולם
+        checkAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            checkUser1.setChecked(isChecked);
+            checkUser2.setChecked(isChecked);
+            checkUser3.setChecked(isChecked);
+        });
 
         // 🔹 כפתור "הוספת משימה"
         Button addTask = findViewById(R.id.add_to_task);
@@ -66,41 +73,7 @@ public class Add_Tasks extends AppCompatActivity {
     }
 
     // ------------------------------------------------------
-    // 📌 פונקציה: טעינת המשתמשים מה-Firestore ל-Spinner
-    // ------------------------------------------------------
-    private void loadUsersIntoSpinner() {
-
-        List<String> usersList = new ArrayList<>();
-        usersList.add("מבצע המשימה"); // ברירת מחדל
-
-        db.collection("users")
-                .get()
-                .addOnSuccessListener(query -> {
-
-                    for (DocumentSnapshot doc : query.getDocuments()) {
-                        String name = doc.getString("name");
-                        if (name != null && !name.isEmpty()) {
-                            usersList.add(name);
-                        }
-                    }
-
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                            Add_Tasks.this,
-                            android.R.layout.simple_spinner_item,
-                            usersList
-                    );
-
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinnerUsers.setAdapter(adapter);
-
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "שגיאה בטעינת משתמשים", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    // ------------------------------------------------------
-    // 📌 פונקציה: שמירת משימה ל-Firestore
+    // 📌 שמירת משימה + המבצעים שנבחרו
     // ------------------------------------------------------
     private void saveTaskToFirestore() {
 
@@ -111,21 +84,19 @@ public class Add_Tasks extends AppCompatActivity {
             return;
         }
 
-        String assignedUser = spinnerUsers.getSelectedItem().toString();
+        String assignedTo = getSelectedUsers();
 
-        if (assignedUser.equals("מבצע המשימה")) {
+        if (assignedTo.isEmpty()) {
             Toast.makeText(this, "נא לבחור מבצע משימה", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // ✨ יצירת מבנה נתונים לשמירה
         Map<String, Object> taskData = new HashMap<>();
         taskData.put("title", taskTitle);
-        taskData.put("assignedTo", assignedUser);
+        taskData.put("assignedTo", assignedTo);
         taskData.put("isDone", false);
         taskData.put("createdAt", Timestamp.now());
 
-        // 📌 שמירה ב-Firestore
         db.collection("home_tasks")
                 .document("defaultList")
                 .collection("items")
@@ -137,5 +108,27 @@ public class Add_Tasks extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "שגיאה בשמירת משימה", Toast.LENGTH_SHORT).show()
                 );
+    }
+
+    // ------------------------------------------------------
+    // 📌 בניית מחרוזת מבצעים
+    // ------------------------------------------------------
+    private String getSelectedUsers() {
+
+        if (checkAll.isChecked()) {
+            return "כולם";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        if (checkUser1.isChecked()) result.append("דנה, ");
+        if (checkUser2.isChecked()) result.append("רון, ");
+        if (checkUser3.isChecked()) result.append("יעל, ");
+
+        if (result.length() > 0) {
+            result.setLength(result.length() - 2); // הסרת פסיק ורווח
+        }
+
+        return result.toString();
     }
 }
