@@ -12,14 +12,29 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
         <activity
-            android:name=".JoinGroupActivity"
+            android:name=".AddCalendarEventActivity"
             android:exported="false" />
+        <activity
+            android:name=".CalendarDayActivity"
+            android:exported="false" /> <!-- 🔹 START ACTIVITY – LAUNCHER -->
+        <activity
+            android:name=".StartActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- 🔹 HOME (נפתח רק דרך Intent) -->
+        <activity
+            android:name=".Home"
+            android:exported="false" /> <!-- 🔹 GROUP FLOW -->
         <activity
             android:name=".CreateGroupActivity"
             android:exported="false" />
         <activity
-            android:name=".StartActivity"
-            android:exported="false" />
+            android:name=".JoinGroupActivity"
+            android:exported="false" /> <!-- 🔹 EXISTING ACTIVITIES – לא נוגעים -->
         <activity
             android:name=".Suggested_list"
             android:exported="false" />
@@ -65,15 +80,6 @@
         <activity
             android:name=".MainActivity2"
             android:exported="false" />
-        <activity
-            android:name=".Home"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>
