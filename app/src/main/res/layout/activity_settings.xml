@@ -69,7 +69,7 @@
             android:id="@+id/addUserSmall"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginTop="300dp"
+            android:layout_marginTop="350dp"
             android:layout_marginLeft="160dp"
             android:src="@drawable/plos"
             android:elevation="20dp"
@@ -78,27 +78,6 @@
             android:background="@drawable/round_white_button"
             android:scaleType="fitCenter" />
 
-        <!-- ⭐ ריבוע התראות -->
-        <LinearLayout
-            android:id="@+id/alerts_box"
-            android:layout_width="330dp"
-            android:layout_height="230dp"
-            android:layout_marginTop="360dp"
-            android:layout_marginLeft="40dp"
-            android:orientation="vertical"
-            android:padding="12dp"
-            android:background="#FFFFFF"
-            android:elevation="6dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="התראות"
-                android:textColor="#777777"
-                android:textSize="20sp"
-                android:layout_marginBottom="8dp" />
-
-        </LinearLayout>
 
     </FrameLayout>
 

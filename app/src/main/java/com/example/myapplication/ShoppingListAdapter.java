@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,21 +21,30 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
     private List<ShoppingItem> mShoppingList;
     private Context mContext;
     private boolean isBinding;
+
     public ShoppingListAdapter(Context context, List<ShoppingItem> shoppingList) {
         mContext = context;
         mShoppingList = shoppingList;
     }
 
     public static class ShoppingItemViewHolder extends RecyclerView.ViewHolder {
-        public TextView nameTextView;
-        public TextView quantityTextView;
-        public CheckBox doneCheckBox;
+
+        TextView nameTextView;
+        TextView quantityTextView;
+        CheckBox doneCheckBox;
+        ImageButton btnPlus;
+        ImageButton btnMinus;
 
         public ShoppingItemViewHolder(View itemView) {
             super(itemView);
+
             nameTextView = itemView.findViewById(R.id.textViewItemName);
             quantityTextView = itemView.findViewById(R.id.textViewQuantity);
             doneCheckBox = itemView.findViewById(R.id.checkBoxDone);
+
+            // ✅ חיבור כפתורי פלוס מינוס
+            btnPlus = itemView.findViewById(R.id.btnPlus);
+            btnMinus = itemView.findViewById(R.id.btnMinus);
         }
     }
 
@@ -51,18 +61,16 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
 
         isBinding = true;
 
-        ShoppingItem currentItem = mShoppingList.get(position);
+        ShoppingItem item = mShoppingList.get(position);
 
-        // ניתוק listener לפני כל שינוי כדי למנוע הפעלה בטעות
         holder.doneCheckBox.setOnCheckedChangeListener(null);
 
-        // מילוי הנתונים
-        holder.nameTextView.setText(currentItem.getName());
-        holder.quantityTextView.setText("x" + currentItem.getQuantity());
-        holder.doneCheckBox.setChecked(currentItem.isPurchased());
+        holder.nameTextView.setText(item.getName());
+        holder.quantityTextView.setText("x" + item.getQuantity());
+        holder.doneCheckBox.setChecked(item.isPurchased());
 
         // קו חוצה
-        if (currentItem.isPurchased()) {
+        if (item.isPurchased()) {
             holder.nameTextView.setPaintFlags(
                     holder.nameTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
             );
@@ -74,24 +82,50 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
 
         isBinding = false;
 
-        // מאזין חדש — פועל רק על לחיצה אמיתית
+        // ✅ צ׳קבוקס – שמירה ל-Firebase
         holder.doneCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-
             if (isBinding) return;
 
-            // עדכון מקומי
-            currentItem.setPurchased(isChecked);
+            item.setPurchased(isChecked);
 
-            // עדכון ב-Firestore
             FirebaseFirestore.getInstance()
                     .collection("shopping_lists")
                     .document("defaultList")
                     .collection("items")
-                    .document(currentItem.getDocumentId())
+                    .document(item.getDocumentId())
                     .update("isPurchased", isChecked);
         });
-    }
 
+        // ➕ פלוס
+        holder.btnPlus.setOnClickListener(v -> {
+            int newQty = item.getQuantity() + 1;
+            item.setQuantity(newQty);
+            holder.quantityTextView.setText("x" + newQty);
+
+            FirebaseFirestore.getInstance()
+                    .collection("shopping_lists")
+                    .document("defaultList")
+                    .collection("items")
+                    .document(item.getDocumentId())
+                    .update("quantity", newQty);
+        });
+
+        // ➖ מינוס (לא יורד מתחת ל־1)
+        holder.btnMinus.setOnClickListener(v -> {
+            if (item.getQuantity() <= 1) return;
+
+            int newQty = item.getQuantity() - 1;
+            item.setQuantity(newQty);
+            holder.quantityTextView.setText("x" + newQty);
+
+            FirebaseFirestore.getInstance()
+                    .collection("shopping_lists")
+                    .document("defaultList")
+                    .collection("items")
+                    .document(item.getDocumentId())
+                    .update("quantity", newQty);
+        });
+    }
 
     @Override
     public int getItemCount() {
