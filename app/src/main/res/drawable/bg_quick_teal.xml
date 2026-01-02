@@ -1,0 +1,5 @@
+<!-- bg_quick_teal.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient android:angle="315" android:startColor="#14B8A6" android:endColor="#0D9488"/>
+    <corners android:radius="14dp"/>
+</shape>

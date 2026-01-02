@@ -1,144 +1,119 @@
 package com.example.myapplication;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class Home extends AppCompatActivity {
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // =====================
+        // SharedPreferences
+        // =====================
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
 
-        // כפתור מעבר לעמוד כלכלת הבית
-        ImageButton economyBtn = findViewById(R.id.H_Economy);
-        economyBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(Home.this, Economy.class);
-            startActivity(intent);
-        });
+        String userId = prefs.getString("user_id", null);
+        String groupId = prefs.getString("group_id", null);
+        String userName = prefs.getString("user_name", null);
+        String familyName = prefs.getString("family_name", null);
 
-        // כפתור מעבר לעמוד קניות
-        View shoppingBox = findViewById(R.id.shoppingBox);
-        shoppingBox.setOnClickListener(v -> {
-            Intent intent = new Intent(Home.this, Shopping.class);
-            startActivity(intent);
-        });
+        // =====================
+        // Toasts – אחד אחד
+        // =====================
+        Handler handler = new Handler(Looper.getMainLooper());
 
-        // ✅ כפתור מעבר לעמוד משימות בית (מתוקן)
-        LinearLayout tasksBtn = findViewById(R.id.tasksBox);
-        tasksBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(Home.this, Display_Calender_Tasks.class);
-            startActivity(intent);
-        });
+        handler.postDelayed(() ->
+                Toast.makeText(this, "userId = " + userId, Toast.LENGTH_SHORT).show(), 0);
 
-        // כפתור מעבר לעמוד לו״ז
-        ImageButton CalendersBtn = findViewById(R.id.HCalender);
-        CalendersBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(Home.this, Display_Calender_Tasks.class);
-            startActivity(intent);
-        });
+        handler.postDelayed(() ->
+                Toast.makeText(this, "groupId = " + groupId, Toast.LENGTH_SHORT).show(), 2000);
 
-        // כפתור מעבר לעמוד הגדרות
-        LinearLayout settingsBox = findViewById(R.id.settingsBox);
-        settingsBox.setOnClickListener(v -> {
-            Intent intent = new Intent(Home.this, Settings.class);
-            startActivity(intent);
-        });
+        handler.postDelayed(() ->
+                Toast.makeText(this, "userName = " + userName, Toast.LENGTH_SHORT).show(), 4000);
 
-        // ----------------------------------------------------
-        // טעינת המשתמשים לריבוע "הגדרות"
-        // ----------------------------------------------------
-        RecyclerView rv = findViewById(R.id.settingsUsersList);
+        handler.postDelayed(() ->
+                Toast.makeText(this, "familyName = " + familyName, Toast.LENGTH_SHORT).show(), 6000);
 
-        if (rv != null) {
-            rv.setLayoutManager(new LinearLayoutManager(this));
+        // =====================
+        // שלום למשתמש
+        // =====================
+        TextView tvHello = findViewById(R.id.tvHello);
 
-            List<AppUser> users = new ArrayList<>();
-            UsersAdapter adapter = new UsersAdapter(this, users);
-            adapter.setHideDeleteIcon(true);
-            rv.setAdapter(adapter);
-
-            FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .get()
-                    .addOnSuccessListener(query -> {
-                        users.clear();
-
-                        for (DocumentSnapshot doc : query) {
-                            AppUser user = doc.toObject(AppUser.class);
-                            user.setDocumentId(doc.getId());
-                            users.add(user);
-                        }
-
-                        adapter.notifyDataSetChanged();
-                    });
+        if (familyName != null && !familyName.isEmpty()) {
+            tvHello.setText("שלום, משפחת " + familyName);
+        } else if (userName != null && !userName.isEmpty()) {
+            tvHello.setText("שלום, " + userName);
+        } else {
+            tvHello.setText("שלום");
         }
 
-        // ----------------------------------------------------
-        // טעינת 4 פריטי הקניות האחרונים לריבוע "קניות"
-        // ----------------------------------------------------
-        RecyclerView shoppingRv = findViewById(R.id.homeShoppingPreview);
-        TextView noItemsText = findViewById(R.id.noItemsText);
+        // =====================
+        // FAB
+        // =====================
+        findViewById(R.id.fabAdd).setOnClickListener(v -> {
+            // TODO: פעולה להוספה
+        });
 
-        if (shoppingRv != null) {
-            shoppingRv.setLayoutManager(new LinearLayoutManager(this));
+        // =====================
+        // Quick actions
+        // =====================
+        findViewById(R.id.quickShopping).setOnClickListener(v ->
+                startActivity(new Intent(this, Shopping.class))
+        );
 
-            List<ShoppingItem> previewList = new ArrayList<>();
-            HomeShoppingAdapter previewAdapter = new HomeShoppingAdapter(previewList);
-            shoppingRv.setAdapter(previewAdapter);
+        findViewById(R.id.quickCalendar).setOnClickListener(v ->
+                startActivity(new Intent(this, CalendarDayActivity.class))
+        );
 
-            FirebaseFirestore.getInstance()
-                    .collection("shopping_lists")
-                    .document("defaultList")
-                    .collection("items")
-                    .orderBy("timestamp", Query.Direction.DESCENDING)
-                    .limit(4)
-                    .addSnapshotListener((querySnapshot, error) -> {
-                        if (error != null || querySnapshot == null) return;
+        findViewById(R.id.quickTasks).setOnClickListener(v ->
+                startActivity(new Intent(Home.this, TasksActivity.class))
+        );
 
-                        previewList.clear();
 
-                        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                            ShoppingItem item = doc.toObject(ShoppingItem.class);
-                            previewList.add(item);
-                        }
+        // =====================
+        // Bottom Navigation
+        // =====================
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        bottomNav.setSelectedItemId(R.id.nav_home);
 
-                        previewAdapter.notifyDataSetChanged();
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
 
-                        if (previewList.isEmpty()) {
-                            noItemsText.setVisibility(View.VISIBLE);
-                            shoppingRv.setVisibility(View.GONE);
-                        } else {
-                            noItemsText.setVisibility(View.GONE);
-                            shoppingRv.setVisibility(View.VISIBLE);
-                        }
-                    });
-        }
+            if (id == R.id.nav_home) return true;
+
+            if (id == R.id.nav_calendar) {
+                startActivity(new Intent(this, CalendarDayActivity.class));
+                return true;
+            }
+
+            if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, Settings.class));
+                return true;
+            }
+
+            if (id == R.id.nav_stats) {
+                startActivity(new Intent(this, Economy.class));
+                return true;
+            }
+
+            return false;
+        });
     }
 }
