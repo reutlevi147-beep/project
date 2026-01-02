@@ -1,35 +1,39 @@
 package com.example.myapplication;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.CheckBox;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Add_Tasks extends AppCompatActivity {
 
-    private EditText taskInput;
+    private EditText etTitle;
     private FirebaseFirestore db;
 
-    // ✅ צ׳קבוקסים
-    private CheckBox checkAll;
-    private CheckBox checkUser1;
-    private CheckBox checkUser2;
-    private CheckBox checkUser3;
+    private String selectedPriority = null;
+    private String selectedCategory = null;
+    private ArrayList<String> selectedUserIds = new ArrayList<>();
+    private boolean allSelected = false;
+    private ArrayList<String> allUserIds = new ArrayList<>();
+    private ArrayList<String> allUserNames = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,98 +41,204 @@ public class Add_Tasks extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_tasks);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
         db = FirebaseFirestore.getInstance();
 
-        // 📝 שדה המשימה
-        taskInput = findViewById(R.id.task);
+        // כותרת
+        etTitle = findViewById(R.id.etTitle);
 
-        // ✅ חיבור הצ׳קבוקסים
-        checkAll = findViewById(R.id.check_all);
-        checkUser1 = findViewById(R.id.check_user1);
-        checkUser2 = findViewById(R.id.check_user2);
-        checkUser3 = findViewById(R.id.check_user3);
+        // חזרה
+        findViewById(R.id.btnBack).setOnClickListener(v ->
+                finish()
+        );
 
-        // ✅ "כולם" מסמן / מבטל את כולם
-        checkAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            checkUser1.setChecked(isChecked);
-            checkUser2.setChecked(isChecked);
-            checkUser3.setChecked(isChecked);
+        // שמירה
+        findViewById(R.id.btnSave).setOnClickListener(v ->
+                saveTaskToFirestore()
+        );
+
+        setupPrioritySelection();
+        setupCategorySelection();
+    }
+
+    private void loadUsersFromFirestore() {
+
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        String groupId = prefs.getString("group_id", null);
+
+        if (groupId == null) return;
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .whereEqualTo("groupId", groupId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    allUserIds.clear();
+                    allUserNames.clear();
+
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        allUserIds.add(doc.getId());
+                        allUserNames.add(doc.getString("name"));
+                    }
+
+                    buildUsersUI();
+                });
+    }
+
+    private void buildUsersUI() {
+
+        LinearLayout container = findViewById(R.id.usersContainer);
+        container.removeAllViews();
+
+        // כפתור "כולם"
+        View allView = createUserView("כולם", "ALL");
+        container.addView(allView);
+
+        for (int i = 0; i < allUserIds.size(); i++) {
+            String userId = allUserIds.get(i);
+            String name = allUserNames.get(i);
+
+            View userView = createUserView(name, userId);
+            container.addView(userView);
+        }
+    }
+
+    private View createUserView(String name, String userId) {
+
+        TextView tv = new TextView(this);
+        tv.setText(name);
+        tv.setPadding(32, 24, 32, 24);
+        tv.setBackgroundResource(R.drawable.bg_selectable_circle);
+        tv.setTextSize(16);
+
+        tv.setOnClickListener(v -> {
+            if (userId.equals("ALL")) {
+                toggleSelectAll(allUserIds);
+            } else {
+                toggleUser(userId);
+            }
         });
 
-        // 🔹 כפתור "הוספת משימה"
-        Button addTask = findViewById(R.id.add_to_task);
-        addTask.setOnClickListener(v -> saveTaskToFirestore());
+        return tv;
+    }
 
-        // 🔹 כפתור "Return"
-        ImageButton returnToCalendar = findViewById(R.id.Return);
-        returnToCalendar.setOnClickListener(v ->
-                startActivity(new Intent(this, Display_Calender_Tasks.class))
+
+    // --------------------------------------------------
+    // 🔴 עדיפות
+    // --------------------------------------------------
+    private void setupPrioritySelection() {
+
+        View high = findViewById(R.id.circleHigh);
+        View medium = findViewById(R.id.circleMedium);
+        View low = findViewById(R.id.circleLow);
+
+        findViewById(R.id.cardPriorityHigh).setOnClickListener(v ->
+                selectPriority("high", high, medium, low)
+        );
+
+        findViewById(R.id.cardPriorityMedium).setOnClickListener(v ->
+                selectPriority("medium", medium, high, low)
+        );
+
+        findViewById(R.id.cardPriorityLow).setOnClickListener(v ->
+                selectPriority("low", low, high, medium)
         );
     }
 
-    // ------------------------------------------------------
-    // 📌 שמירת משימה + המבצעים שנבחרו
-    // ------------------------------------------------------
+    private void selectPriority(String value, View selected, View o1, View o2) {
+        selected.setBackgroundResource(R.drawable.bg_selectable_circle_selected);
+        o1.setBackgroundResource(R.drawable.bg_selectable_circle);
+        o2.setBackgroundResource(R.drawable.bg_selectable_circle);
+        selectedPriority = value;
+    }
+
+    // --------------------------------------------------
+    // 🏷 קטגוריה
+    // --------------------------------------------------
+    private void setupCategorySelection() {
+
+        findViewById(R.id.cardCatHome).setOnClickListener(v -> selectCategory("בית"));
+        findViewById(R.id.cardCatWork).setOnClickListener(v -> selectCategory("עבודה"));
+        findViewById(R.id.cardCatShopping).setOnClickListener(v -> selectCategory("קניות"));
+        findViewById(R.id.cardCatPersonal).setOnClickListener(v -> selectCategory("אישי"));
+        findViewById(R.id.cardCatHealth).setOnClickListener(v -> selectCategory("בריאות"));
+        findViewById(R.id.cardCatOther).setOnClickListener(v -> selectCategory("אחר"));
+    }
+
+    private void selectCategory(String category) {
+        selectedCategory = category;
+    }
+
+    // --------------------------------------------------
+    // 💾 שמירה
+    // --------------------------------------------------
     private void saveTaskToFirestore() {
 
-        String taskTitle = taskInput.getText().toString().trim();
+        String title = etTitle.getText().toString().trim();
 
-        if (taskTitle.isEmpty()) {
-            Toast.makeText(this, "נא להכניס משימה", Toast.LENGTH_SHORT).show();
+        if (title.isEmpty() || selectedPriority == null || selectedCategory == null) {
+            Toast.makeText(this, "נא למלא כותרת, עדיפות וקטגוריה", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String assignedTo = getSelectedUsers();
-
-        if (assignedTo.isEmpty()) {
-            Toast.makeText(this, "נא לבחור מבצע משימה", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Map<String, Object> taskData = new HashMap<>();
-        taskData.put("title", taskTitle);
-        taskData.put("assignedTo", assignedTo);
-        taskData.put("isDone", false);
-        taskData.put("createdAt", Timestamp.now());
+        Map<String, Object> task = new HashMap<>();
+        task.put("title", title);
+        task.put("priority", selectedPriority);
+        task.put("category", selectedCategory);
+        task.put("isDone", false);
+        task.put("createdAt", Timestamp.now());
 
         db.collection("home_tasks")
                 .document("defaultList")
                 .collection("items")
-                .add(taskData)
-                .addOnSuccessListener(docRef -> {
-                    Toast.makeText(this, "המשימה נשמרה!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, Display_Calender_Tasks.class));
+                .add(task)
+                .addOnSuccessListener(doc -> {
+                    Toast.makeText(this, "המשימה נוספה", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, TasksActivity.class));
+                    finish();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "שגיאה בשמירת משימה", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "שגיאה בשמירה", Toast.LENGTH_SHORT).show()
                 );
     }
 
-    // ------------------------------------------------------
-    // 📌 בניית מחרוזת מבצעים
-    // ------------------------------------------------------
-    private String getSelectedUsers() {
+    private void toggleUser(String userId) {
 
-        if (checkAll.isChecked()) {
-            return "כולם";
+        if (allSelected) {
+            allSelected = false;
+            selectedUserIds.clear();
         }
 
-        StringBuilder result = new StringBuilder();
-
-        if (checkUser1.isChecked()) result.append("דנה, ");
-        if (checkUser2.isChecked()) result.append("רון, ");
-        if (checkUser3.isChecked()) result.append("יעל, ");
-
-        if (result.length() > 0) {
-            result.setLength(result.length() - 2); // הסרת פסיק ורווח
+        if (selectedUserIds.contains(userId)) {
+            selectedUserIds.remove(userId);
+        } else {
+            selectedUserIds.add(userId);
         }
 
-        return result.toString();
+        updateUserUI();
     }
+
+
+    private void toggleSelectAll(ArrayList<String> allUserIds) {
+
+        if (allSelected) {
+            allSelected = false;
+            selectedUserIds.clear();
+        } else {
+            allSelected = true;
+            selectedUserIds.clear();
+            selectedUserIds.addAll(allUserIds);
+        }
+
+        updateUserUI();
+    }
+
+
+    private void updateUserUI() {
+        // שלב הבא – כאן נסמן עיגולים / כרטיסים
+    }
+
+
+
+
 }

@@ -3,13 +3,11 @@ package com.example.myapplication;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
@@ -25,7 +23,7 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<HomeTasksAdapter.Task
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_home_task, parent, false);
+                .inflate(R.layout.task_item, parent, false);
         return new TaskViewHolder(view);
     }
 
@@ -33,23 +31,23 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<HomeTasksAdapter.Task
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = tasks.get(position);
 
-        holder.taskTitle.setText(task.getTaskName());
+        holder.tvTitle.setText(task.getTitle());
 
-        // מניעת טריגר כפול
-        holder.checkDone.setOnCheckedChangeListener(null);
+        // כרגע דמו – אפשר לשפר בהמשך
+        holder.tvPriority.setText(
+                task.getPriority() != null ? task.getPriority() : "רגילה"
+        );
 
-        holder.checkDone.setChecked(task.isCompleted());
+        holder.tvCategory.setText(
+                task.getCategory() != null ? task.getCategory() : "כללי"
+        );
 
-        // ✅ שלב 1: עדכון Firestore בלחיצה
-        holder.checkDone.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        holder.tvDate.setText(
+                task.getDueDate() != null ? task.getDueDate() : ""
+        );
 
-            FirebaseFirestore.getInstance()
-                    .collection("home_tasks")
-                    .document("defaultList")
-                    .collection("items")
-                    .document(task.getId())
-                    .update("isDone", isChecked);
-        });
+        // מצב ויזואלי של סימון
+        holder.imgCheck.setAlpha(task.isCompleted() ? 1f : 0.4f);
     }
 
     @Override
@@ -59,13 +57,17 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<HomeTasksAdapter.Task
 
     static class TaskViewHolder extends RecyclerView.ViewHolder {
 
-        TextView taskTitle;
-        CheckBox checkDone;
+        ImageView imgCheck;
+        TextView tvTitle, tvPriority, tvCategory, tvDate;
 
         TaskViewHolder(@NonNull View itemView) {
             super(itemView);
-            taskTitle = itemView.findViewById(R.id.txtTaskTitle);
-            checkDone = itemView.findViewById(R.id.checkDone);
+
+            imgCheck = itemView.findViewById(R.id.imgCheck);
+            tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvPriority = itemView.findViewById(R.id.tvPriority);
+            tvCategory = itemView.findViewById(R.id.tvCategory);
+            tvDate = itemView.findViewById(R.id.tvDate);
         }
     }
 }

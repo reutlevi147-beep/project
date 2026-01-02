@@ -28,13 +28,13 @@ public class Add_Calender extends AppCompatActivity {
         // 🔹 כפתור "הוספה ליומן" - מעבר לעמוד המשימות והיומן
         Button addToCalendar = findViewById(R.id.AddtoCalendar);
         addToCalendar.setOnClickListener(v ->
-                startActivity(new Intent(this, Display_Calender_Tasks.class))
+                startActivity(new Intent(this, TasksActivity.class))
         );
 
         // 🔹 כפתור "Return" לעמוד Display_Calender_Tasks
         ImageButton returnToCalendar = findViewById(R.id.Return);
         returnToCalendar.setOnClickListener(v ->
-                startActivity(new Intent(this, Display_Calender_Tasks.class))
+                startActivity(new Intent(this, TasksActivity.class))
         );
 
 

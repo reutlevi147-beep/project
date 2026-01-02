@@ -1,66 +1,53 @@
 package com.example.myapplication;
 
-import java.util.List; // ✅ חדש
-
 public class Task {
 
-    private String id;
-    private String taskName;
-
-    // 🔹 קיים – לא נוגעים
-    private String assignedTo;
-
-    // 🔹 חדש – לכמה מבצעים
-    private List<String> assignedToList;
-
+    private String title;
+    private String category;
+    private String priority;
+    private String dueDate;
     private boolean completed;
 
     // חובה ל-Firestore
-    public Task() {
-    }
+    public Task() {}
 
-    // בנאי קיים – לא נוגעים
-    public Task(String id, String taskName, String assignedTo, boolean completed) {
-        this.id = id;
-        this.taskName = taskName;
-        this.assignedTo = assignedTo;
+    // בנאי מלא (לעתיד)
+    public Task(String title, String category, String priority, String dueDate, boolean completed) {
+        this.title = title;
+        this.category = category;
+        this.priority = priority;
+        this.dueDate = dueDate;
         this.completed = completed;
     }
 
-    // 🔹 בנאי חדש (לא חובה עדיין – לשלב הבא)
-    public Task(String id, String taskName, List<String> assignedToList, boolean completed) {
-        this.id = id;
-        this.taskName = taskName;
-        this.assignedToList = assignedToList;
+    // בנאי קצר (לדמו / בדיקות)
+    public Task(String title, boolean completed) {
+        this.title = title;
         this.completed = completed;
     }
 
-    public String getId() {
-        return id;
+    // Getters
+    public String getTitle() {
+        return title;
     }
 
-    public String getTaskName() {
-        return taskName;
+    public String getCategory() {
+        return category;
     }
 
-    // קיים
-    public String getAssignedTo() {
-        return assignedTo;
+    public String getPriority() {
+        return priority;
     }
 
-    // 🔹 חדש
-    public List<String> getAssignedToList() {
-        return assignedToList;
-    }
-
-    public void setAssignedToList(List<String> assignedToList) {
-        this.assignedToList = assignedToList;
+    public String getDueDate() {
+        return dueDate;
     }
 
     public boolean isCompleted() {
         return completed;
     }
 
+    // Setters
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }

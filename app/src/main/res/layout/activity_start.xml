@@ -1,37 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
-    tools:context=".StartActivity">
+    android:layout_height="match_parent">
 
-    <!-- טקסט פתיחה -->
-    <TextView
-        android:id="@+id/tvWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ברוכה הבאה"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="32dp" />
-
-    <!-- כפתור יצירת קבוצה -->
-    <Button
-        android:id="@+id/btnCreateGroup"
+    <!-- רקע גרדיאנט -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="צור קבוצה"
-        android:layout_marginBottom="16dp" />
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_gradient_welcome" />
 
-    <!-- כפתור הצטרפות לקבוצה -->
-    <Button
-        android:id="@+id/btnJoinGroup"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="הצטרף לקבוצה" />
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp">
+
+            <!-- אייקון -->
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@drawable/bg_icon_glass"
+                android:layout_marginBottom="24dp"
+                android:foregroundGravity="center">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_users"
+                    app:tint="@android:color/white"
+                    android:layout_gravity="center" />
+            </FrameLayout>
+
+            <!-- כותרת -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ברוכה הבאה"
+                android:textSize="34sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ניהול משק בית חכם ומאורגן"
+                android:textSize="18sp"
+                android:textColor="#E0E7FF"
+                android:layout_marginBottom="48dp" />
+
+            <!-- כפתור צור קבוצה -->
+            <Button
+                android:id="@+id/btnCreateGroup"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="צור קבוצה"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/indigo_600"
+                android:background="@drawable/bg_button_white"
+                android:drawableStart="@drawable/ic_users"
+                android:drawablePadding="12dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- כפתור הצטרפות -->
+            <Button
+                android:id="@+id/btnJoinGroup"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="הצטרף לקבוצה"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_button_glass"
+                android:drawableStart="@drawable/ic_user_plus"
+                android:drawablePadding="12dp" />
+
+            <!-- טקסט תחתון -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ארגנו יחד את משק הבית שלכם"
+                android:textSize="14sp"
+                android:textColor="#C7D2FE"
+                android:layout_marginTop="32dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

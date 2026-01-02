@@ -1,7 +1,6 @@
 package com.example.myapplication;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -18,17 +17,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 public class CreateGroupActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_ONBOARDING_DONE = "onboarding_completed";
-    private static final String KEY_GROUP_ID = "group_id";
-    private static final String KEY_JOIN_CODE = "join_code";
+    private static final String KEY_GROUP_CODE = "group_code";
 
-    // UI
-    private EditText etName, etPhone, etEmail, etGroupCode;
+    private EditText etName, etPhone, etEmail, etGroupCode, etFamilyName;
     private RadioGroup rgGroupType, rgFamilyRole;
     private LinearLayout layoutFamilyRole;
 
@@ -41,6 +37,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         etPhone = findViewById(R.id.etPhone);
         etEmail = findViewById(R.id.etEmail);
         etGroupCode = findViewById(R.id.etGroupCode);
+        etFamilyName = findViewById(R.id.etFamilyName);
 
         rgGroupType = findViewById(R.id.rgGroupType);
         rgFamilyRole = findViewById(R.id.rgFamilyRole);
@@ -48,11 +45,11 @@ public class CreateGroupActivity extends AppCompatActivity {
 
         Button btnCreateGroup = findViewById(R.id.btnCreateGroup);
 
-        rgGroupType.setOnCheckedChangeListener((group, checkedId) -> {
-            layoutFamilyRole.setVisibility(
-                    checkedId == R.id.rbFamily ? View.VISIBLE : View.GONE
-            );
-        });
+        rgGroupType.setOnCheckedChangeListener((group, checkedId) ->
+                layoutFamilyRole.setVisibility(
+                        checkedId == R.id.rbFamily ? View.VISIBLE : View.GONE
+                )
+        );
 
         btnCreateGroup.setOnClickListener(v -> {
             if (validateForm()) {
@@ -61,14 +58,11 @@ public class CreateGroupActivity extends AppCompatActivity {
         });
     }
 
-    // 🔹 ולידציות
+    private String cleanPhone() {
+        return etPhone.getText().toString().replaceAll("[^0-9]", "").trim();
+    }
+
     private boolean validateForm() {
-
-        etName.setError(null);
-        etPhone.setError(null);
-        etEmail.setError(null);
-        etGroupCode.setError(null);
-
         boolean valid = true;
 
         if (TextUtils.isEmpty(etName.getText().toString().trim())) {
@@ -76,67 +70,59 @@ public class CreateGroupActivity extends AppCompatActivity {
             valid = false;
         }
 
-        String phone = etPhone.getText().toString().trim();
-        if (TextUtils.isEmpty(phone) || !phone.matches("^05\\d{8}$")) {
+        if (!cleanPhone().matches("^05\\d{8}$")) {
             etPhone.setError("מספר טלפון לא תקין");
             valid = false;
         }
 
-        String email = etEmail.getText().toString().trim();
-        if (TextUtils.isEmpty(email)
-                || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("כתובת אימייל לא תקינה");
+        if (!android.util.Patterns.EMAIL_ADDRESS
+                .matcher(etEmail.getText().toString().trim()).matches()) {
+            etEmail.setError("אימייל לא תקין");
             valid = false;
         }
 
-        String code = etGroupCode.getText().toString().trim();
-        if (TextUtils.isEmpty(code)
-                || code.length() < 6
-                || code.length() > 10
-                || !code.matches("^[A-Za-z0-9]+$")) {
+        if (!etGroupCode.getText().toString().trim().matches("^[A-Za-z0-9]{6,10}$")) {
             etGroupCode.setError("קוד קבוצה לא תקין");
             valid = false;
         }
 
-        int selectedGroupType = rgGroupType.getCheckedRadioButtonId();
-        if (selectedGroupType == -1) {
+        if (rgGroupType.getCheckedRadioButtonId() == -1) {
             Toast.makeText(this, "יש לבחור סוג קבוצה", Toast.LENGTH_SHORT).show();
             valid = false;
         }
 
-        if (selectedGroupType == R.id.rbFamily &&
-                rgFamilyRole.getCheckedRadioButtonId() == -1) {
-            Toast.makeText(this, "יש לבחור תפקיד במשפחה", Toast.LENGTH_SHORT).show();
-            valid = false;
+        if (rgGroupType.getCheckedRadioButtonId() == R.id.rbFamily) {
+            if (rgFamilyRole.getCheckedRadioButtonId() == -1) {
+                Toast.makeText(this, "יש לבחור תפקיד במשפחה", Toast.LENGTH_SHORT).show();
+                valid = false;
+            }
+            if (TextUtils.isEmpty(etFamilyName.getText().toString().trim())) {
+                etFamilyName.setError("חובה להזין שם משפחה");
+                valid = false;
+            }
         }
 
         return valid;
     }
 
-    // 🔹 בדיקת ייחודיות קוד
     private void checkGroupCodeAndCreate() {
+        String groupCode = etGroupCode.getText().toString().trim().toUpperCase();
+
         FirebaseFirestore.getInstance()
                 .collection("groups")
-                .whereEqualTo("groupCode", etGroupCode.getText().toString().trim())
+                .document(groupCode)
                 .get()
-                .addOnSuccessListener(snapshot -> {
-                    if (!snapshot.isEmpty()) {
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
                         etGroupCode.setError("קוד הקבוצה כבר קיים");
                     } else {
-                        createGroup();
+                        createGroup(groupCode);
                     }
-                })
-                .addOnFailureListener(Throwable::printStackTrace);
+                });
     }
 
-    // 🔹 יצירת קבוצה + משתמש
-    private void createGroup() {
+    private void createGroup(String groupCode) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        String name = etName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String groupCode = etGroupCode.getText().toString().trim();
 
         String groupType =
                 rgGroupType.getCheckedRadioButtonId() == R.id.rbFamily ? "family" :
@@ -153,39 +139,51 @@ public class CreateGroupActivity extends AppCompatActivity {
         groupData.put("groupType", groupType);
         groupData.put("createdAt", FieldValue.serverTimestamp());
 
-        db.collection("groups")
-                .add(groupData)
-                .addOnSuccessListener(groupRef -> {
+        if ("family".equals(groupType)) {
+            groupData.put("familyName", etFamilyName.getText().toString().trim());
+        }
 
-                    String groupId = groupRef.getId();
+        db.collection("groups")
+                .document(groupCode)
+                .set(groupData)
+                .addOnSuccessListener(unused -> {
 
                     Map<String, Object> userData = new HashMap<>();
-                    userData.put("name", name);
-                    userData.put("phone", phone);
-                    userData.put("email", email);
-                    userData.put("groupId", groupId);
+                    userData.put("name", etName.getText().toString().trim());
+                    userData.put("phone", cleanPhone());
+                    userData.put("email", etEmail.getText().toString().trim());
+                    userData.put("groupId", groupCode);
                     userData.put("role", role);
                     userData.put("createdAt", FieldValue.serverTimestamp());
 
                     db.collection("users")
                             .add(userData)
                             .addOnSuccessListener(userRef -> {
-                                saveUserLocally(userRef.getId(), role, groupId, groupCode);
+                                saveUserLocally(
+                                        userRef.getId(),
+                                        role,
+                                        groupCode,
+                                        etName.getText().toString().trim()
+                                );
                                 markOnboardingCompleted();
                                 goToHome();
                             });
                 });
     }
 
-    // 🔹 שמירת משתמש מקומית (חדש)
-    private void saveUserLocally(String userId, String role, String groupId, String joinCode) {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        prefs.edit()
+    private void saveUserLocally(String userId, String role,
+                                 String groupCode, String userName) {
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit()
                 .putString("user_id", userId)
                 .putString("role", role)
-                .putString(KEY_GROUP_ID, groupId)
-                .putString(KEY_JOIN_CODE, joinCode)
+                .putString(KEY_GROUP_CODE, groupCode)
+                .putString("group_id", groupCode) // ⭐ זה הפתרון
+                .putString("user_name", userName)
+                .putString("family_name", etFamilyName.getText().toString().trim())
                 .apply();
+
+
     }
 
     private void markOnboardingCompleted() {
