@@ -1,31 +1,33 @@
 package com.example.myapplication;
 
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Exclude;
+
 public class ShoppingItem {
 
-    // 1. מזהה המסמך (חיוני למחיקה/עריכה)
+    @Exclude
     private String documentId;
 
-    // 2. שדות הנתונים
     private String name;
-    private int quantity; // הוספנו כמות
-    private boolean isPurchased; // הוספנו סטטוס רכישה
+    private int quantity;
+    private boolean isPurchased;
+    private String categoryId;        // 👈 חדש
+    private Timestamp createdAt;      // 👈 חדש
 
-    // ********** 1. קונסטרוקטור ריק (חובה ל-Firestore) **********
-    public ShoppingItem() {
-        // Firestore חייב קונסטרוקטור ציבורי ריק
-    }
+    // חובה ל-Firestore
+    public ShoppingItem() {}
 
-    // קונסטרוקטור מלא (לנוחות)
-    public ShoppingItem(String name, int quantity) {
+    public ShoppingItem(String name, int quantity, String categoryId) {
         this.name = name;
         this.quantity = quantity;
+        this.categoryId = categoryId;
         this.isPurchased = false;
+        this.createdAt = Timestamp.now();
     }
 
-    // ********** 2. Getters ו-Setters **********
+    // ===== getters / setters =====
 
-    // Getters/Setters ל-Document ID
-    // נשתמש ב-documentId כדי להימנע מבלבול עם ה-ID הפנימי של האובייקט
     public String getDocumentId() {
         return documentId;
     }
@@ -34,7 +36,6 @@ public class ShoppingItem {
         this.documentId = documentId;
     }
 
-    // Getters/Setters לשם הפריט
     public String getName() {
         return name;
     }
@@ -43,7 +44,6 @@ public class ShoppingItem {
         this.name = name;
     }
 
-    // Getters/Setters לכמות
     public int getQuantity() {
         return quantity;
     }
@@ -52,12 +52,27 @@ public class ShoppingItem {
         this.quantity = quantity;
     }
 
-    // Getters/Setters לסטטוס הרכישה
     public boolean isPurchased() {
         return isPurchased;
     }
 
     public void setPurchased(boolean purchased) {
         isPurchased = purchased;
+    }
+
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }

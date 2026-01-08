@@ -40,7 +40,6 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         // טקסטים
         h.tvTitle.setText(task.getTitle());
         h.tvCategory.setText(task.getCategory());
-        h.tvDate.setText(task.getDueDate());
         h.tvPriority.setText(getPriorityLabel(task.getPriority()));
 
         // UI לפי סטטוס

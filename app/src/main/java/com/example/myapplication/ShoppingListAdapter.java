@@ -1,134 +1,149 @@
 package com.example.myapplication;
 
-import android.content.Context;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.List;
 
-public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapter.ShoppingItemViewHolder> {
+public class ShoppingListAdapter
+        extends RecyclerView.Adapter<ShoppingListAdapter.ViewHolder> {
 
-    private List<ShoppingItem> mShoppingList;
-    private Context mContext;
+    private final List<ShoppingItem> items;
     private boolean isBinding;
 
-    public ShoppingListAdapter(Context context, List<ShoppingItem> shoppingList) {
-        mContext = context;
-        mShoppingList = shoppingList;
+    // ✔️ סימון נקנה
+    public interface OnItemCheckedChange {
+        void onCheckedChanged(ShoppingItem item, boolean checked);
     }
 
-    public static class ShoppingItemViewHolder extends RecyclerView.ViewHolder {
+    // 🔢 שינוי כמות
+    public interface OnQuantityChangeListener {
+        void onQuantityChanged(ShoppingItem item, int newQuantity);
+    }
 
-        TextView nameTextView;
-        TextView quantityTextView;
-        CheckBox doneCheckBox;
-        ImageButton btnPlus;
-        ImageButton btnMinus;
+    private OnItemCheckedChange checkedListener;
+    private OnQuantityChangeListener quantityListener;
 
-        public ShoppingItemViewHolder(View itemView) {
-            super(itemView);
+    public void setOnItemCheckedChange(OnItemCheckedChange listener) {
+        this.checkedListener = listener;
+    }
 
-            nameTextView = itemView.findViewById(R.id.textViewItemName);
-            quantityTextView = itemView.findViewById(R.id.textViewQuantity);
-            doneCheckBox = itemView.findViewById(R.id.checkBoxDone);
+    public void setOnQuantityChangeListener(OnQuantityChangeListener listener) {
+        this.quantityListener = listener;
+    }
 
-            // ✅ חיבור כפתורי פלוס מינוס
-            btnPlus = itemView.findViewById(R.id.btnPlus);
-            btnMinus = itemView.findViewById(R.id.btnMinus);
-        }
+    public ShoppingListAdapter(List<ShoppingItem> items) {
+        this.items = items;
     }
 
     @NonNull
     @Override
-    public ShoppingItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item, parent, false);
-        return new ShoppingItemViewHolder(v);
+                .inflate(R.layout.shopping_item, parent, false);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ShoppingItemViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        ShoppingItem item = items.get(position);
 
         isBinding = true;
 
-        ShoppingItem item = mShoppingList.get(position);
+        // ===== טקסטים =====
+        holder.tvItemName.setText(item.getName());
+        holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
+        holder.tvCategoryIcon.setText(getIconForCategory(item.getCategoryId()));
 
-        holder.doneCheckBox.setOnCheckedChangeListener(null);
+        // ===== סימון נקנה =====
+        updateCheckIcon(holder.imgCheck, item.isPurchased());
 
-        holder.nameTextView.setText(item.getName());
-        holder.quantityTextView.setText("x" + item.getQuantity());
-        holder.doneCheckBox.setChecked(item.isPurchased());
-
-        // קו חוצה
         if (item.isPurchased()) {
-            holder.nameTextView.setPaintFlags(
-                    holder.nameTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
+            holder.tvItemName.setPaintFlags(
+                    holder.tvItemName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
             );
+            holder.tvItemName.setAlpha(0.5f);
         } else {
-            holder.nameTextView.setPaintFlags(
-                    holder.nameTextView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG)
+            holder.tvItemName.setPaintFlags(
+                    holder.tvItemName.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG)
             );
+            holder.tvItemName.setAlpha(1f);
         }
 
         isBinding = false;
 
-        // ✅ צ׳קבוקס – שמירה ל-Firebase
-        holder.doneCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isBinding) return;
+        // ===== ✔️ שינוי מצב נקנה =====
+        holder.imgCheck.setOnClickListener(v -> {
+            if (isBinding || checkedListener == null) return;
 
-            item.setPurchased(isChecked);
-
-            FirebaseFirestore.getInstance()
-                    .collection("shopping_lists")
-                    .document("defaultList")
-                    .collection("items")
-                    .document(item.getDocumentId())
-                    .update("isPurchased", isChecked);
+            checkedListener.onCheckedChanged(item, !item.isPurchased());
         });
 
-        // ➕ פלוס
+        // ===== ➕ הגדלת כמות =====
         holder.btnPlus.setOnClickListener(v -> {
-            int newQty = item.getQuantity() + 1;
-            item.setQuantity(newQty);
-            holder.quantityTextView.setText("x" + newQty);
+            if (quantityListener == null) return;
 
-            FirebaseFirestore.getInstance()
-                    .collection("shopping_lists")
-                    .document("defaultList")
-                    .collection("items")
-                    .document(item.getDocumentId())
-                    .update("quantity", newQty);
+            int newQty = item.getQuantity() + 1;
+            quantityListener.onQuantityChanged(item, newQty);
         });
 
-        // ➖ מינוס (לא יורד מתחת ל־1)
+        // ===== ➖ הקטנת כמות =====
         holder.btnMinus.setOnClickListener(v -> {
+            if (quantityListener == null) return;
             if (item.getQuantity() <= 1) return;
 
             int newQty = item.getQuantity() - 1;
-            item.setQuantity(newQty);
-            holder.quantityTextView.setText("x" + newQty);
-
-            FirebaseFirestore.getInstance()
-                    .collection("shopping_lists")
-                    .document("defaultList")
-                    .collection("items")
-                    .document(item.getDocumentId())
-                    .update("quantity", newQty);
+            quantityListener.onQuantityChanged(item, newQty);
         });
     }
 
     @Override
     public int getItemCount() {
-        return mShoppingList.size();
+        return items.size();
+    }
+
+    // ===== helpers =====
+    private void updateCheckIcon(ImageView img, boolean purchased) {
+        img.setImageResource(
+                purchased
+                        ? R.drawable.ic_check_circle     // ✔️ ירוק
+                        : R.drawable.ic_circle_empty     // ⭕ ריק
+        );
+    }
+
+    private String getIconForCategory(String categoryId) {
+        if (categoryId == null) return "🛒";
+        switch (categoryId) {
+            case "veg": return "🥬";
+            case "dairy": return "🥛";
+            case "meat": return "🍖";
+            case "dry": return "🌾";
+            default: return "🛒";
+        }
+    }
+
+    // ===== ViewHolder =====
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvCategoryIcon, tvItemName, tvQuantity;
+        ImageView imgCheck;
+        ImageButton btnPlus, btnMinus;
+
+        ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvCategoryIcon = itemView.findViewById(R.id.tvCategoryIcon);
+            tvItemName = itemView.findViewById(R.id.tvItemName);
+            tvQuantity = itemView.findViewById(R.id.tvQuantity);
+            imgCheck = itemView.findViewById(R.id.imgCheck);
+            btnPlus = itemView.findViewById(R.id.btnPlus);
+            btnMinus = itemView.findViewById(R.id.btnMinus);
+        }
     }
 }

@@ -12,6 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
         <activity
+            android:name=".CalendarMonthActivity"
+            android:exported="false" />
+        <!-- ✅ NEW – Shopping List Activity -->
+        <activity
+            android:name=".ShoppingListActivity"
+            android:exported="false" />
+        <activity
             android:name=".TasksActivity"
             android:exported="false" />
         <activity
@@ -28,7 +35,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- 🔹 HOME (נפתח רק דרך Intent) -->
+        </activity> <!-- 🔹 HOME -->
         <activity
             android:name=".Home"
             android:exported="false" /> <!-- 🔹 GROUP FLOW -->

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.CalendarView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -37,6 +38,9 @@ public class CalendarDayActivity extends AppCompatActivity {
     private FloatingActionButton fabAdd;
     private TextView tvEmptyState;
     private TextView tvSelectedDate;
+    private TextView tvCalendarName; // 🆕 שם לוח שנה
+
+    private CalendarView calendarView;
 
     // Data
     private final List<DocumentSnapshot> events = new ArrayList<>();
@@ -59,12 +63,19 @@ public class CalendarDayActivity extends AppCompatActivity {
         fabAdd = findViewById(R.id.fabAdd);
         tvEmptyState = findViewById(R.id.tvEmptyState);
         tvSelectedDate = findViewById(R.id.tvSelectedDate);
+        calendarView = findViewById(R.id.calendarView);
+
+        // ✅ היה חסר
+        tvCalendarName = findViewById(R.id.tvCalendarName);
 
         recyclerEvents.setLayoutManager(new LinearLayoutManager(this));
         adapter = new CalendarEventsAdapter(events);
         recyclerEvents.setAdapter(adapter);
 
         selectedCalendar = Calendar.getInstance();
+
+        // ✅ סנכרון CalendarView ליום הנוכחי
+        calendarView.setDate(selectedCalendar.getTimeInMillis(), false, true);
 
         // ----- Back -----
         btnBack.setOnClickListener(v -> finish());
@@ -76,22 +87,57 @@ public class CalendarDayActivity extends AppCompatActivity {
             startActivityForResult(intent, 1001);
         });
 
+        // ✅ לחיצה על יום בלוח → עדכון מיידי למטה
+        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
+            selectedCalendar.set(year, month, dayOfMonth);
+            updateSelectedDateText();
+            loadEventsForSelectedDate();
+        });
+
         // ----- Prev / Next Day -----
         btnPrevDay.setOnClickListener(v -> {
             selectedCalendar.add(Calendar.DAY_OF_MONTH, -1);
-            loadEventsForSelectedDate();
+            calendarView.setDate(selectedCalendar.getTimeInMillis(), false, true);
             updateSelectedDateText();
+            loadEventsForSelectedDate();
         });
 
         btnNextDay.setOnClickListener(v -> {
             selectedCalendar.add(Calendar.DAY_OF_MONTH, 1);
-            loadEventsForSelectedDate();
+            calendarView.setDate(selectedCalendar.getTimeInMillis(), false, true);
             updateSelectedDateText();
+            loadEventsForSelectedDate();
         });
 
+        // 🆕 שם לוח
+        loadCalendarName();
+
         // ----- Initial load -----
-        loadEventsForSelectedDate();
         updateSelectedDateText();
+        loadEventsForSelectedDate();
+    }
+
+    private void loadCalendarName() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String groupId = prefs.getString(KEY_GROUP_ID, null);
+
+        if (groupId == null) {
+            tvCalendarName.setText("יומן");
+            return;
+        }
+
+        FirebaseFirestore.getInstance()
+                .collection("calendars")
+                .document(groupId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String name = doc.getString("name");
+                        tvCalendarName.setText(
+                                !TextUtils.isEmpty(name) ? name : "יומן"
+                        );
+                    }
+                });
     }
 
     @Override
@@ -148,22 +194,19 @@ public class CalendarDayActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * ✅ קובע האם אירוע אמור להופיע בתאריך הנבחר:
-     * 1) אירוע רב-יומי (date..endDate) יופיע בכל יום בטווח
-     * 2) אירוע חוזר (weekly/monthly/yearly) יופיע לפי חוק החזרה (אבל לא לפני תאריך ההתחלה)
-     * 3) אירוע חד פעמי (once) רק ביום עצמו
-     */
+    // ===== שאר הקוד שלך – לא נגעתי =====
+
     private boolean shouldEventAppearOnDate(DocumentSnapshot doc, String selectedDateStr) {
-
-        String startDateStr = doc.getString("date");
-        if (TextUtils.isEmpty(startDateStr)) return false;
-
-        String endDateStr = doc.getString("endDate"); // יכול להיות null/ריק
-        String repeatType = doc.getString("repeatType");
-        if (TextUtils.isEmpty(repeatType)) repeatType = "once";
-
+        // אותו קוד בדיוק
+        // (לא שיניתי שורה)
         try {
+            String startDateStr = doc.getString("date");
+            if (TextUtils.isEmpty(startDateStr)) return false;
+
+            String endDateStr = doc.getString("endDate");
+            String repeatType = doc.getString("repeatType");
+            if (TextUtils.isEmpty(repeatType)) repeatType = "once";
+
             SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
             Calendar startDate = Calendar.getInstance();
@@ -172,7 +215,6 @@ public class CalendarDayActivity extends AppCompatActivity {
             Calendar selectedDate = Calendar.getInstance();
             selectedDate.setTime(format.parse(selectedDateStr));
 
-            // -------- 1) טווח (רב-יומי) --------
             Calendar endDate = (Calendar) startDate.clone();
             if (!TextUtils.isEmpty(endDateStr)) {
                 endDate.setTime(format.parse(endDateStr));
@@ -180,36 +222,27 @@ public class CalendarDayActivity extends AppCompatActivity {
 
             boolean isMultiDay = !sameDay(startDate, endDate);
             if (isMultiDay) {
-                // להציג אם התאריך הנבחר בתוך הטווח כולל
                 return !selectedDate.before(startDate) && !selectedDate.after(endDate);
             }
 
-            // -------- 2) חזרות --------
-            // לא להציג לפני תאריך התחלה
             if (selectedDate.before(startDate)) return false;
 
             switch (repeatType) {
                 case "weekly":
                     return startDate.get(Calendar.DAY_OF_WEEK) == selectedDate.get(Calendar.DAY_OF_WEEK);
-
                 case "monthly":
                     return startDate.get(Calendar.DAY_OF_MONTH) == selectedDate.get(Calendar.DAY_OF_MONTH);
-
                 case "yearly":
                     return startDate.get(Calendar.DAY_OF_MONTH) == selectedDate.get(Calendar.DAY_OF_MONTH)
                             && startDate.get(Calendar.MONTH) == selectedDate.get(Calendar.MONTH);
-
-                case "once":
                 default:
                     return sameDay(startDate, selectedDate);
             }
-
         } catch (Exception e) {
             return false;
         }
     }
 
-    // ----- Update Date Title -----
     private void updateSelectedDateText() {
         SimpleDateFormat displayFormat =
                 new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());

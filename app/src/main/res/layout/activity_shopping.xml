@@ -1,55 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Shopping">
+    android:background="#F9FAFB">
 
-
-    <ImageView
-        android:id="@+id/B"
-        android:layout_width="157dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="115dp"
-        android:layout_marginTop="50dp"
-        android:background="@null"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/title_shop" />
-
-
-
-        <ImageButton
-            android:id="@+id/my_shop1"
-            android:layout_width="287dp"
-            android:layout_height="219dp"
-            android:layout_marginLeft="58dp"
-            android:layout_marginTop="30dp"
-            android:background="@null"
-            android:scaleType="centerCrop"
-            android:src="@drawable/my_shop1" />
-
-    <ImageButton
-        android:id="@+id/my_shop2"
-        android:layout_width="287dp"
-        android:layout_height="219dp"
-        android:layout_marginLeft="58dp"
-        android:layout_marginTop="20dp"
-        android:background="@null"
-        android:scaleType="centerCrop"
-        android:src="@drawable/my_shop2" />
-
-
-
-    <!-- שורת משימות (Footer Fragment) -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_footer"
-        android:name="com.example.myapplication.footerFragment"
+    <!-- MAIN COLUMN -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-</LinearLayout>
+        <!-- HEADER -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="@drawable/bg_gradient_teal">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_right"
+                app:tint="@android:color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="רשימת קניות"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <!-- CONTENT -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- SUMMARY -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="2"
+                    android:layout_marginBottom="20dp">
+
+                    <include
+                        android:id="@+id/cardToBuy"
+                        layout="@layout/item_summary_card" />
+
+                    <include
+                        android:id="@+id/cardPurchased"
+                        layout="@layout/item_summary_card" />
+                </LinearLayout>
+
+                <!-- 🛒 לקנות -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="לקנות"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerToBuy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+                <!-- ✅ נקנו + מחיקה -->
+                <LinearLayout
+                    android:id="@+id/completedSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="12dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="נקנו"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/btnClearPurchased"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="נקה הכל"
+                        android:textColor="#EF4444"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerPurchased"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- FAB -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="24dp"
+        app:backgroundTint="#14B8A6"
+        app:srcCompat="@drawable/ic_plus"
+        app:tint="@android:color/white" />
+
+</FrameLayout>

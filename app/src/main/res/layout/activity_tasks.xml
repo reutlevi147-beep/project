@@ -60,21 +60,17 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:layout_marginTop="16dp"
-            android:weightSum="3">
+            android:weightSum="2">
 
             <include
+                android:id="@+id/statActive"
                 layout="@layout/item_task_stat"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"/>
 
             <include
-                layout="@layout/item_task_stat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-
-            <include
+                android:id="@+id/statCompleted"
                 layout="@layout/item_task_stat"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -84,10 +80,10 @@
     </LinearLayout>
 
     <!-- CONTENT -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="240dp"
+        android:layout_marginTop="260dp"
         android:fillViewport="true">
 
         <LinearLayout
@@ -109,6 +105,7 @@
                     android:orientation="horizontal">
 
                     <Button
+                        android:id="@+id/btnAll"
                         style="@style/CategoryButtonSelected"
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
@@ -116,6 +113,7 @@
                         android:layout_marginEnd="8dp"/>
 
                     <Button
+                        android:id="@+id/btnFamily"
                         style="@style/CategoryButton"
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
@@ -123,6 +121,7 @@
                         android:layout_marginEnd="8dp"/>
 
                     <Button
+                        android:id="@+id/btnHome"
                         style="@style/CategoryButton"
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
@@ -130,12 +129,47 @@
                         android:layout_marginEnd="8dp"/>
 
                     <Button
+                        android:id="@+id/btnWork"
                         style="@style/CategoryButton"
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
                         android:text="עבודה"
                         android:layout_marginEnd="8dp"/>
+
+                    <Button
+                        android:id="@+id/btnShopping"
+                        style="@style/CategoryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="קניות"
+                        android:layout_marginEnd="8dp"/>
+
+                    <Button
+                        android:id="@+id/btnPersonal"
+                        style="@style/CategoryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="אישי"
+                        android:layout_marginEnd="8dp"/>
+
+                    <Button
+                        android:id="@+id/btnHealth"
+                        style="@style/CategoryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="בריאות"
+                        android:layout_marginEnd="8dp"/>
+
+                    <Button
+                        android:id="@+id/btnOther"
+                        style="@style/CategoryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="אחר"
+                        android:layout_marginEnd="8dp"/>
+
                 </LinearLayout>
+
             </HorizontalScrollView>
 
             <!-- כותרת -->
@@ -149,6 +183,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"/>
 
+
             <!-- רשימת משימות -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerTasks"
@@ -157,7 +192,7 @@
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/task_item"/>
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton

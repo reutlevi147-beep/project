@@ -106,7 +106,6 @@ public class JoinGroupActivity extends AppCompatActivity {
                     String groupType = doc.getString("groupType");
                     String familyName = doc.getString("familyName");
 
-
                     if ("family".equals(groupType)
                             && rgFamilyRole.getCheckedRadioButtonId() == -1) {
                         layoutFamilyRole.setVisibility(View.VISIBLE);
@@ -125,24 +124,54 @@ public class JoinGroupActivity extends AppCompatActivity {
                     userData.put("email", etEmail.getText().toString().trim());
                     userData.put("groupId", groupCode);
                     userData.put("role", role);
+                    userData.put("createdAt",
+                            com.google.firebase.firestore.FieldValue.serverTimestamp());
 
+                    // 1️⃣ שמירה כללית
                     db.collection("users")
                             .add(userData)
                             .addOnSuccessListener(userRef -> {
-                                saveUserLocally(
-                                        userRef.getId(),
-                                        groupCode,
-                                        groupCode,
-                                        etName.getText().toString().trim(),
-                                        familyName
-                                );
 
+                                String userId = userRef.getId();
 
-                                markOnboardingCompleted();
-                                goToHome();
-                            });
-                });
+                                // 2️⃣ שמירה גם בתוך הקבוצה
+                                db.collection("groups")
+                                        .document(groupCode)
+                                        .collection("users")
+                                        .document(userId)
+                                        .set(userData)
+                                        .addOnSuccessListener(v -> {
+
+                                            saveUserLocally(
+                                                    userId,
+                                                    groupCode,
+                                                    groupCode,
+                                                    etName.getText().toString().trim(),
+                                                    familyName
+                                            );
+
+                                            markOnboardingCompleted();
+                                            goToHome();
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this,
+                                                        "שגיאה בשמירה בקבוצה",
+                                                        Toast.LENGTH_SHORT).show()
+                                        );
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this,
+                                            "שגיאה ביצירת משתמש",
+                                            Toast.LENGTH_SHORT).show()
+                            );
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "שגיאה בבדיקת קבוצה",
+                                Toast.LENGTH_SHORT).show()
+                );
     }
+
 
     private void saveUserLocally(String userId, String groupId,
                                  String joinCode, String userName,

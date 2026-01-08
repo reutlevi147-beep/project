@@ -75,7 +75,7 @@ public class Home extends AppCompatActivity {
         // Quick actions
         // =====================
         findViewById(R.id.quickShopping).setOnClickListener(v ->
-                startActivity(new Intent(this, Shopping.class))
+                startActivity(new Intent(this, ShoppingListActivity.class))
         );
 
         findViewById(R.id.quickCalendar).setOnClickListener(v ->

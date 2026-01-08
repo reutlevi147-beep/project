@@ -1,113 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Add_Shopping">
+    android:background="#F9FAFB">
 
-
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="643dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <!-- התמונה -->
+        <!-- HEADER -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="@drawable/bg_gradient_teal">
 
-        <!-- הטקסט שמעל התמונה -->
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_right"
+                app:tint="@android:color/white" />
 
-        <!-- תמונת רקע- שורה אחת -->
-        <ImageView
-            android:layout_width="351dp"
-            android:layout_height="557dp"
-            android:layout_marginLeft="40dp"
-            android:layout_marginTop="150dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/c1"
-            android:clickable="false"
-            android:focusable="false"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="הוסף מוצר"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="12dp" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="הוסף מוצר חדש לרשימת הקניות"
+                android:textSize="14sp"
+                android:textColor="#E5E7EB"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/Return"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
-            android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/return1" />
+        <!-- CONTENT -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
-        <!-- כותרת -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="120dp"
-            android:layout_marginTop="100dp"
-            android:shadowColor="#80000000"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="4"
-            android:text="הכנסת מוצר"
-            android:textColor="#000000"
-            android:textSize="30sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:orientation="vertical">
 
-        <!-- כפתור שם מוצר -->
-        <EditText
-            android:id="@+id/name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="60dp"
-            android:layout_marginTop="230dp"
-            android:background="@android:color/transparent"
-            android:hint="שם מוצר"
-            android:textColor="#000000"
-            android:textSize="30sp"
-            android:shadowColor="#80000000"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="4"
-            />
+                <!-- שם מוצר -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="שם המוצר *"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="#111827"/>
 
-        <!-- בחירת כמות -->
-        <Spinner
-            android:id="@+id/quantitySpinner"
+                <EditText
+                    android:id="@+id/etItemName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="לדוגמה: חלב, לחם, ביצים…"
+                    android:inputType="text"
+                    android:background="@drawable/bg_input_outline"
+                    android:padding="14dp"
+                    android:layout_marginTop="6dp"/>
+
+                <!-- קטגוריה -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="קטגוריה *"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginTop="16dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerCategories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:nestedScrollingEnabled="false" />
+
+                <!-- כמות + מחיר -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="20dp">
+
+                    <EditText
+                        android:id="@+id/etQuantity"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="כמות"
+                        android:inputType="text"
+                        android:background="@drawable/bg_input_outline"
+                        android:padding="14dp"/>
+
+                </LinearLayout>
+
+                <!-- דחוף -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="14dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_user_card">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="מוצר דחוף"
+                        android:textStyle="bold"
+                        android:textColor="#111827"/>
+
+                    <Switch
+                        android:id="@+id/switchUrgent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+
+                <!-- הערות -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="הערות"
+                    android:textStyle="bold"
+                    android:textColor="#111827"
+                    android:layout_marginTop="20dp"/>
+
+                <EditText
+                    android:id="@+id/etNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:gravity="top"
+                    android:hint="הערות נוספות…"
+                    android:inputType="textMultiLine"
+                    android:background="@drawable/bg_input_outline"
+                    android:padding="14dp"/>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- ACTIONS -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginTop="300dp"
-            android:layout_marginRight="30dp"
-            android:padding="12dp"/>
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:background="@android:color/white">
 
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="ביטול"
+                android:background="@drawable/bg_button_neutral"/>
 
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="הוסף לרשימה"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_button_teal"/>
+        </LinearLayout>
 
-        <!-- כפתור הוספת מוצר -->
-        <Button
-            android:id="@+id/addtoshopping"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
-            android:layout_marginTop="500dp"
-            android:shadowColor="#80000000"
-            android:backgroundTint="#2d8bba"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:shadowRadius="4"
-            android:text="הוספת מוצר"
-            android:textColor="#000000"
-            android:textSize="30sp" />
-
-    </FrameLayout>
-
-    <!-- שורת משימות (Footer Fragment) -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_footer"
-        android:name="com.example.myapplication.footerFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
-
-
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>

@@ -1,32 +1,30 @@
 package com.example.myapplication;
 
+import com.google.firebase.Timestamp;
+
 public class Task {
 
+    private String id;          // מזהה Firestore
     private String title;
     private String category;
     private String priority;
-    private String dueDate;
     private boolean completed;
 
     // חובה ל-Firestore
     public Task() {}
 
-    // בנאי מלא (לעתיד)
-    public Task(String title, String category, String priority, String dueDate, boolean completed) {
+    public Task(String title, String category, String priority, boolean completed) {
         this.title = title;
         this.category = category;
         this.priority = priority;
-        this.dueDate = dueDate;
         this.completed = completed;
     }
 
-    // בנאי קצר (לדמו / בדיקות)
-    public Task(String title, boolean completed) {
-        this.title = title;
-        this.completed = completed;
+    // ===== Getters =====
+    public String getId() {
+        return id;
     }
 
-    // Getters
     public String getTitle() {
         return title;
     }
@@ -39,16 +37,18 @@ public class Task {
         return priority;
     }
 
-    public String getDueDate() {
-        return dueDate;
-    }
-
     public boolean isCompleted() {
         return completed;
     }
 
-    // Setters
+    // ===== Setters =====
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
 }
+
+

@@ -32,7 +32,6 @@ public class footerFragment extends Fragment {
         ic_ststs.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Economy.class)));
         ic_list.setOnClickListener(v -> startActivity(new Intent(requireActivity(), TasksActivity.class)));
         ic_home.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Home.class)));
-        ic_cart.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Shopping.class)));
         ic_settings.setOnClickListener(v -> startActivity(new Intent(requireActivity(), Settings.class)));
 
         return view; // ✅ חשוב!

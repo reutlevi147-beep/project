@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layoutDirection="rtl"
@@ -424,20 +425,36 @@
 
             </LinearLayout>
 
+
             <!-- מוטל על -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="מוטל על"
+                android:textSize="16sp"
                 android:textStyle="bold"
+                android:textColor="#111827"
                 android:layout_marginTop="24dp"/>
 
-            <LinearLayout
-                android:id="@+id/usersContainer"
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSelectAllUsers"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="בחר את כולם"
+                android:textSize="16sp"
+                android:textColor="#111827"
+                android:background="@drawable/bg_select_all_white"
+                android:layout_marginBottom="12dp"/>
+
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerUsers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="12dp"/>
+                android:layout_marginTop="12dp"
+                tools:listitem="@layout/item_user_assign"/>
+
 
 
             <!-- NOTES -->

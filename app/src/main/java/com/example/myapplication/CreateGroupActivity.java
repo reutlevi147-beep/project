@@ -156,7 +156,9 @@ public class CreateGroupActivity extends AppCompatActivity {
                     userData.put("role", role);
                     userData.put("createdAt", FieldValue.serverTimestamp());
 
-                    db.collection("users")
+                    db.collection("groups")
+                            .document(groupCode)
+                            .collection("users")
                             .add(userData)
                             .addOnSuccessListener(userRef -> {
                                 saveUserLocally(
@@ -169,7 +171,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                                 goToHome();
                             });
                 });
-    }
+    } // ✅ כאן נסגרת createGroup
 
     private void saveUserLocally(String userId, String role,
                                  String groupCode, String userName) {
@@ -178,12 +180,10 @@ public class CreateGroupActivity extends AppCompatActivity {
                 .putString("user_id", userId)
                 .putString("role", role)
                 .putString(KEY_GROUP_CODE, groupCode)
-                .putString("group_id", groupCode) // ⭐ זה הפתרון
+                .putString("group_id", groupCode)
                 .putString("user_name", userName)
                 .putString("family_name", etFamilyName.getText().toString().trim())
                 .apply();
-
-
     }
 
     private void markOnboardingCompleted() {

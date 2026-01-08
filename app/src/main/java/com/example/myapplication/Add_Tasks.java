@@ -1,39 +1,47 @@
 package com.example.myapplication;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Add_Tasks extends AppCompatActivity {
 
     private EditText etTitle;
+    private EditText etDate;
+
     private FirebaseFirestore db;
 
     private String selectedPriority = null;
     private String selectedCategory = null;
-    private ArrayList<String> selectedUserIds = new ArrayList<>();
-    private boolean allSelected = false;
-    private ArrayList<String> allUserIds = new ArrayList<>();
-    private ArrayList<String> allUserNames = new ArrayList<>();
+    private View selectedCategoryView = null;
 
+    private Long selectedDateMillis = null;
+
+    // 👥 Users
+    private RecyclerView recyclerUsers;
+    private UsersAssignAdapter usersAdapter;
+    private final ArrayList<AppUser> usersList = new ArrayList<>();
+
+    // נשמור כאן את מי שנבחר (בהמשך)
+    private final ArrayList<String> selectedUserIds = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,137 +51,71 @@ public class Add_Tasks extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // כותרת
         etTitle = findViewById(R.id.etTitle);
+        etDate = findViewById(R.id.etDate);
 
-        // חזרה
-        findViewById(R.id.btnBack).setOnClickListener(v ->
-                finish()
-        );
-
-        // שמירה
-        findViewById(R.id.btnSave).setOnClickListener(v ->
-                saveTaskToFirestore()
-        );
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        findViewById(R.id.btnSave).setOnClickListener(v -> saveTaskToFirestore());
 
         setupPrioritySelection();
         setupCategorySelection();
+
+        findViewById(R.id.btnSelectAllUsers).setOnClickListener(v -> {
+            usersAdapter.selectAll();
+        });
+
+        // 👥 RecyclerView users
+        recyclerUsers = findViewById(R.id.recyclerUsers);
+        recyclerUsers.setLayoutManager(new GridLayoutManager(this, 2));
+        usersAdapter = new UsersAssignAdapter(usersList);
+        recyclerUsers.setAdapter(usersAdapter);
+
+        loadUsersFromFirestore();
+
+        etDate.setOnClickListener(v -> showDatePicker());
     }
 
-    private void loadUsersFromFirestore() {
+    // ================= USERS =================
 
+    private void loadUsersFromFirestore() {
         SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
         String groupId = prefs.getString("group_id", null);
 
-        if (groupId == null) return;
+        if (groupId == null) {
+            Toast.makeText(this, "❌ group_id לא קיים", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        FirebaseFirestore.getInstance()
+        db.collection("groups")
+                .document(groupId)
                 .collection("users")
-                .whereEqualTo("groupId", groupId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
-                    allUserIds.clear();
-                    allUserNames.clear();
+                    usersList.clear();
 
-                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        allUserIds.add(doc.getId());
-                        allUserNames.add(doc.getString("name"));
+                    for (DocumentSnapshot doc : snapshot) {
+                        AppUser user = doc.toObject(AppUser.class);
+                        if (user == null || user.getName() == null) continue;
+
+                        user.setDocumentId(doc.getId());
+                        usersList.add(user);
                     }
 
-                    buildUsersUI();
-                });
+                    usersAdapter.notifyDataSetChanged();
+
+                    if (usersList.isEmpty()) {
+                        Toast.makeText(this, "⚠️ אין משתמשים בקבוצה", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "שגיאה בטעינת משתמשים", Toast.LENGTH_SHORT).show()
+                );
     }
 
-    private void buildUsersUI() {
+    // ================= TASK =================
 
-        LinearLayout container = findViewById(R.id.usersContainer);
-        container.removeAllViews();
-
-        // כפתור "כולם"
-        View allView = createUserView("כולם", "ALL");
-        container.addView(allView);
-
-        for (int i = 0; i < allUserIds.size(); i++) {
-            String userId = allUserIds.get(i);
-            String name = allUserNames.get(i);
-
-            View userView = createUserView(name, userId);
-            container.addView(userView);
-        }
-    }
-
-    private View createUserView(String name, String userId) {
-
-        TextView tv = new TextView(this);
-        tv.setText(name);
-        tv.setPadding(32, 24, 32, 24);
-        tv.setBackgroundResource(R.drawable.bg_selectable_circle);
-        tv.setTextSize(16);
-
-        tv.setOnClickListener(v -> {
-            if (userId.equals("ALL")) {
-                toggleSelectAll(allUserIds);
-            } else {
-                toggleUser(userId);
-            }
-        });
-
-        return tv;
-    }
-
-
-    // --------------------------------------------------
-    // 🔴 עדיפות
-    // --------------------------------------------------
-    private void setupPrioritySelection() {
-
-        View high = findViewById(R.id.circleHigh);
-        View medium = findViewById(R.id.circleMedium);
-        View low = findViewById(R.id.circleLow);
-
-        findViewById(R.id.cardPriorityHigh).setOnClickListener(v ->
-                selectPriority("high", high, medium, low)
-        );
-
-        findViewById(R.id.cardPriorityMedium).setOnClickListener(v ->
-                selectPriority("medium", medium, high, low)
-        );
-
-        findViewById(R.id.cardPriorityLow).setOnClickListener(v ->
-                selectPriority("low", low, high, medium)
-        );
-    }
-
-    private void selectPriority(String value, View selected, View o1, View o2) {
-        selected.setBackgroundResource(R.drawable.bg_selectable_circle_selected);
-        o1.setBackgroundResource(R.drawable.bg_selectable_circle);
-        o2.setBackgroundResource(R.drawable.bg_selectable_circle);
-        selectedPriority = value;
-    }
-
-    // --------------------------------------------------
-    // 🏷 קטגוריה
-    // --------------------------------------------------
-    private void setupCategorySelection() {
-
-        findViewById(R.id.cardCatHome).setOnClickListener(v -> selectCategory("בית"));
-        findViewById(R.id.cardCatWork).setOnClickListener(v -> selectCategory("עבודה"));
-        findViewById(R.id.cardCatShopping).setOnClickListener(v -> selectCategory("קניות"));
-        findViewById(R.id.cardCatPersonal).setOnClickListener(v -> selectCategory("אישי"));
-        findViewById(R.id.cardCatHealth).setOnClickListener(v -> selectCategory("בריאות"));
-        findViewById(R.id.cardCatOther).setOnClickListener(v -> selectCategory("אחר"));
-    }
-
-    private void selectCategory(String category) {
-        selectedCategory = category;
-    }
-
-    // --------------------------------------------------
-    // 💾 שמירה
-    // --------------------------------------------------
     private void saveTaskToFirestore() {
-
         String title = etTitle.getText().toString().trim();
 
         if (title.isEmpty() || selectedPriority == null || selectedCategory == null) {
@@ -185,8 +127,13 @@ public class Add_Tasks extends AppCompatActivity {
         task.put("title", title);
         task.put("priority", selectedPriority);
         task.put("category", selectedCategory);
-        task.put("isDone", false);
+        task.put("assignedUserIds", selectedUserIds);
         task.put("createdAt", Timestamp.now());
+        task.put("isDone", false);
+
+        if (selectedDateMillis != null) {
+            task.put("dueDate", selectedDateMillis);
+        }
 
         db.collection("home_tasks")
                 .document("defaultList")
@@ -194,51 +141,77 @@ public class Add_Tasks extends AppCompatActivity {
                 .add(task)
                 .addOnSuccessListener(doc -> {
                     Toast.makeText(this, "המשימה נוספה", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, TasksActivity.class));
                     finish();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "שגיאה בשמירה", Toast.LENGTH_SHORT).show()
-                );
+                });
     }
 
-    private void toggleUser(String userId) {
+    // ================= PRIORITY =================
 
-        if (allSelected) {
-            allSelected = false;
-            selectedUserIds.clear();
-        }
+    private void setupPrioritySelection() {
+        View high = findViewById(R.id.circleHigh);
+        View medium = findViewById(R.id.circleMedium);
+        View low = findViewById(R.id.circleLow);
 
-        if (selectedUserIds.contains(userId)) {
-            selectedUserIds.remove(userId);
-        } else {
-            selectedUserIds.add(userId);
-        }
-
-        updateUserUI();
+        findViewById(R.id.cardPriorityHigh)
+                .setOnClickListener(v -> selectPriority("high", high, medium, low));
+        findViewById(R.id.cardPriorityMedium)
+                .setOnClickListener(v -> selectPriority("medium", medium, high, low));
+        findViewById(R.id.cardPriorityLow)
+                .setOnClickListener(v -> selectPriority("low", low, high, medium));
     }
 
-
-    private void toggleSelectAll(ArrayList<String> allUserIds) {
-
-        if (allSelected) {
-            allSelected = false;
-            selectedUserIds.clear();
-        } else {
-            allSelected = true;
-            selectedUserIds.clear();
-            selectedUserIds.addAll(allUserIds);
-        }
-
-        updateUserUI();
+    private void selectPriority(String value, View selected, View o1, View o2) {
+        selected.setBackgroundResource(R.drawable.bg_selectable_circle_selected);
+        o1.setBackgroundResource(R.drawable.bg_selectable_circle);
+        o2.setBackgroundResource(R.drawable.bg_selectable_circle);
+        selectedPriority = value;
     }
 
+    // ================= CATEGORY =================
 
-    private void updateUserUI() {
-        // שלב הבא – כאן נסמן עיגולים / כרטיסים
+    private void setupCategorySelection() {
+        setupCategoryClick(R.id.cardCatHome, "בית");
+        setupCategoryClick(R.id.cardCatWork, "עבודה");
+        setupCategoryClick(R.id.cardCatShopping, "קניות");
+        setupCategoryClick(R.id.cardCatPersonal, "אישי");
+        setupCategoryClick(R.id.cardCatHealth, "בריאות");
+        setupCategoryClick(R.id.cardCatOther, "אחר");
     }
 
+    private void setupCategoryClick(int viewId, String category) {
+        View card = findViewById(viewId);
 
+        card.setOnClickListener(v -> {
+            if (selectedCategoryView != null) {
+                selectedCategoryView.setForeground(null);
+            }
 
+            v.setForeground(getDrawable(R.drawable.bg_category_selected));
+            selectedCategoryView = v;
+            selectedCategory = category;
+        });
+    }
 
+    // ================= DATE =================
+
+    private void showDatePicker() {
+        final Calendar calendar = Calendar.getInstance();
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+
+                    Calendar selectedCal = Calendar.getInstance();
+                    selectedCal.set(year, month, dayOfMonth, 0, 0, 0);
+
+                    selectedDateMillis = selectedCal.getTimeInMillis();
+                    etDate.setText(dayOfMonth + "/" + (month + 1) + "/" + year);
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+
+        datePickerDialog.show();
+    }
 }

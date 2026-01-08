@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="12dp">
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="משימות שבוצעו"
+        android:textStyle="bold"
+        android:textColor="#6B7280"
+        android:textSize="14sp"/>
+
+    <!-- ⭐ אותו כפתור, אותו ID -->
+    <Button
+        android:id="@+id/btnDeleteCompleted"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="מחק משימות שבוצעו"
+        android:textColor="@android:color/white"
+        android:backgroundTint="#DC2626"
+        android:visibility="visible"/>
+</LinearLayout>
+
+
