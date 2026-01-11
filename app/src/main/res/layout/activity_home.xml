@@ -594,17 +594,7 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="88dp"
-        android:contentDescription="Add"
-        app:backgroundTint="@color/indigo_600"
-        app:tint="@android:color/white"
-        app:srcCompat="@drawable/plos" />
+
 
     <!-- Bottom Nav -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

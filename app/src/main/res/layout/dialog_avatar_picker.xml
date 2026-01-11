@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+
+    <ImageView
+        android:id="@+id/avatarBlue"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_user"
+        app:tint="@color/avatar_blue"
+        android:padding="8dp"/>
+
+    <ImageView
+        android:id="@+id/avatarPurple"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_user"
+        app:tint="@color/avatar_purple"
+        android:padding="8dp"/>
+
+
+    <ImageView
+        android:id="@+id/avatarRed"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_user"
+        app:tint="@color/avatar_red"
+        android:padding="8dp"/>
+
+    <ImageView
+        android:id="@+id/avatarPink"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_user"
+        app:tint="@color/avatar_pink"
+        android:padding="8dp"/>
+
+    <ImageView
+        android:id="@+id/avatarTeal"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_user"
+        app:tint="@color/avatar_teal"
+        android:padding="8dp"/>
+
+</LinearLayout>

@@ -3,7 +3,7 @@ package com.example.myapplication;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,50 +16,57 @@ import java.util.List;
 import java.util.Set;
 
 public class AssignUsersAdapter
-        extends RecyclerView.Adapter<AssignUsersAdapter.UserViewHolder> {
+        extends RecyclerView.Adapter<AssignUsersAdapter.ViewHolder> {
 
     private final List<DocumentSnapshot> users = new ArrayList<>();
     private final Set<Integer> selectedPositions = new HashSet<>();
 
-    static class UserViewHolder extends RecyclerView.ViewHolder {
-        CheckBox cbUser;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvUserName;
 
-        UserViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
-            cbUser = itemView.findViewById(R.id.cbSelectUser);
+            tvUserName = itemView.findViewById(R.id.tvUserName);
         }
     }
 
     @NonNull
     @Override
-    public UserViewHolder onCreateViewHolder(
+    public ViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent,
             int viewType
     ) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_assign_user, parent, false);
-        return new UserViewHolder(v);
+        return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(
-            @NonNull UserViewHolder holder,
+            @NonNull ViewHolder holder,
             int position
     ) {
         DocumentSnapshot user = users.get(position);
         String name = user.getString("name");
         if (name == null) name = "משתמש";
 
-        holder.cbUser.setOnCheckedChangeListener(null);
-        holder.cbUser.setText(name);
-        holder.cbUser.setChecked(selectedPositions.contains(position));
+        holder.tvUserName.setText(name);
 
-        holder.cbUser.setOnCheckedChangeListener((btn, isChecked) -> {
-            if (isChecked) {
-                selectedPositions.add(position);
-            } else {
+        boolean isSelected = selectedPositions.contains(position);
+
+        holder.itemView.setBackgroundResource(
+                isSelected
+                        ? R.drawable.bg_user_card_selected
+                        : R.drawable.bg_user_card
+        );
+
+        holder.itemView.setOnClickListener(v -> {
+            if (selectedPositions.contains(position)) {
                 selectedPositions.remove(position);
+            } else {
+                selectedPositions.add(position);
             }
+            notifyItemChanged(position);
         });
     }
 
@@ -68,8 +75,6 @@ public class AssignUsersAdapter
         return users.size();
     }
 
-    // ===== Data =====
-
     public void setUsers(List<DocumentSnapshot> newUsers) {
         users.clear();
         users.addAll(newUsers);
@@ -77,7 +82,6 @@ public class AssignUsersAdapter
         notifyDataSetChanged();
     }
 
-    /** 🔹 IDs של משתמשים שנבחרו */
     public List<String> getSelectedUserIds() {
         List<String> ids = new ArrayList<>();
         for (Integer pos : selectedPositions) {
@@ -86,30 +90,29 @@ public class AssignUsersAdapter
         return ids;
     }
 
-    /** 🔹 שמות משתמשים שנבחרו */
-    public List<String> getSelectedUserNamesList() {
-        List<String> names = new ArrayList<>();
-
-        for (Integer pos : selectedPositions) {
-            String name = users.get(pos).getString("name");
-            if (name != null && !name.isEmpty()) {
-                names.add(name);
-            }
-        }
-
-        return names;
-    }
-
-    /** 🔹 סימון משתמשים לעריכה */
     public void setSelectedUserIds(List<String> userIds) {
         selectedPositions.clear();
-
         for (int i = 0; i < users.size(); i++) {
             if (userIds.contains(users.get(i).getId())) {
                 selectedPositions.add(i);
             }
         }
+        notifyDataSetChanged();
+    }
+
+    public List<DocumentSnapshot> getUsers() {
+        return users;
+    }
+
+    // ===== בחירת כל המשתמשים =====
+    public void selectAll() {
+        selectedPositions.clear();
+
+        for (int i = 0; i < users.size(); i++) {
+            selectedPositions.add(i);
+        }
 
         notifyDataSetChanged();
     }
+
 }

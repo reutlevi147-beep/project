@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -53,10 +54,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
     private final List<String> selectedUserIds = new ArrayList<>();
     private List<String> pendingSelectedUserIds = null;
 
-    private boolean sameDay(Calendar c1, Calendar c2) {
-        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
-                && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR);
-    }
+    // ================= Lifecycle =================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,11 +77,15 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         etStartTime.setOnClickListener(v -> showStartTimePicker());
         etEndTime.setOnClickListener(v -> showEndTimePicker());
 
+        // 👥 Users
         rvAssignUsers = findViewById(R.id.rvAssignUsers);
         assignUsersAdapter = new AssignUsersAdapter();
         rvAssignUsers.setLayoutManager(new LinearLayoutManager(this));
         rvAssignUsers.setAdapter(assignUsersAdapter);
 
+        loadUsersFromFirebase();
+
+        // 🎨 Colors
         frameIndigo = findViewById(R.id.frameIndigo);
         frameTeal = findViewById(R.id.frameTeal);
         frameAmber = findViewById(R.id.frameAmber);
@@ -100,8 +102,24 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         frameSlate.setOnClickListener(v -> selectColor(frameSlate, "slate"));
         frameEmerald.setOnClickListener(v -> selectColor(frameEmerald, "emerald"));
 
+        // 🔔 Reminder
         spReminder = findViewById(R.id.spReminder);
 
+        String[] reminderOptions = {
+                "ללא תזכורת",
+                "5 דקות לפני",
+                "10 דקות לפני",
+                "30 דקות לפני",
+                "שעה לפני",
+                "יום לפני"
+        };
+
+        spReminder.setAdapter(
+                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, reminderOptions)
+        );
+        spReminder.setText(reminderOptions[0], false);
+
+        // 🔁 Repeat
         MaterialButtonToggleGroup toggleRepeatType =
                 findViewById(R.id.toggleRepeatType);
 
@@ -121,20 +139,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
             }
         });
 
-        String[] reminderOptions = {
-                "ללא תזכורת",
-                "5 דקות לפני",
-                "10 דקות לפני",
-                "30 דקות לפני",
-                "שעה לפני",
-                "יום לפני"
-        };
-
-        spReminder.setAdapter(
-                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, reminderOptions)
-        );
-        spReminder.setText(reminderOptions[0], false);
-
+        // ⬅️ / 💾
         btnBack.setOnClickListener(v -> finish());
 
         btnSave.setOnClickListener(v -> {
@@ -146,14 +151,31 @@ public class AddCalendarEventActivity extends AppCompatActivity {
             }
         });
 
-        loadUsersFromFirebase();
-
         if (editingEventId != null) {
             loadEventForEdit();
         }
     }
 
-    // ===== שמירה =====
+    // ================= Firestore =================
+
+    private void loadUsersFromFirebase() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String groupId = prefs.getString(KEY_GROUP_ID, null);
+        if (groupId == null) return;
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .whereEqualTo("groupId", groupId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    assignUsersAdapter.setUsers(snapshot.getDocuments());
+
+                    if (pendingSelectedUserIds != null) {
+                        assignUsersAdapter.setSelectedUserIds(pendingSelectedUserIds);
+                    }
+                });
+    }
+
     private void saveEventToFirestore() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
@@ -165,17 +187,6 @@ public class AddCalendarEventActivity extends AppCompatActivity {
 
         boolean isAllUsers = selectedUserIds.isEmpty();
         String assignedToLabel = buildAssignedToLabel(isAllUsers);
-
-        String seriesId = null;
-
-        if (!selectedRepeatType.equals("once")) {
-            seriesId = editingEventId != null
-                    ? editingEventId
-                    : FirebaseFirestore.getInstance()
-                    .collection("calendar_events")
-                    .document()
-                    .getId();
-        }
 
         HashMap<String, Object> data = new HashMap<>();
         data.put("groupId", groupId);
@@ -190,46 +201,114 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         data.put("assignedToLabel", assignedToLabel);
         data.put("isAllUsers", isAllUsers);
         data.put("repeatType", selectedRepeatType);
-        data.put("repeatType", selectedRepeatType);
-        data.put("seriesId", seriesId);
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        if (editingEventId != null) {
-            db.collection("calendar_events")
-                    .document(editingEventId)
-                    .update(data)
-                    .addOnSuccessListener(v -> {
-                        setResult(RESULT_OK);
-                        finish();
-                    });
-        } else {
-            db.collection("calendar_events")
-                    .add(data)
-                    .addOnSuccessListener(v -> {
-                        setResult(RESULT_OK);
-                        finish();
-                    });
-        }
+        FirebaseFirestore.getInstance()
+                .collection("calendar_events")
+                .add(data)
+                .addOnSuccessListener(v -> finish());
     }
 
-    // ===== טקסט "מי מיועד ל–" =====
+    // ================= Helpers =================
+
     private String buildAssignedToLabel(boolean isAllUsers) {
         if (isAllUsers) return "לכולם";
 
-        List<String> names = assignUsersAdapter.getSelectedUserNamesList();
+        List<String> names = new ArrayList<>();
+        List<String> selectedIds = assignUsersAdapter.getSelectedUserIds();
+        List<DocumentSnapshot> allUsers = assignUsersAdapter.getUsers();
 
-        if (names == null || names.isEmpty()) return "לכולם";
-
-        if (names.size() == 1) {
-            return names.get(0);
+        for (DocumentSnapshot user : allUsers) {
+            if (selectedIds.contains(user.getId())) {
+                String name = user.getString("name");
+                if (name != null) names.add(name);
+            }
         }
 
-        if (names.size() == 2) {
-            return names.get(0) + " ו" + names.get(1);
-        }
+        if (names.isEmpty()) return "לכולם";
+        if (names.size() == 1) return names.get(0);
+        if (names.size() == 2) return names.get(0) + " ו" + names.get(1);
 
         return names.get(0) + ", " + names.get(1) + " ועוד " + (names.size() - 2);
+    }
+
+    private boolean validateForm() {
+        if (TextUtils.isEmpty(etEventTitle.getText())) {
+            etEventTitle.setError("יש להזין כותרת");
+            return false;
+        }
+        if (TextUtils.isEmpty(etEventDate.getText())) {
+            etEventDate.setError("יש לבחור תאריך");
+            return false;
+        }
+        if (TextUtils.isEmpty(etStartTime.getText())) {
+            etStartTime.setError("יש לבחור שעה");
+            return false;
+        }
+        return true;
+    }
+
+    private int getReminderMinutes() {
+        switch (spReminder.getText().toString()) {
+            case "5 דקות לפני": return 5;
+            case "10 דקות לפני": return 10;
+            case "30 דקות לפני": return 30;
+            case "שעה לפני": return 60;
+            case "יום לפני": return 1440;
+            default: return 0;
+        }
+    }
+
+    // ================= Pickers =================
+
+    private void showStartDatePicker() {
+        new DatePickerDialog(this, (v, y, m, d) -> {
+            startCalendar.set(y, m, d);
+            endCalendar.set(y, m, d);
+            etEventDate.setText(String.format("%02d/%02d/%04d", d, m + 1, y));
+            etEndDate.setText(String.format("%02d/%02d/%04d", d, m + 1, y));
+        }, startCalendar.get(Calendar.YEAR),
+                startCalendar.get(Calendar.MONTH),
+                startCalendar.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+    private void showEndDatePicker() {
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (v, y, m, d) ->
+                        etEndDate.setText(String.format("%02d/%02d/%04d", d, m + 1, y)),
+                endCalendar.get(Calendar.YEAR),
+                endCalendar.get(Calendar.MONTH),
+                endCalendar.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.getDatePicker().setMinDate(startCalendar.getTimeInMillis());
+        dialog.show();
+    }
+
+    private void showStartTimePicker() {
+        new TimePickerDialog(this, (v, h, m) ->
+                etStartTime.setText(String.format("%02d:%02d", h, m)),
+                startCalendar.get(Calendar.HOUR_OF_DAY),
+                startCalendar.get(Calendar.MINUTE),
+                true).show();
+    }
+
+    private void showEndTimePicker() {
+        new TimePickerDialog(this, (v, h, m) ->
+                etEndTime.setText(String.format("%02d:%02d", h, m)),
+                endCalendar.get(Calendar.HOUR_OF_DAY),
+                endCalendar.get(Calendar.MINUTE),
+                true).show();
+    }
+
+    private void selectColor(FrameLayout selectedFrame, String colorId) {
+        selectedColor = colorId;
+        frameIndigo.setBackgroundResource(R.drawable.bg_color_unselected);
+        frameTeal.setBackgroundResource(R.drawable.bg_color_unselected);
+        frameAmber.setBackgroundResource(R.drawable.bg_color_unselected);
+        frameRose.setBackgroundResource(R.drawable.bg_color_unselected);
+        frameSlate.setBackgroundResource(R.drawable.bg_color_unselected);
+        frameEmerald.setBackgroundResource(R.drawable.bg_color_unselected);
+        selectedFrame.setBackgroundResource(R.drawable.bg_color_selected);
     }
 
     // ===== טעינת אירוע לעריכה =====
@@ -264,173 +343,34 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                         setReminderFromMinutes(reminder.intValue());
                     }
 
+                    // משתמשים שנבחרו
                     pendingSelectedUserIds =
                             (List<String>) doc.get("assignedUserIds");
                 });
     }
 
-    // ===== Users =====
-    private void loadUsersFromFirebase() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String groupId = prefs.getString(KEY_GROUP_ID, null);
-        if (groupId == null) return;
-
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .whereEqualTo("groupId", groupId)
-                .get()
-                .addOnSuccessListener(snapshot -> {
-                    assignUsersAdapter.setUsers(snapshot.getDocuments());
-
-                    if (pendingSelectedUserIds != null) {
-                        assignUsersAdapter.setSelectedUserIds(pendingSelectedUserIds);
-                    }
-                });
-    }
-
-    // ===== Pickers =====
-    private void showStartDatePicker() {
-        new DatePickerDialog(this, (v, y, m, d) -> {
-            startCalendar.set(y, m, d);
-            endCalendar.set(y, m, d);
-            String date = String.format("%02d/%02d/%04d", d, m + 1, y);
-            etEventDate.setText(date);
-            etEndDate.setText(date);
-        }, startCalendar.get(Calendar.YEAR),
-                startCalendar.get(Calendar.MONTH),
-                startCalendar.get(Calendar.DAY_OF_MONTH)).show();
-    }
-
-    private void showEndDatePicker() {
-        DatePickerDialog dialog = new DatePickerDialog(
-                this,
-                (v, y, m, d) -> {
-                    endCalendar.set(y, m, d);
-                    etEndDate.setText(String.format("%02d/%02d/%04d", d, m + 1, y));
-                },
-                endCalendar.get(Calendar.YEAR),
-                endCalendar.get(Calendar.MONTH),
-                endCalendar.get(Calendar.DAY_OF_MONTH)
-        );
-
-        // ⛔ חסימה – לא לפני תאריך התחלה
-        dialog.getDatePicker().setMinDate(startCalendar.getTimeInMillis());
-
-        dialog.show();
-    }
-
-
-    private void showStartTimePicker() {
-        new TimePickerDialog(this,
-                (v, h, m) -> {
-                    startCalendar.set(Calendar.HOUR_OF_DAY, h);
-                    startCalendar.set(Calendar.MINUTE, m);
-
-                    etStartTime.setText(String.format("%02d:%02d", h, m));
-
-                    // אם שעת סיום ריקה → קבע שעה אחרי
-                    if (TextUtils.isEmpty(etEndTime.getText())) {
-                        Calendar temp = (Calendar) startCalendar.clone();
-                        temp.add(Calendar.HOUR_OF_DAY, 1);
-
-                        etEndTime.setText(
-                                String.format(
-                                        "%02d:%02d",
-                                        temp.get(Calendar.HOUR_OF_DAY),
-                                        temp.get(Calendar.MINUTE)
-                                )
-                        );
-                    }
-                },
-                startCalendar.get(Calendar.HOUR_OF_DAY),
-                startCalendar.get(Calendar.MINUTE),
-                true
-        ).show();
-    }
-
-
-    private void showEndTimePicker() {
-        new TimePickerDialog(this,
-                (v, h, m) -> {
-
-                    Calendar tempEnd = (Calendar) endCalendar.clone();
-                    tempEnd.set(Calendar.HOUR_OF_DAY, h);
-                    tempEnd.set(Calendar.MINUTE, m);
-
-                    // אם אותו תאריך ושעת הסיום לפני שעת ההתחלה → מעבר ליום הבא
-                    if (sameDay(startCalendar, endCalendar)
-                            && tempEnd.before(startCalendar)) {
-
-                        endCalendar.add(Calendar.DAY_OF_MONTH, 1);
-
-                        etEndDate.setText(String.format(
-                                "%02d/%02d/%04d",
-                                endCalendar.get(Calendar.DAY_OF_MONTH),
-                                endCalendar.get(Calendar.MONTH) + 1,
-                                endCalendar.get(Calendar.YEAR)
-                        ));
-                    }
-
-                    endCalendar.set(Calendar.HOUR_OF_DAY, h);
-                    endCalendar.set(Calendar.MINUTE, m);
-
-                    etEndTime.setText(String.format("%02d:%02d", h, m));
-                },
-                endCalendar.get(Calendar.HOUR_OF_DAY),
-                endCalendar.get(Calendar.MINUTE),
-                true
-        ).show();
-    }
-
-
-
-    // ===== Helpers =====
-    private boolean validateForm() {
-        if (TextUtils.isEmpty(etEventTitle.getText())) {
-            etEventTitle.setError("יש להזין כותרת");
-            return false;
-        }
-        if (TextUtils.isEmpty(etEventDate.getText())) {
-            etEventDate.setError("יש לבחור תאריך");
-            return false;
-        }
-        if (TextUtils.isEmpty(etStartTime.getText())) {
-            etStartTime.setError("יש לבחור שעה");
-            return false;
-        }
-        return true;
-    }
-
-    private int getReminderMinutes() {
-        switch (spReminder.getText().toString()) {
-            case "5 דקות לפני": return 5;
-            case "10 דקות לפני": return 10;
-            case "30 דקות לפני": return 30;
-            case "שעה לפני": return 60;
-            case "יום לפני": return 1440;
-            default: return 0;
-        }
-    }
-
+    // ===== הגדרת תזכורת לפי דקות =====
     private void setReminderFromMinutes(int minutes) {
         switch (minutes) {
-            case 5: spReminder.setText("5 דקות לפני", false); break;
-            case 10: spReminder.setText("10 דקות לפני", false); break;
-            case 30: spReminder.setText("30 דקות לפני", false); break;
-            case 60: spReminder.setText("שעה לפני", false); break;
-            case 1440: spReminder.setText("יום לפני", false); break;
-            default: spReminder.setText("ללא תזכורת", false);
+            case 5:
+                spReminder.setText("5 דקות לפני", false);
+                break;
+            case 10:
+                spReminder.setText("10 דקות לפני", false);
+                break;
+            case 30:
+                spReminder.setText("30 דקות לפני", false);
+                break;
+            case 60:
+                spReminder.setText("שעה לפני", false);
+                break;
+            case 1440:
+                spReminder.setText("יום לפני", false);
+                break;
+            default:
+                spReminder.setText("ללא תזכורת", false);
         }
     }
 
-    private void selectColor(FrameLayout selectedFrame, String colorId) {
-        selectedColor = colorId;
-        frameIndigo.setBackgroundResource(R.drawable.bg_color_unselected);
-        frameTeal.setBackgroundResource(R.drawable.bg_color_unselected);
-        frameAmber.setBackgroundResource(R.drawable.bg_color_unselected);
-        frameRose.setBackgroundResource(R.drawable.bg_color_unselected);
-        frameSlate.setBackgroundResource(R.drawable.bg_color_unselected);
-        frameEmerald.setBackgroundResource(R.drawable.bg_color_unselected);
-        selectedFrame.setBackgroundResource(R.drawable.bg_color_selected);
-    }
+
 }

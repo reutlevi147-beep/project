@@ -60,8 +60,9 @@ public class CategoriesAdapter
 
 
         holder.itemView.setOnClickListener(v -> {
-            int pos = holder.getBindingAdapterPosition();
+            int pos = holder.getAdapterPosition();
             if (pos == RecyclerView.NO_POSITION) return;
+
 
             int oldPos = selectedPosition;
             selectedPosition = pos;

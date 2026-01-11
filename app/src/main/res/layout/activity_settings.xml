@@ -1,84 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFF6FF"
-    tools:context=".Settings">
+    android:background="#F5F5F5">
 
-    <!-- כותרת -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="משתמשי הבית"
-        android:textSize="34sp"
-        android:textColor="#000000"
-        android:textStyle="bold"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="40dp" />
-
-    <FrameLayout
+    <!-- ===== HEADER ===== -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="510dp">
+        android:layout_height="160dp"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="48dp"
+        android:background="#64748B">
 
-        <!-- ⭐ רקע עליון של הכרטיס (הצורה המעוגלת) -->
-        <ImageView
-            android:id="@+id/top_background"
-            android:layout_width="330dp"
-            android:layout_height="140dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginLeft="40dp"
-            android:src="@drawable/c2"
-            android:scaleType="fitXY" />
+        <TextView
+            android:text="הגדרות"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
 
-        <!-- ⭐ ריבוע המשתמשים -->
+    <!-- CONTENT WRAPPER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- GROUP CODE -->
         <LinearLayout
-            android:id="@+id/users_box"
-            android:layout_width="330dp"
-            android:layout_height="260dp"
-            android:layout_marginTop="80dp"
-            android:layout_marginLeft="40dp"
-            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:padding="12dp"
-            android:background="#FFFFFF"
-            android:elevation="6dp">
+            android:background="@android:color/white"
+            android:layout_marginBottom="16dp">
 
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/usersRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+            <TextView
+                android:id="@+id/tvGroupCode"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:clipToPadding="false" />
+                android:text="קוד קבוצה: -----"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#333333"/>
 
+            <ImageButton
+                android:id="@+id/btnToggleGroupCode"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_view"/>
         </LinearLayout>
 
-        <!-- ⭐ פלוס מעל התיבה -->
-        <ImageButton
-            android:id="@+id/addUserSmall"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="350dp"
-            android:layout_marginLeft="160dp"
-            android:src="@drawable/plos"
-            android:elevation="20dp"
-            android:translationZ="20dp"
-
-            android:background="@drawable/round_white_button"
-            android:scaleType="fitCenter" />
-
-
-    </FrameLayout>
-
-    <!-- פוטר -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_footer"
-        android:name="com.example.myapplication.footerFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
+        <!-- USERS LIST -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerUsers"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
 
 </LinearLayout>

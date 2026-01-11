@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -14,32 +13,30 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ShoppingListActivity extends AppCompatActivity {
 
-    // 🛒 לקנות
+    // 🛒 לקנות (מקובץ)
     private RecyclerView recyclerToBuy;
     private ShoppingListAdapter toBuyAdapter;
-    private final List<ShoppingItem> toBuyItems = new ArrayList<>();
+    private final List<ShoppingListRow> toBuyRows = new ArrayList<>();
 
     // ✅ נקנו
     private RecyclerView recyclerPurchased;
     private ShoppingListAdapter purchasedAdapter;
-    private final List<ShoppingItem> purchasedItems = new ArrayList<>();
+    private final List<ShoppingListRow> purchasedRows = new ArrayList<>();
 
     // 🔢 סיכום
     private TextView tvToBuyCount, tvPurchasedCount;
-    private TextView tvToBuyLabel, tvPurchasedLabel;
-
-    // UI
     private LinearLayout completedSection;
     private TextView btnClearPurchased;
 
@@ -58,34 +55,23 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // 🔙 חזרה
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        // ===== כרטיסי סיכום =====
-        View cardToBuy = findViewById(R.id.cardToBuy);
-        View cardPurchased = findViewById(R.id.cardPurchased);
-
-        tvToBuyCount = cardToBuy.findViewById(R.id.tvCount);
-        tvToBuyLabel = cardToBuy.findViewById(R.id.tvLabel);
-
-        tvPurchasedCount = cardPurchased.findViewById(R.id.tvCount);
-        tvPurchasedLabel = cardPurchased.findViewById(R.id.tvLabel);
-
-        tvToBuyLabel.setText("לקנות");
-        tvPurchasedLabel.setText("נקנו");
-
-        // ===== Views =====
         recyclerToBuy = findViewById(R.id.recyclerToBuy);
         recyclerPurchased = findViewById(R.id.recyclerPurchased);
         completedSection = findViewById(R.id.completedSection);
         btnClearPurchased = findViewById(R.id.btnClearPurchased);
+        recyclerToBuy.setHasFixedSize(false);
+        recyclerPurchased.setHasFixedSize(false);
 
-        // ===== RecyclerViews =====
+        tvToBuyCount = findViewById(R.id.cardToBuy).findViewById(R.id.tvCount);
+        tvPurchasedCount = findViewById(R.id.cardPurchased).findViewById(R.id.tvCount);
+
         recyclerToBuy.setLayoutManager(new LinearLayoutManager(this));
         recyclerPurchased.setLayoutManager(new LinearLayoutManager(this));
 
-        toBuyAdapter = new ShoppingListAdapter(toBuyItems);
-        purchasedAdapter = new ShoppingListAdapter(purchasedItems);
+        toBuyAdapter = new ShoppingListAdapter(toBuyRows);
+        purchasedAdapter = new ShoppingListAdapter(purchasedRows);
 
         recyclerToBuy.setAdapter(toBuyAdapter);
         recyclerPurchased.setAdapter(purchasedAdapter);
@@ -96,18 +82,19 @@ public class ShoppingListActivity extends AppCompatActivity {
         attachAdapterListeners(toBuyAdapter);
         attachAdapterListeners(purchasedAdapter);
 
-        // 🗑️ מחיקת כל הנקנו
         btnClearPurchased.setOnClickListener(v -> {
-            for (ShoppingItem item : purchasedItems) {
-                db.collection(MAIN_COLLECTION)
-                        .document(DOCUMENT_ID)
-                        .collection(ITEMS_SUB_COLLECTION)
-                        .document(item.getDocumentId())
-                        .delete();
+            for (ShoppingListRow row : purchasedRows) {
+                if (row.getType() == ShoppingListRow.TYPE_ITEM) {
+                    ShoppingItem item = row.getItem();
+                    db.collection(MAIN_COLLECTION)
+                            .document(DOCUMENT_ID)
+                            .collection(ITEMS_SUB_COLLECTION)
+                            .document(item.getDocumentId())
+                            .delete();
+                }
             }
         });
 
-        // ➕ הוספת מוצר
         findViewById(R.id.fabAdd).setOnClickListener(v ->
                 startActivity(new Intent(this, Add_Shopping.class))
         );
@@ -115,7 +102,6 @@ public class ShoppingListActivity extends AppCompatActivity {
 
     private void attachAdapterListeners(ShoppingListAdapter adapter) {
 
-        // 🔢 שינוי כמות
         adapter.setOnQuantityChangeListener((item, newQuantity) ->
                 db.collection(MAIN_COLLECTION)
                         .document(DOCUMENT_ID)
@@ -124,16 +110,18 @@ public class ShoppingListActivity extends AppCompatActivity {
                         .update("quantity", newQuantity)
         );
 
-        // ✔️ סימון נקנה – ✔️ שדה נכון
-        adapter.setOnItemCheckedChange((item, checked) ->
-                db.collection(MAIN_COLLECTION)
-                        .document(DOCUMENT_ID)
-                        .collection(ITEMS_SUB_COLLECTION)
-                        .document(item.getDocumentId())
-                        .update("purchased", checked)
-        );
-    }
+        adapter.setOnItemCheckedChange((item, checked) -> {
+            Map<String, Object> updates = new java.util.HashMap<>();
+            updates.put("isPurchased", checked);
+            updates.put("purchased", checked);
 
+            db.collection(MAIN_COLLECTION)
+                    .document(DOCUMENT_ID)
+                    .collection(ITEMS_SUB_COLLECTION)
+                    .document(item.getDocumentId())
+                    .update(updates);
+        });
+    }
 
     private void disableChangeAnimations(RecyclerView rv) {
         RecyclerView.ItemAnimator animator = rv.getItemAnimator();
@@ -142,10 +130,9 @@ public class ShoppingListActivity extends AppCompatActivity {
         }
     }
 
-    // =====================
-    // 🔄 SnapshotListener
-    // =====================
+    // 🔄 Firestore Listener
     private void listenToShoppingItems() {
+
         shoppingListener = db
                 .collection(MAIN_COLLECTION)
                 .document(DOCUMENT_ID)
@@ -153,15 +140,15 @@ public class ShoppingListActivity extends AppCompatActivity {
                 .orderBy("createdAt", Query.Direction.ASCENDING)
                 .addSnapshotListener((snapshots, e) -> {
 
-                    if (e != null) {
+                    if (e != null || snapshots == null) {
                         Log.e("SHOPPING", "Listen failed", e);
                         return;
                     }
 
-                    if (snapshots == null) return;
+                    toBuyRows.clear();
+                    purchasedRows.clear();
 
-                    toBuyItems.clear();
-                    purchasedItems.clear();
+                    Map<String, List<ShoppingItem>> grouped = new LinkedHashMap<>();
 
                     for (QueryDocumentSnapshot doc : snapshots) {
                         ShoppingItem item = doc.toObject(ShoppingItem.class);
@@ -169,24 +156,55 @@ public class ShoppingListActivity extends AppCompatActivity {
 
                         item.setDocumentId(doc.getId());
 
+                        Boolean p = doc.getBoolean("isPurchased");
+                        if (p == null) p = doc.getBoolean("purchased");
+                        item.setPurchased(p != null && p);
+
                         if (item.isPurchased()) {
-                            purchasedItems.add(item);
+                            purchasedRows.add(ShoppingListRow.item(item));
                         } else {
-                            toBuyItems.add(item);
+                            grouped
+                                    .computeIfAbsent(item.getCategoryId(), k -> new ArrayList<>())
+                                    .add(item);
                         }
                     }
 
-                    // 🔢 עדכון סיכום
-                    tvToBuyCount.setText(String.valueOf(toBuyItems.size()));
-                    tvPurchasedCount.setText(String.valueOf(purchasedItems.size()));
+                    int toBuyCount = 0;
 
+                    for (Map.Entry<String, List<ShoppingItem>> entry : grouped.entrySet()) {
+                        if (entry.getValue().isEmpty()) continue;
+
+                        toBuyRows.add(
+                                ShoppingListRow.header(getCategoryName(entry.getKey()))
+                        );
+
+                        for (ShoppingItem item : entry.getValue()) {
+                            toBuyRows.add(ShoppingListRow.item(item));
+                            toBuyCount++;
+                        }
+                    }
+
+                    tvToBuyCount.setText(String.valueOf(toBuyCount));
+                    tvPurchasedCount.setText(String.valueOf(purchasedRows.size()));
                     completedSection.setVisibility(
-                            purchasedItems.isEmpty() ? View.GONE : View.VISIBLE
+                            purchasedRows.isEmpty() ? View.GONE : View.VISIBLE
                     );
 
                     toBuyAdapter.notifyDataSetChanged();
                     purchasedAdapter.notifyDataSetChanged();
                 });
+    }
+
+    private String getCategoryName(String id) {
+        if (id == null) return "אחר";
+        switch (id) {
+            case "veg": return "ירקות ופירות";
+            case "dairy": return "מוצרי חלב";
+            case "meat": return "בשרים ועופות";
+            case "dry": return "יבשים";
+            case "cleaning": return "ניקיון והיגיינה";
+            default: return "אחר";
+        }
     }
 
     @Override

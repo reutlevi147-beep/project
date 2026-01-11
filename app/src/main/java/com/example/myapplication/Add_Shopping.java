@@ -65,6 +65,8 @@ public class Add_Shopping extends AppCompatActivity {
         categories.add(new ShoppingCategory("dairy", "מוצרי חלב", "🥛"));
         categories.add(new ShoppingCategory("meat", "בשרים ועופות", "🍖"));
         categories.add(new ShoppingCategory("dry", "יבשים", "🌾"));
+        categories.add(new ShoppingCategory("cleaning", "ניקיון והיגיינה", "🧼"));
+        categories.add(new ShoppingCategory("other", "אחר", "🛒"));
 
         categoriesAdapter = new CategoriesAdapter(categories, category ->
                 selectedCategoryId = category.getId()
@@ -83,11 +85,29 @@ public class Add_Shopping extends AppCompatActivity {
     // 💾 Save to Firestore
     // =====================
     private void saveItem() {
+
         String name = etItemName.getText().toString().trim();
-        int quantity = Integer.parseInt(etQuantity.getText().toString().trim());
+        String qtyStr = etQuantity.getText().toString().trim();
 
         if (name.isEmpty()) {
             etItemName.setError("חובה להזין שם מוצר");
+            return;
+        }
+
+        int quantity;
+        if (qtyStr.isEmpty()) {
+            quantity = 1; // ברירת מחדל
+        } else {
+            try {
+                quantity = Integer.parseInt(qtyStr);
+            } catch (NumberFormatException e) {
+                etQuantity.setError("כמות לא תקינה");
+                return;
+            }
+        }
+
+        if (quantity <= 0) {
+            etQuantity.setError("הכמות חייבת להיות לפחות 1");
             return;
         }
 
@@ -111,8 +131,8 @@ public class Add_Shopping extends AppCompatActivity {
                         showDuplicateDialog(db, doc.getId(), existingQty, quantity);
                     }
                 });
-
     }
+
 
     private void showDuplicateDialog(FirebaseFirestore db,
                                      String docId,
@@ -149,6 +169,9 @@ public class Add_Shopping extends AppCompatActivity {
         item.put("isPurchased", false);
         item.put("createdAt", FieldValue.serverTimestamp());
 
+
+        item.put("categoryId", selectedCategoryId);
+
         db.collection("shopping_lists")
                 .document("defaultList")
                 .collection("items")
@@ -158,6 +181,10 @@ public class Add_Shopping extends AppCompatActivity {
                     finish();
                 });
     }
+
+
+
+
 
 
 

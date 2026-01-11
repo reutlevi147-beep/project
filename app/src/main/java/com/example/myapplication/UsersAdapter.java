@@ -1,106 +1,122 @@
 package com.example.myapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.firestore.FirebaseFirestore;
+import androidx.core.content.ContextCompat;
 
 import java.util.List;
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
+public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> {
 
-    private Context context;
-    private List<AppUser> userList;
+    private final Context context;
+    private final List<User> users;
 
-    // ✔ מאפשר להסתיר את אייקון המחיקה בעמוד ההגדרות
-    private boolean hideDeleteIcon = false;
-
-    public void setHideDeleteIcon(boolean hide) {
-        this.hideDeleteIcon = hide;
-    }
-
-    // 🎨 צבעים שונים לאייקון המשתמש
-    private int[] userColors = {
-            0xFF4AC7D1, // טורקיז בהיר
-            0xFF3BA0C3, // טורקיז־כחול
-            0xFF2E79B7, // כחול בינוני
-            0xFF2A5EA8, // כחול כהה
-            0xFF455A8A  // כחול-סגול
-    };
-
-    public UsersAdapter(Context context, List<AppUser> userList) {
+    public UsersAdapter(Context context, List<User> users) {
         this.context = context;
-        this.userList = userList;
+        this.users = users;
     }
 
-    public static class UserViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView userIcon, deleteIcon;
-        TextView userNameText;
+        TextView tvName, tvRole, tvPhone, tvEmail;
+        ImageView imgAvatar;
+        Button btnEditProfile;
 
-        public UserViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            userIcon = itemView.findViewById(R.id.userIcon);
-            deleteIcon = itemView.findViewById(R.id.deleteIcon);
-            userNameText = itemView.findViewById(R.id.userNameText);
+            tvName = itemView.findViewById(R.id.tvName);
+            tvRole = itemView.findViewById(R.id.tvRole);
+            tvPhone = itemView.findViewById(R.id.tvPhone);
+            tvEmail = itemView.findViewById(R.id.tvEmail);
+            imgAvatar = itemView.findViewById(R.id.imgAvatar);
+            btnEditProfile = itemView.findViewById(R.id.btnEditProfile);
         }
     }
 
     @NonNull
     @Override
-    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.user_item, parent, false);
-        return new UserViewHolder(v);
+    public ViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType
+    ) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_user_card, parent, false);
+
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        AppUser currentUser = userList.get(position);
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        // ✔ מציג את שם המשתמש שהוזן מתוך Firestore
-        holder.userNameText.setText(currentUser.getName());
+        User user = users.get(position);
 
-        // 🎨 צבע אייקון מתחלף
-        int colorIndex = position % userColors.length;
-        holder.userIcon.setColorFilter(userColors[colorIndex]);
+        holder.tvName.setText(user.getName());
+        holder.tvRole.setText(user.getRole());
+        holder.tvPhone.setText(user.getPhone());
+        holder.tvEmail.setText(user.getEmail());
 
-        // ✔ אם hideDeleteIcon = true → מסתירים את הפח
-        if (hideDeleteIcon) {
-            holder.deleteIcon.setVisibility(View.GONE);
-        } else {
-            holder.deleteIcon.setVisibility(View.VISIBLE);
+        // ✅ צבע אווטאר מתוך Firestore
+        applyAvatarColor(holder.imgAvatar, user.getAvatarColor());
 
-            // 🗑️ מחיקה בלחיצה על הפח (קיים כמו שהיה)
-            holder.deleteIcon.setOnClickListener(v -> {
-
-                String docId = currentUser.getDocumentId();
-                if (docId == null || docId.isEmpty()) return;
-
-                FirebaseFirestore.getInstance()
-                        .collection("users")
-                        .document(docId)
-                        .delete()
-                        .addOnSuccessListener(aVoid -> {
-
-                            userList.remove(position);
-                            notifyItemRemoved(position);
-                            notifyItemRangeChanged(position, userList.size());
-                        });
-            });
-        }
+        holder.btnEditProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(context, EditUserActivity.class);
+            intent.putExtra("userId", user.getId());
+            context.startActivity(intent);
+        });
     }
+
+
+    private void applyAvatarColor(ImageView imgAvatar, String color) {
+
+        // אייקון תמיד לבן
+        imgAvatar.setImageResource(R.drawable.ic_user);
+        imgAvatar.setColorFilter(
+                ContextCompat.getColor(imgAvatar.getContext(), android.R.color.white)
+        );
+
+        int bgColor = R.color.avatar_beige; // ברירת מחדל עדינה
+
+        if (color != null) {
+            switch (color) {
+                case "blue":
+                    bgColor = R.color.avatar_blue;
+                    break;
+                case "purple":
+                    bgColor = R.color.avatar_purple;
+                    break;
+                case "red":
+                    bgColor = R.color.avatar_red;
+                    break;
+                case "pink":
+                    bgColor = R.color.avatar_pink;
+                    break;
+                case "teal":
+                    bgColor = R.color.avatar_teal;
+                    break;
+            }
+        }
+
+        imgAvatar.setBackgroundTintList(
+                ContextCompat.getColorStateList(
+                        imgAvatar.getContext(), bgColor
+                )
+        );
+    }
+
 
     @Override
     public int getItemCount() {
-        return userList.size();
+        return users.size();
     }
 }

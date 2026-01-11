@@ -5,12 +5,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.CalendarView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,26 +26,24 @@ import java.util.Locale;
 
 public class CalendarDayActivity extends AppCompatActivity {
 
-    // SharedPreferences
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_GROUP_ID = "group_id";
 
     // UI
-    private ImageButton btnBack;
-    private ImageButton btnPrevDay;
-    private ImageButton btnNextDay;
-    private RecyclerView recyclerEvents;
+    private ImageButton btnBack, btnPrevMonth, btnNextMonth;
+    private TextView tvMonthTitle, tvEmptyState;
+    private RecyclerView recyclerMonth, recyclerEvents;
     private FloatingActionButton fabAdd;
-    private TextView tvEmptyState;
-    private TextView tvSelectedDate;
-    private TextView tvCalendarName; // 🆕 שם לוח שנה
 
-    private CalendarView calendarView;
-
-    // Data
-    private final List<DocumentSnapshot> events = new ArrayList<>();
-    private CalendarEventsAdapter adapter;
+    // Calendar
+    private final List<Integer> monthDays = new ArrayList<>();
+    private final List<Integer> daysWithEvents = new ArrayList<>();
+    private CalendarMonthAdapter monthAdapter;
     private Calendar selectedCalendar;
+
+    // Events
+    private final List<DocumentSnapshot> events = new ArrayList<>();
+    private CalendarEventsAdapter eventsAdapter;
 
     private final SimpleDateFormat dbFormat =
             new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -55,198 +53,127 @@ public class CalendarDayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar_day);
 
-        // ----- Bind Views -----
         btnBack = findViewById(R.id.btnBack);
-        btnPrevDay = findViewById(R.id.btnPrevDay);
-        btnNextDay = findViewById(R.id.btnNextDay);
+        btnPrevMonth = findViewById(R.id.btnPrevMonth);
+        btnNextMonth = findViewById(R.id.btnNextMonth);
+        tvMonthTitle = findViewById(R.id.tvMonthTitle);
+        tvEmptyState = findViewById(R.id.tvEmptyState);
+        recyclerMonth = findViewById(R.id.recyclerMonth);
         recyclerEvents = findViewById(R.id.recyclerEvents);
         fabAdd = findViewById(R.id.fabAdd);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
-        tvSelectedDate = findViewById(R.id.tvSelectedDate);
-        calendarView = findViewById(R.id.calendarView);
-
-        // ✅ היה חסר
-        tvCalendarName = findViewById(R.id.tvCalendarName);
-
-        recyclerEvents.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new CalendarEventsAdapter(events);
-        recyclerEvents.setAdapter(adapter);
 
         selectedCalendar = Calendar.getInstance();
 
-        // ✅ סנכרון CalendarView ליום הנוכחי
-        calendarView.setDate(selectedCalendar.getTimeInMillis(), false, true);
-
-        // ----- Back -----
         btnBack.setOnClickListener(v -> finish());
 
-        // ----- Add Event -----
+        btnPrevMonth.setOnClickListener(v -> {
+            selectedCalendar.add(Calendar.MONTH, -1);
+            selectedCalendar.set(Calendar.DAY_OF_MONTH, 1);
+
+            updateMonthTitle();
+            buildMonthCalendar();
+            monthAdapter.setSelectedDay(1);
+            loadEventsForSelectedDate();
+        });
+
+
+        btnNextMonth.setOnClickListener(v -> {
+            selectedCalendar.add(Calendar.MONTH, 1);
+            selectedCalendar.set(Calendar.DAY_OF_MONTH, 1);
+            updateMonthTitle();
+            buildMonthCalendar();
+            loadEventsForSelectedDate();
+        });
+
+        recyclerMonth.setLayoutManager(new GridLayoutManager(this, 7));
+        monthAdapter = new CalendarMonthAdapter(
+                monthDays,
+                daysWithEvents,
+                selectedCalendar.get(Calendar.DAY_OF_MONTH),
+                day -> {
+                    selectedCalendar.set(Calendar.DAY_OF_MONTH, day);
+                    loadEventsForSelectedDate();
+                }
+        );
+        recyclerMonth.setAdapter(monthAdapter);
+
+        recyclerEvents.setLayoutManager(new LinearLayoutManager(this));
+        eventsAdapter = new CalendarEventsAdapter(events);
+        recyclerEvents.setAdapter(eventsAdapter);
+
         fabAdd.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddCalendarEventActivity.class);
             intent.putExtra("date", dbFormat.format(selectedCalendar.getTime()));
-            startActivityForResult(intent, 1001);
+            startActivity(intent);
         });
 
-        // ✅ לחיצה על יום בלוח → עדכון מיידי למטה
-        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
-            selectedCalendar.set(year, month, dayOfMonth);
-            updateSelectedDateText();
-            loadEventsForSelectedDate();
-        });
-
-        // ----- Prev / Next Day -----
-        btnPrevDay.setOnClickListener(v -> {
-            selectedCalendar.add(Calendar.DAY_OF_MONTH, -1);
-            calendarView.setDate(selectedCalendar.getTimeInMillis(), false, true);
-            updateSelectedDateText();
-            loadEventsForSelectedDate();
-        });
-
-        btnNextDay.setOnClickListener(v -> {
-            selectedCalendar.add(Calendar.DAY_OF_MONTH, 1);
-            calendarView.setDate(selectedCalendar.getTimeInMillis(), false, true);
-            updateSelectedDateText();
-            loadEventsForSelectedDate();
-        });
-
-        // 🆕 שם לוח
-        loadCalendarName();
-
-        // ----- Initial load -----
-        updateSelectedDateText();
+        updateMonthTitle();
+        buildMonthCalendar();
         loadEventsForSelectedDate();
     }
 
-    private void loadCalendarName() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String groupId = prefs.getString(KEY_GROUP_ID, null);
-
-        if (groupId == null) {
-            tvCalendarName.setText("יומן");
-            return;
-        }
-
-        FirebaseFirestore.getInstance()
-                .collection("calendars")
-                .document(groupId)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        String name = doc.getString("name");
-                        tvCalendarName.setText(
-                                !TextUtils.isEmpty(name) ? name : "יומן"
-                        );
-                    }
-                });
+    private void updateMonthTitle() {
+        SimpleDateFormat monthFormat =
+                new SimpleDateFormat("MMMM yyyy", new Locale("he"));
+        tvMonthTitle.setText(monthFormat.format(selectedCalendar.getTime()));
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private void buildMonthCalendar() {
+        monthDays.clear();
 
-        if (requestCode == 1001 && resultCode == RESULT_OK) {
-            loadEventsForSelectedDate();
-        }
+        Calendar cal = (Calendar) selectedCalendar.clone();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+
+        int firstDay = cal.get(Calendar.DAY_OF_WEEK) - 1;
+        int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        for (int i = 0; i < firstDay; i++) monthDays.add(0);
+        for (int d = 1; d <= daysInMonth; d++) monthDays.add(d);
+
+        monthAdapter.notifyDataSetChanged();
     }
 
-    // ✅ רענון לפי היום שנבחר
     private void loadEventsForSelectedDate() {
-        loadEventsForDate(dbFormat.format(selectedCalendar.getTime()));
-    }
-
-    // ----- Firestore -----
-    private void loadEventsForDate(String dateKey) {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences prefs =
+                getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
 
-        if (groupId == null) {
-            events.clear();
-            adapter.notifyDataSetChanged();
-            tvEmptyState.setVisibility(View.VISIBLE);
-            recyclerEvents.setVisibility(View.GONE);
-            return;
-        }
+        if (groupId == null) return;
 
         FirebaseFirestore.getInstance()
                 .collection("calendar_events")
                 .whereEqualTo("groupId", groupId)
-                .addSnapshotListener(this, (querySnapshot, error) -> {
+                .addSnapshotListener(this, (snapshot, e) -> {
 
-                    if (error != null || querySnapshot == null) return;
+                    if (snapshot == null) return;
 
                     events.clear();
+                    daysWithEvents.clear();
 
-                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        if (shouldEventAppearOnDate(doc, dateKey)) {
-                            events.add(doc);
-                        }
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String dateStr = doc.getString("date");
+                        if (TextUtils.isEmpty(dateStr)) continue;
+
+                        try {
+                            Calendar c = Calendar.getInstance();
+                            c.setTime(dbFormat.parse(dateStr));
+
+                            if (c.get(Calendar.YEAR) == selectedCalendar.get(Calendar.YEAR)
+                                    && c.get(Calendar.MONTH) == selectedCalendar.get(Calendar.MONTH)) {
+                                daysWithEvents.add(c.get(Calendar.DAY_OF_MONTH));
+                            }
+
+                            if (sameDay(c, selectedCalendar)) {
+                                events.add(doc);
+                            }
+
+                        } catch (Exception ignored) {}
                     }
 
-                    adapter.notifyDataSetChanged();
-
-                    if (events.isEmpty()) {
-                        tvEmptyState.setVisibility(View.VISIBLE);
-                        recyclerEvents.setVisibility(View.GONE);
-                    } else {
-                        tvEmptyState.setVisibility(View.GONE);
-                        recyclerEvents.setVisibility(View.VISIBLE);
-                    }
+                    eventsAdapter.notifyDataSetChanged();
+                    monthAdapter.notifyDataSetChanged();
+                    tvEmptyState.setVisibility(events.isEmpty() ? View.VISIBLE : View.GONE);
                 });
-    }
-
-    // ===== שאר הקוד שלך – לא נגעתי =====
-
-    private boolean shouldEventAppearOnDate(DocumentSnapshot doc, String selectedDateStr) {
-        // אותו קוד בדיוק
-        // (לא שיניתי שורה)
-        try {
-            String startDateStr = doc.getString("date");
-            if (TextUtils.isEmpty(startDateStr)) return false;
-
-            String endDateStr = doc.getString("endDate");
-            String repeatType = doc.getString("repeatType");
-            if (TextUtils.isEmpty(repeatType)) repeatType = "once";
-
-            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-
-            Calendar startDate = Calendar.getInstance();
-            startDate.setTime(format.parse(startDateStr));
-
-            Calendar selectedDate = Calendar.getInstance();
-            selectedDate.setTime(format.parse(selectedDateStr));
-
-            Calendar endDate = (Calendar) startDate.clone();
-            if (!TextUtils.isEmpty(endDateStr)) {
-                endDate.setTime(format.parse(endDateStr));
-            }
-
-            boolean isMultiDay = !sameDay(startDate, endDate);
-            if (isMultiDay) {
-                return !selectedDate.before(startDate) && !selectedDate.after(endDate);
-            }
-
-            if (selectedDate.before(startDate)) return false;
-
-            switch (repeatType) {
-                case "weekly":
-                    return startDate.get(Calendar.DAY_OF_WEEK) == selectedDate.get(Calendar.DAY_OF_WEEK);
-                case "monthly":
-                    return startDate.get(Calendar.DAY_OF_MONTH) == selectedDate.get(Calendar.DAY_OF_MONTH);
-                case "yearly":
-                    return startDate.get(Calendar.DAY_OF_MONTH) == selectedDate.get(Calendar.DAY_OF_MONTH)
-                            && startDate.get(Calendar.MONTH) == selectedDate.get(Calendar.MONTH);
-                default:
-                    return sameDay(startDate, selectedDate);
-            }
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private void updateSelectedDateText() {
-        SimpleDateFormat displayFormat =
-                new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        tvSelectedDate.setText(displayFormat.format(selectedCalendar.getTime()));
     }
 
     private boolean sameDay(Calendar c1, Calendar c2) {

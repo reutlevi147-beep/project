@@ -16,11 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.myapplication.AssignUsersAdapter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class Add_Tasks extends AppCompatActivity {
 
@@ -37,7 +39,7 @@ public class Add_Tasks extends AppCompatActivity {
 
     // 👥 Users
     private RecyclerView recyclerUsers;
-    private UsersAssignAdapter usersAdapter;
+    private AssignUsersAdapter usersAdapter;
     private final ArrayList<AppUser> usersList = new ArrayList<>();
 
     // נשמור כאן את מי שנבחר (בהמשך)
@@ -67,7 +69,7 @@ public class Add_Tasks extends AppCompatActivity {
         // 👥 RecyclerView users
         recyclerUsers = findViewById(R.id.recyclerUsers);
         recyclerUsers.setLayoutManager(new GridLayoutManager(this, 2));
-        usersAdapter = new UsersAssignAdapter(usersList);
+        usersAdapter = new AssignUsersAdapter();
         recyclerUsers.setAdapter(usersAdapter);
 
         loadUsersFromFirestore();
@@ -123,6 +125,10 @@ public class Add_Tasks extends AppCompatActivity {
             return;
         }
 
+        // ⭐ קבלת המשתמשים שנבחרו מה-Adapter
+        selectedUserIds.clear();
+        selectedUserIds.addAll(usersAdapter.getSelectedUserIds());
+
         Map<String, Object> task = new HashMap<>();
         task.put("title", title);
         task.put("priority", selectedPriority);
@@ -142,8 +148,12 @@ public class Add_Tasks extends AppCompatActivity {
                 .addOnSuccessListener(doc -> {
                     Toast.makeText(this, "המשימה נוספה", Toast.LENGTH_SHORT).show();
                     finish();
-                });
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "שגיאה בהוספת משימה", Toast.LENGTH_SHORT).show()
+                );
     }
+
 
     // ================= PRIORITY =================
 

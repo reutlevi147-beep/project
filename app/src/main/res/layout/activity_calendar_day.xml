@@ -1,133 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:layoutDirection="rtl"
     android:background="#F9FAFB">
 
-    <!-- ===== HEADER ===== -->
+    <!-- ===== MAIN COLUMN ===== -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:background="@drawable/bg_gradient_calendar">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_arrow_right"
-            app:tint="@android:color/white" />
+        <!-- ===== HEADER ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:background="@drawable/bg_gradient_calendar">
 
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_arrow_right"
+                app:tint="@android:color/white" />
+
+
+            <TextView
+                android:id="@+id/tvCalendarName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="יומן"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="6dp"/>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="תכנון והתארגנות"
+                android:textSize="14sp"
+                android:textColor="#FFF7ED" />
+        </LinearLayout>
+
+        <!-- ===== MONTH HEADER ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp">
+
+            <ImageButton
+                android:id="@+id/btnPrevMonth"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_chevron_right" />
+
+            <TextView
+                android:id="@+id/tvMonthTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ינואר 2026"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:gravity="center" />
+
+            <ImageButton
+                android:id="@+id/btnNextMonth"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_chevron_left" />
+        </LinearLayout>
+
+
+
+        <!-- ===== MONTH CALENDAR (CRITICAL FIX) ===== -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:layout_marginTop="8dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerMonth"
+                android:layout_width="match_parent"
+                android:layout_height="260dp"
+                android:padding="8dp"
+                android:nestedScrollingEnabled="false"/>
+
+        </FrameLayout>
+
+
+
+        <!-- ===== EVENTS TITLE ===== -->
         <TextView
-           android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:text="היומן שלי"
-            android:textSize="28sp"
+            android:layout_height="wrap_content"
+            android:text="אירועים היום"
             android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="12dp" />
+            android:textSize="18sp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="8dp" />
 
-        <TextView
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="תכנון והתארגנות"
-            android:textSize="14sp"
-            android:textColor="#FFF7ED" />
-    </LinearLayout>
-
-    <!-- ===== CALENDAR ===== -->
-    <TextView
-        android:id="@+id/tvCalendarName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="יומן"
-        android:textSize="14sp"
-        android:textColor="#FFF7ED"
-        android:layout_marginTop="4dp"/>
-
-
-    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-
-
-    <!-- ===== DAY SELECTOR ===== -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="12dp"
-        android:background="@drawable/bg_card"
-        android:layout_margin="16dp">
-
-        <ImageButton
-            android:id="@+id/btnPrevDay"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_chevron_right"/>
-
-        <TextView
-            android:id="@+id/tvSelectedDate"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+        <!-- ===== EVENTS LIST ===== -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerEvents"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="09/01/2026"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:gravity="center"/>
+            android:paddingHorizontal="16dp"
+            android:layout_marginBottom="80dp" />
 
-        <ImageButton
-            android:id="@+id/btnNextDay"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_chevron_left"/>
+        <TextView
+            android:id="@+id/tvEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="אין אירועים היום"
+            android:textSize="16sp"
+            android:textColor="#6B7280"
+            android:gravity="center"
+            android:padding="24dp"
+            android:layout_marginTop="-200dp"
+            android:visibility="gone" />
+
     </LinearLayout>
 
-    <!-- ===== CONTENT ===== -->
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="אירועים היום"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerEvents"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingHorizontal="16dp"/>
-
-    <TextView
-        android:id="@+id/tvEmptyState"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="אין אירועים היום 🌿"
-        android:textSize="16sp"
-        android:textColor="#6B7280"
-        android:gravity="center"
-        android:padding="24dp"
-        android:visibility="gone"/>
-
-    <!-- FAB -->
+    <!-- ===== FAB ===== -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="24dp"
         app:backgroundTint="#F59E0B"
-        android:src="@drawable/ic_plus"/>
-</LinearLayout>
+        android:src="@drawable/ic_plus" />
+
+</FrameLayout>

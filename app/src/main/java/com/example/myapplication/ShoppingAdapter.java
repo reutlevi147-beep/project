@@ -39,11 +39,29 @@ public class ShoppingAdapter extends RecyclerView.Adapter<ShoppingAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ShoppingAdapter.ViewHolder holder, int position) {
         ShoppingItem item = items.get(position);
-        holder.name.setText(item.getName());
+        String icon = getCategoryIcon(item.getCategoryId());
+        holder.name.setText(icon + "  " + item.getName());
+
     }
 
     @Override
     public int getItemCount() {
         return items.size();
     }
+
+
+    private String getCategoryIcon(String categoryId) {
+        if (categoryId == null) return "🛒";
+
+        switch (categoryId) {
+            case "veg": return "🥬";
+            case "dairy": return "🥛";
+            case "meat": return "🍖";
+            case "dry": return "🌾";
+            case "cleaning": return "🧼";
+            case "other": return "🛒";
+            default: return "🛒";
+        }
+    }
+
 }

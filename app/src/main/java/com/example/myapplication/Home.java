@@ -13,6 +13,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.myapplication.SettingsActivity;
 
 public class Home extends AppCompatActivity {
 
@@ -64,12 +65,7 @@ public class Home extends AppCompatActivity {
             tvHello.setText("שלום");
         }
 
-        // =====================
-        // FAB
-        // =====================
-        findViewById(R.id.fabAdd).setOnClickListener(v -> {
-            // TODO: פעולה להוספה
-        });
+
 
         // =====================
         // Quick actions
@@ -84,6 +80,9 @@ public class Home extends AppCompatActivity {
 
         findViewById(R.id.quickTasks).setOnClickListener(v ->
                 startActivity(new Intent(Home.this, TasksActivity.class))
+        );
+        findViewById(R.id.quickSettings).setOnClickListener(v ->
+                startActivity(new Intent(Home.this, SettingsActivity.class))
         );
 
 
@@ -104,7 +103,7 @@ public class Home extends AppCompatActivity {
             }
 
             if (id == R.id.nav_settings) {
-                startActivity(new Intent(this, Settings.class));
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             }
 

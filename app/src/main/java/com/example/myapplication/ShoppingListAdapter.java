@@ -14,136 +14,163 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class ShoppingListAdapter
-        extends RecyclerView.Adapter<ShoppingListAdapter.ViewHolder> {
+        extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<ShoppingItem> items;
-    private boolean isBinding;
+    private final List<ShoppingListRow> rows;
 
-    // ✔️ סימון נקנה
-    public interface OnItemCheckedChange {
-        void onCheckedChanged(ShoppingItem item, boolean checked);
-    }
-
-    // 🔢 שינוי כמות
+    // ===== Listeners =====
     public interface OnQuantityChangeListener {
         void onQuantityChanged(ShoppingItem item, int newQuantity);
     }
 
-    private OnItemCheckedChange checkedListener;
-    private OnQuantityChangeListener quantityListener;
-
-    public void setOnItemCheckedChange(OnItemCheckedChange listener) {
-        this.checkedListener = listener;
+    public interface OnItemCheckedChangeListener {
+        void onItemCheckedChanged(ShoppingItem item, boolean checked);
     }
 
-    public void setOnQuantityChangeListener(OnQuantityChangeListener listener) {
-        this.quantityListener = listener;
+    private OnQuantityChangeListener quantityChangeListener;
+    private OnItemCheckedChangeListener checkedChangeListener;
+
+    public void setOnQuantityChangeListener(OnQuantityChangeListener l) {
+        quantityChangeListener = l;
     }
 
-    public ShoppingListAdapter(List<ShoppingItem> items) {
-        this.items = items;
+    public void setOnItemCheckedChange(OnItemCheckedChangeListener l) {
+        checkedChangeListener = l;
+    }
+
+    public ShoppingListAdapter(List<ShoppingListRow> rows) {
+        this.rows = rows;
+    }
+
+    // ===== ViewHolders =====
+    static class HeaderVH extends RecyclerView.ViewHolder {
+        TextView title;
+        HeaderVH(View v) {
+            super(v);
+            title = v.findViewById(R.id.tvHeaderTitle);
+        }
+    }
+
+    static class ItemVH extends RecyclerView.ViewHolder {
+        TextView tvName, tvCategoryIcon, tvQuantity;
+        ImageButton btnPlus, btnMinus;
+        ImageView imgCheck;
+
+        ItemVH(View v) {
+            super(v);
+            tvName = v.findViewById(R.id.tvItemName);
+            tvCategoryIcon = v.findViewById(R.id.tvCategoryIcon);
+            tvQuantity = v.findViewById(R.id.tvQuantity);
+            btnPlus = v.findViewById(R.id.btnPlus);
+            btnMinus = v.findViewById(R.id.btnMinus);
+            imgCheck = v.findViewById(R.id.imgCheck);
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return rows.get(position).getType();
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent, int viewType) {
+
+        if (viewType == ShoppingListRow.TYPE_HEADER) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_category_header, parent, false);
+            return new HeaderVH(v);
+        }
+
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.shopping_item, parent, false);
-        return new ViewHolder(v);
+        return new ItemVH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ShoppingItem item = items.get(position);
+    public void onBindViewHolder(
+            @NonNull RecyclerView.ViewHolder holder, int position) {
 
-        isBinding = true;
+        ShoppingListRow row = rows.get(position);
 
-        // ===== טקסטים =====
-        holder.tvItemName.setText(item.getName());
-        holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
-        holder.tvCategoryIcon.setText(getIconForCategory(item.getCategoryId()));
-
-        // ===== סימון נקנה =====
-        updateCheckIcon(holder.imgCheck, item.isPurchased());
-
-        if (item.isPurchased()) {
-            holder.tvItemName.setPaintFlags(
-                    holder.tvItemName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
-            );
-            holder.tvItemName.setAlpha(0.5f);
-        } else {
-            holder.tvItemName.setPaintFlags(
-                    holder.tvItemName.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG)
-            );
-            holder.tvItemName.setAlpha(1f);
+        if (row.getType() == ShoppingListRow.TYPE_HEADER) {
+            ((HeaderVH) holder).title.setText(row.getHeaderTitle());
+            return;
         }
 
-        isBinding = false;
+        ShoppingItem item = row.getItem();
+        ItemVH h = (ItemVH) holder;
 
-        // ===== ✔️ שינוי מצב נקנה =====
-        holder.imgCheck.setOnClickListener(v -> {
-            if (isBinding || checkedListener == null) return;
+        h.tvName.setText(item.getName());
+        h.tvCategoryIcon.setText(getCategoryIcon(item.getCategoryId()));
+        h.tvQuantity.setText(String.valueOf(item.getQuantity()));
 
-            checkedListener.onCheckedChanged(item, !item.isPurchased());
+        h.imgCheck.setImageResource(
+                item.isPurchased()
+                        ? R.drawable.ic_check_circle
+                        : R.drawable.ic_circle_empty
+        );
+
+        h.imgCheck.setOnClickListener(v -> {
+            boolean newState = !item.isPurchased();
+            item.setPurchased(newState);
+
+            h.imgCheck.setImageResource(
+                    newState
+                            ? R.drawable.ic_check_circle
+                            : R.drawable.ic_circle_empty
+            );
+
+            if (checkedChangeListener != null) {
+                checkedChangeListener.onItemCheckedChanged(item, newState);
+            }
         });
 
-        // ===== ➕ הגדלת כמות =====
-        holder.btnPlus.setOnClickListener(v -> {
-            if (quantityListener == null) return;
-
-            int newQty = item.getQuantity() + 1;
-            quantityListener.onQuantityChanged(item, newQty);
+        h.btnPlus.setOnClickListener(v -> {
+            int q = item.getQuantity() + 1;
+            item.setQuantity(q);
+            h.tvQuantity.setText(String.valueOf(q));
+            if (quantityChangeListener != null) {
+                quantityChangeListener.onQuantityChanged(item, q);
+            }
         });
 
-        // ===== ➖ הקטנת כמות =====
-        holder.btnMinus.setOnClickListener(v -> {
-            if (quantityListener == null) return;
+        h.btnMinus.setOnClickListener(v -> {
             if (item.getQuantity() <= 1) return;
-
-            int newQty = item.getQuantity() - 1;
-            quantityListener.onQuantityChanged(item, newQty);
+            int q = item.getQuantity() - 1;
+            item.setQuantity(q);
+            h.tvQuantity.setText(String.valueOf(q));
+            if (quantityChangeListener != null) {
+                quantityChangeListener.onQuantityChanged(item, q);
+            }
         });
+
+        if (item.isPurchased()) {
+            h.tvName.setPaintFlags(
+                    h.tvName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            h.tvName.setAlpha(0.5f);
+        } else {
+            h.tvName.setPaintFlags(
+                    h.tvName.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+            h.tvName.setAlpha(1f);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return rows.size();
     }
 
-    // ===== helpers =====
-    private void updateCheckIcon(ImageView img, boolean purchased) {
-        img.setImageResource(
-                purchased
-                        ? R.drawable.ic_check_circle     // ✔️ ירוק
-                        : R.drawable.ic_circle_empty     // ⭕ ריק
-        );
-    }
-
-    private String getIconForCategory(String categoryId) {
-        if (categoryId == null) return "🛒";
-        switch (categoryId) {
+    private String getCategoryIcon(String id) {
+        if (id == null) return "🛒";
+        switch (id) {
             case "veg": return "🥬";
             case "dairy": return "🥛";
             case "meat": return "🍖";
             case "dry": return "🌾";
+            case "cleaning": return "🧼";
             default: return "🛒";
-        }
-    }
-
-    // ===== ViewHolder =====
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvCategoryIcon, tvItemName, tvQuantity;
-        ImageView imgCheck;
-        ImageButton btnPlus, btnMinus;
-
-        ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvCategoryIcon = itemView.findViewById(R.id.tvCategoryIcon);
-            tvItemName = itemView.findViewById(R.id.tvItemName);
-            tvQuantity = itemView.findViewById(R.id.tvQuantity);
-            imgCheck = itemView.findViewById(R.id.imgCheck);
-            btnPlus = itemView.findViewById(R.id.btnPlus);
-            btnMinus = itemView.findViewById(R.id.btnMinus);
         }
     }
 }
