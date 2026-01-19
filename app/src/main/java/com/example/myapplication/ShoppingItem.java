@@ -1,78 +1,62 @@
 package com.example.myapplication;
 
 import com.google.firebase.firestore.Exclude;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.Exclude;
 
 public class ShoppingItem {
 
     @Exclude
-    private String documentId;
+    private String documentId;   // לא נשמר ב-Firestore
 
     private String name;
+    private String categoryId;
     private int quantity;
-    private boolean isPurchased;
-    private String categoryId;        // 👈 חדש
-    private Timestamp createdAt;      // 👈 חדש
 
-    // חובה ל-Firestore
+    // ✅ לשמור את השדה בשם "purchased" או להשאיר isPurchased, אבל עם setter נכון
+    private boolean isPurchased;
+
     public ShoppingItem() {}
 
-    public ShoppingItem(String name, int quantity, String categoryId) {
-        this.name = name;
-        this.quantity = quantity;
-        this.categoryId = categoryId;
-        this.isPurchased = false;
-        this.createdAt = Timestamp.now();
-    }
-
-    // ===== getters / setters =====
-
+    // ===== documentId =====
+    @Exclude
     public String getDocumentId() {
         return documentId;
-    }
-
-    public void setDocumentId(String documentId) {
-        this.documentId = documentId;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
+
+
+    @Exclude
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
+    }
+
+    // ===== fields =====
+    public String getName() { return name; }
+    public String getCategoryId() { return categoryId; }
+    public int getQuantity() { return quantity; }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
+    // ✅ חשוב: Firestore יזהה "isPurchased" רק אם יש setIsPurchased
     public boolean isPurchased() {
         return isPurchased;
     }
 
+    public void setIsPurchased(boolean isPurchased) {
+        this.isPurchased = isPurchased;
+    }
+
+    // ✅ אם את משתמשת בקוד שלך ב-setPurchased, נשאיר תאימות
+    @Exclude
     public void setPurchased(boolean purchased) {
-        isPurchased = purchased;
-    }
-
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+        this.isPurchased = purchased;
     }
 }

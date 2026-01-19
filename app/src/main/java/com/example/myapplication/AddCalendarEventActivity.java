@@ -35,6 +35,8 @@ public class AddCalendarEventActivity extends AppCompatActivity {
 
     private FrameLayout frameIndigo, frameTeal, frameAmber,
             frameRose, frameSlate, frameEmerald;
+    private boolean endTimeManuallyChanged = false;
+    private static final int DEFAULT_EVENT_DURATION_MINUTES = 60;
 
     private String selectedColor = "indigo";
     private String editingEventId = null;
@@ -53,8 +55,6 @@ public class AddCalendarEventActivity extends AppCompatActivity {
 
     private final List<String> selectedUserIds = new ArrayList<>();
     private List<String> pendingSelectedUserIds = null;
-
-    // ================= Lifecycle =================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +104,6 @@ public class AddCalendarEventActivity extends AppCompatActivity {
 
         // 🔔 Reminder
         spReminder = findViewById(R.id.spReminder);
-
         String[] reminderOptions = {
                 "ללא תזכורת",
                 "5 דקות לפני",
@@ -128,18 +127,12 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         toggleRepeatType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) return;
 
-            if (checkedId == R.id.btnRepeatWeekly) {
-                selectedRepeatType = "weekly";
-            } else if (checkedId == R.id.btnRepeatMonthly) {
-                selectedRepeatType = "monthly";
-            } else if (checkedId == R.id.btnRepeatYearly) {
-                selectedRepeatType = "yearly";
-            } else {
-                selectedRepeatType = "once";
-            }
+            if (checkedId == R.id.btnRepeatWeekly) selectedRepeatType = "weekly";
+            else if (checkedId == R.id.btnRepeatMonthly) selectedRepeatType = "monthly";
+            else if (checkedId == R.id.btnRepeatYearly) selectedRepeatType = "yearly";
+            else selectedRepeatType = "once";
         });
 
-        // ⬅️ / 💾
         btnBack.setOnClickListener(v -> finish());
 
         btnSave.setOnClickListener(v -> {
@@ -156,16 +149,17 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         }
     }
 
-    // ================= Firestore =================
+    // ================= USERS =================
 
     private void loadUsersFromFirebase() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
-        if (groupId == null) return;
+        if (groupId == null || groupId.isEmpty()) return;
 
         FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(groupId)
                 .collection("users")
-                .whereEqualTo("groupId", groupId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     assignUsersAdapter.setUsers(snapshot.getDocuments());
@@ -176,11 +170,13 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                 });
     }
 
+    // ================= SAVE EVENT =================
+
     private void saveEventToFirestore() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
 
-        if (groupId == null) {
+        if (groupId == null || groupId.isEmpty()) {
             Toast.makeText(this, "לא נמצא groupId", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -203,12 +199,58 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         data.put("repeatType", selectedRepeatType);
 
         FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(groupId)
                 .collection("calendar_events")
                 .add(data)
                 .addOnSuccessListener(v -> finish());
     }
 
-    // ================= Helpers =================
+    // ================= LOAD EVENT FOR EDIT =================
+
+    private void loadEventForEdit() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String groupId = prefs.getString(KEY_GROUP_ID, null);
+        if (groupId == null || groupId.isEmpty()) return;
+
+        FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(groupId)
+                .collection("calendar_events")
+                .document(editingEventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) return;
+
+                    etEventTitle.setText(doc.getString("title"));
+                    etEventDate.setText(doc.getString("date"));
+                    etEndDate.setText(doc.getString("endDate"));
+                    etStartTime.setText(doc.getString("startTime"));
+                    etEndTime.setText(doc.getString("endTime"));
+
+                    String color = doc.getString("color");
+                    if (color != null) {
+                        switch (color) {
+                            case "teal": selectColor(frameTeal, "teal"); break;
+                            case "amber": selectColor(frameAmber, "amber"); break;
+                            case "rose": selectColor(frameRose, "rose"); break;
+                            case "slate": selectColor(frameSlate, "slate"); break;
+                            case "emerald": selectColor(frameEmerald, "emerald"); break;
+                            default: selectColor(frameIndigo, "indigo");
+                        }
+                    }
+
+                    Long reminder = doc.getLong("reminderMinutes");
+                    if (reminder != null) {
+                        setReminderFromMinutes(reminder.intValue());
+                    }
+
+                    pendingSelectedUserIds =
+                            (List<String>) doc.get("assignedUserIds");
+                });
+    }
+
+    // ================= HELPERS =================
 
     private String buildAssignedToLabel(boolean isAllUsers) {
         if (isAllUsers) return "לכולם";
@@ -258,7 +300,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         }
     }
 
-    // ================= Pickers =================
+    // ================= PICKERS =================
 
     private void showStartDatePicker() {
         new DatePickerDialog(this, (v, y, m, d) -> {
@@ -285,19 +327,49 @@ public class AddCalendarEventActivity extends AppCompatActivity {
     }
 
     private void showStartTimePicker() {
-        new TimePickerDialog(this, (v, h, m) ->
-                etStartTime.setText(String.format("%02d:%02d", h, m)),
-                startCalendar.get(Calendar.HOUR_OF_DAY),
+        endTimeManuallyChanged = false;
+        new TimePickerDialog(this, (v, h, m) -> {
+
+            startCalendar.set(Calendar.HOUR_OF_DAY, h);
+            startCalendar.set(Calendar.MINUTE, m);
+
+            etStartTime.setText(String.format("%02d:%02d", h, m));
+
+            // ⬅️ עדכון אוטומטי של שעת סיום
+            if (!endTimeManuallyChanged) {
+                updateEndTimeAutomatically();
+            }
+
+        }, startCalendar.get(Calendar.HOUR_OF_DAY),
                 startCalendar.get(Calendar.MINUTE),
                 true).show();
     }
 
+
     private void showEndTimePicker() {
-        new TimePickerDialog(this, (v, h, m) ->
-                etEndTime.setText(String.format("%02d:%02d", h, m)),
-                endCalendar.get(Calendar.HOUR_OF_DAY),
+        new TimePickerDialog(this, (v, h, m) -> {
+
+            endCalendar.set(Calendar.HOUR_OF_DAY, h);
+            endCalendar.set(Calendar.MINUTE, m);
+
+            etEndTime.setText(String.format("%02d:%02d", h, m));
+
+            // ⭐ המשתמש שינה ידנית
+            endTimeManuallyChanged = true;
+
+        }, endCalendar.get(Calendar.HOUR_OF_DAY),
                 endCalendar.get(Calendar.MINUTE),
                 true).show();
+    }
+
+    private void updateEndTimeAutomatically() {
+        endCalendar.setTime(startCalendar.getTime());
+        endCalendar.add(Calendar.MINUTE, DEFAULT_EVENT_DURATION_MINUTES);
+
+        int h = endCalendar.get(Calendar.HOUR_OF_DAY);
+        int m = endCalendar.get(Calendar.MINUTE);
+
+        etEndTime.setText(String.format("%02d:%02d", h, m));
     }
 
     private void selectColor(FrameLayout selectedFrame, String colorId) {
@@ -311,66 +383,14 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         selectedFrame.setBackgroundResource(R.drawable.bg_color_selected);
     }
 
-    // ===== טעינת אירוע לעריכה =====
-    private void loadEventForEdit() {
-        FirebaseFirestore.getInstance()
-                .collection("calendar_events")
-                .document(editingEventId)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (!doc.exists()) return;
-
-                    etEventTitle.setText(doc.getString("title"));
-                    etEventDate.setText(doc.getString("date"));
-                    etEndDate.setText(doc.getString("endDate"));
-                    etStartTime.setText(doc.getString("startTime"));
-                    etEndTime.setText(doc.getString("endTime"));
-
-                    String color = doc.getString("color");
-                    if (color != null) {
-                        switch (color) {
-                            case "teal": selectColor(frameTeal, "teal"); break;
-                            case "amber": selectColor(frameAmber, "amber"); break;
-                            case "rose": selectColor(frameRose, "rose"); break;
-                            case "slate": selectColor(frameSlate, "slate"); break;
-                            case "emerald": selectColor(frameEmerald, "emerald"); break;
-                            default: selectColor(frameIndigo, "indigo");
-                        }
-                    }
-
-                    Long reminder = doc.getLong("reminderMinutes");
-                    if (reminder != null) {
-                        setReminderFromMinutes(reminder.intValue());
-                    }
-
-                    // משתמשים שנבחרו
-                    pendingSelectedUserIds =
-                            (List<String>) doc.get("assignedUserIds");
-                });
-    }
-
-    // ===== הגדרת תזכורת לפי דקות =====
     private void setReminderFromMinutes(int minutes) {
         switch (minutes) {
-            case 5:
-                spReminder.setText("5 דקות לפני", false);
-                break;
-            case 10:
-                spReminder.setText("10 דקות לפני", false);
-                break;
-            case 30:
-                spReminder.setText("30 דקות לפני", false);
-                break;
-            case 60:
-                spReminder.setText("שעה לפני", false);
-                break;
-            case 1440:
-                spReminder.setText("יום לפני", false);
-                break;
-            default:
-                spReminder.setText("ללא תזכורת", false);
+            case 5: spReminder.setText("5 דקות לפני", false); break;
+            case 10: spReminder.setText("10 דקות לפני", false); break;
+            case 30: spReminder.setText("30 דקות לפני", false); break;
+            case 60: spReminder.setText("שעה לפני", false); break;
+            case 1440: spReminder.setText("יום לפני", false); break;
+            default: spReminder.setText("ללא תזכורת", false);
         }
     }
-
-
 }

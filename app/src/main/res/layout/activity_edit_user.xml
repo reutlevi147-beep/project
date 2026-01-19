@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layoutDirection="rtl"
     android:background="@color/white">
 
@@ -55,7 +56,7 @@
                     android:src="@drawable/ic_user"
                     android:scaleType="centerCrop"
                     android:padding="0dp"
-                    android:tint="@null" />
+                    app:tint="@null" />
 
 
             </FrameLayout>
@@ -97,14 +98,49 @@
                 android:padding="16dp"
                 android:layout_marginBottom="16dp"/>
 
-            <EditText
-                android:id="@+id/etRole"
+            <!-- תפקיד (הורה / ילד) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="תפקיד במשפחה"
+                android:textStyle="bold"
+                android:textColor="#111827"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleRole"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:hint="תפקיד במשפחה"
-                android:background="@drawable/bg_input_rounded"
-                android:padding="16dp"
-                android:layout_marginBottom="24dp"/>
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnParent"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="הורה"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/role_toggle_bg"
+                    app:strokeColor="@color/teal_600"
+                    app:strokeWidth="1dp"
+                    android:textColor="@color/role_toggle_text"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnChild"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="ילד"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/role_toggle_bg"
+                    app:strokeColor="@color/teal_600"
+                    app:strokeWidth="1dp"
+                    android:textColor="@color/role_toggle_text"/>
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
 
             <Button
                 android:id="@+id/btnSave"

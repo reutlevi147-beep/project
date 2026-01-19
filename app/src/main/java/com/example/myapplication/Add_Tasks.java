@@ -1,7 +1,6 @@
 package com.example.myapplication;
 
 import android.app.DatePickerDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -16,13 +15,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.myapplication.AssignUsersAdapter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
 
 public class Add_Tasks extends AppCompatActivity {
 
@@ -41,9 +38,11 @@ public class Add_Tasks extends AppCompatActivity {
     private RecyclerView recyclerUsers;
     private AssignUsersAdapter usersAdapter;
     private final ArrayList<AppUser> usersList = new ArrayList<>();
-
-    // נשמור כאן את מי שנבחר (בהמשך)
     private final ArrayList<String> selectedUserIds = new ArrayList<>();
+
+    // ===== SharedPreferences =====
+    private static final String PREFS_NAME = "app_prefs";
+    private static final String KEY_GROUP_ID = "group_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +61,9 @@ public class Add_Tasks extends AppCompatActivity {
         setupPrioritySelection();
         setupCategorySelection();
 
-        findViewById(R.id.btnSelectAllUsers).setOnClickListener(v -> {
-            usersAdapter.selectAll();
-        });
+        findViewById(R.id.btnSelectAllUsers).setOnClickListener(v ->
+                usersAdapter.selectAll()
+        );
 
         // 👥 RecyclerView users
         recyclerUsers = findViewById(R.id.recyclerUsers);
@@ -80,10 +79,10 @@ public class Add_Tasks extends AppCompatActivity {
     // ================= USERS =================
 
     private void loadUsersFromFirestore() {
-        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
-        String groupId = prefs.getString("group_id", null);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String groupId = prefs.getString(KEY_GROUP_ID, null);
 
-        if (groupId == null) {
+        if (groupId == null || groupId.isEmpty()) {
             Toast.makeText(this, "❌ group_id לא קיים", Toast.LENGTH_LONG).show();
             return;
         }
@@ -104,7 +103,7 @@ public class Add_Tasks extends AppCompatActivity {
                         usersList.add(user);
                     }
 
-                    usersAdapter.notifyDataSetChanged();
+                    usersAdapter.setUsers(snapshot.getDocuments());
 
                     if (usersList.isEmpty()) {
                         Toast.makeText(this, "⚠️ אין משתמשים בקבוצה", Toast.LENGTH_LONG).show();
@@ -125,7 +124,14 @@ public class Add_Tasks extends AppCompatActivity {
             return;
         }
 
-        // ⭐ קבלת המשתמשים שנבחרו מה-Adapter
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String groupId = prefs.getString(KEY_GROUP_ID, null);
+
+        if (groupId == null || groupId.isEmpty()) {
+            Toast.makeText(this, "❌ groupId לא נמצא", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         selectedUserIds.clear();
         selectedUserIds.addAll(usersAdapter.getSelectedUserIds());
 
@@ -136,14 +142,15 @@ public class Add_Tasks extends AppCompatActivity {
         task.put("assignedUserIds", selectedUserIds);
         task.put("createdAt", Timestamp.now());
         task.put("isDone", false);
+        task.put("groupId", groupId);
 
         if (selectedDateMillis != null) {
             task.put("dueDate", selectedDateMillis);
         }
 
-        db.collection("home_tasks")
-                .document("defaultList")
-                .collection("items")
+        db.collection("groups")
+                .document(groupId)
+                .collection("home_tasks")
                 .add(task)
                 .addOnSuccessListener(doc -> {
                     Toast.makeText(this, "המשימה נוספה", Toast.LENGTH_SHORT).show();
@@ -153,7 +160,6 @@ public class Add_Tasks extends AppCompatActivity {
                         Toast.makeText(this, "שגיאה בהוספת משימה", Toast.LENGTH_SHORT).show()
                 );
     }
-
 
     // ================= PRIORITY =================
 

@@ -15,8 +15,8 @@ public class CategoriesAdapter
 
     private final ArrayList<ShoppingCategory> categories;
 
-    // ❗ אין בחירה בהתחלה
-    private int selectedPosition = RecyclerView.NO_POSITION;
+    // ✅ קטגוריה נבחרת לפי ID
+    private String selectedCategoryId = null;
 
     public interface OnCategorySelected {
         void onSelected(ShoppingCategory category);
@@ -45,35 +45,28 @@ public class CategoriesAdapter
         holder.tvIcon.setText(cat.getIcon());
         holder.tvName.setText(cat.getName());
 
-        boolean selected = position == selectedPosition;
+        boolean isSelected = cat.getId().equals(selectedCategoryId);
 
+        // 🎨 רקע לפי בחירה
         holder.itemView.setBackgroundResource(
-                selected
+                isSelected
                         ? R.drawable.bg_category_card_selected
                         : R.drawable.bg_category_card
         );
 
-        // צבע טקסט כהה – קריא על שני הרקעים
+        // קצת הדגשה
+        holder.itemView.setAlpha(isSelected ? 1f : 0.6f);
+
         holder.tvName.setTextColor(
                 android.graphics.Color.parseColor("#111827")
         );
 
-
         holder.itemView.setOnClickListener(v -> {
-            int pos = holder.getAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) return;
-
-
-            int oldPos = selectedPosition;
-            selectedPosition = pos;
-
-            if (oldPos != RecyclerView.NO_POSITION) {
-                notifyItemChanged(oldPos);
-            }
-            notifyItemChanged(pos);
+            selectedCategoryId = cat.getId();
+            notifyDataSetChanged();
 
             if (listener != null) {
-                listener.onSelected(categories.get(pos));
+                listener.onSelected(cat);
             }
         });
     }
@@ -91,5 +84,11 @@ public class CategoriesAdapter
             tvIcon = itemView.findViewById(R.id.tvIcon);
             tvName = itemView.findViewById(R.id.tvName);
         }
+    }
+
+    // ✅ מאפשר סימון אוטומטי (מה־✔️ / AI)
+    public void setSelectedCategory(String categoryId) {
+        this.selectedCategoryId = categoryId;
+        notifyDataSetChanged();
     }
 }

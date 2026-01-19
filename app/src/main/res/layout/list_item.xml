@@ -1,68 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="6dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:orientation="horizontal"
+    android:padding="12dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <CheckBox
+        android:id="@+id/checkBoxDone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/textViewItemName"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="12dp">
+        android:layout_weight="1"
+        android:textSize="16sp"/>
 
-        <!-- צ׳קבוקס -->
-        <CheckBox
-            android:id="@+id/checkBoxDone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+    <ImageButton
+        android:id="@+id/btnMinus"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_minus"/>
 
-        <!-- שם מוצר -->
-        <TextView
-            android:id="@+id/textViewItemName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="שם מוצר"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#000000"/>
+    <TextView
+        android:id="@+id/textViewQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="x1"/>
 
-        <!-- ➖ מינוס -->
-        <ImageButton
-            android:id="@+id/btnMinus"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_minus"
-            android:contentDescription="הפחת כמות"/>
-
-
-
-        <!-- כמות -->
-        <TextView
-            android:id="@+id/textViewQuantity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:text="x1"
-            android:textSize="16sp"
-            android:textColor="#666666"/>
-
-        <!-- ➕ פלוס -->
-        <ImageButton
-            android:id="@+id/btnPlus"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_plus"
-            android:contentDescription="הוסף כמות"/>
-
-
-
-    </LinearLayout>
-</androidx.cardview.widget.CardView>
+    <ImageButton
+        android:id="@+id/btnPlus"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_plus"/>
+</LinearLayout>

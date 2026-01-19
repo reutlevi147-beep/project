@@ -17,6 +17,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.function.Consumer;
 
 public class CreateGroupActivity extends AppCompatActivity {
 
@@ -44,12 +46,25 @@ public class CreateGroupActivity extends AppCompatActivity {
         layoutFamilyRole = findViewById(R.id.layoutFamilyRole);
 
         Button btnCreateGroup = findViewById(R.id.btnCreateGroup);
+        Button btnSuggestCode = findViewById(R.id.btnSuggestCode);
 
         rgGroupType.setOnCheckedChangeListener((group, checkedId) ->
                 layoutFamilyRole.setVisibility(
                         checkedId == R.id.rbFamily ? View.VISIBLE : View.GONE
                 )
         );
+
+        btnSuggestCode.setOnClickListener(v -> {
+            etGroupCode.setError(null);
+            etGroupCode.setText("...");
+
+            generateAvailableGroupCode(code -> {
+                etGroupCode.setText(code);
+            });
+        });
+
+        // 🔹 יצירת קוד מוצע אוטומטית
+        generateAvailableGroupCode(code -> etGroupCode.setText(code));
 
         btnCreateGroup.setOnClickListener(v -> {
             if (validateForm()) {
@@ -171,7 +186,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                                 goToHome();
                             });
                 });
-    } // ✅ כאן נסגרת createGroup
+    }
 
     private void saveUserLocally(String userId, String role,
                                  String groupCode, String userName) {
@@ -197,5 +212,36 @@ public class CreateGroupActivity extends AppCompatActivity {
         Intent intent = new Intent(this, Home.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+    }
+
+    // =========================
+    // 🔹 קוד מוצע אוטומטי
+    // =========================
+
+    private String generateGroupCode() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        StringBuilder code = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < 6; i++) {
+            code.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return code.toString();
+    }
+
+    private void generateAvailableGroupCode(Consumer<String> callback) {
+        String code = generateGroupCode();
+
+        FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(code)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) {
+                        callback.accept(code);
+                    } else {
+                        generateAvailableGroupCode(callback);
+                    }
+                });
     }
 }

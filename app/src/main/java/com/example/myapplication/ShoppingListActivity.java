@@ -1,51 +1,50 @@
 package com.example.myapplication;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ShoppingListActivity extends AppCompatActivity {
 
-    // 🛒 לקנות (מקובץ)
-    private RecyclerView recyclerToBuy;
-    private ShoppingListAdapter toBuyAdapter;
-    private final List<ShoppingListRow> toBuyRows = new ArrayList<>();
+    private static final String TAG = "SHOPPING";
+    private static final String PREFS_NAME = "app_prefs";
+    private static final String KEY_GROUP_ID = "group_id";
 
-    // ✅ נקנו
-    private RecyclerView recyclerPurchased;
-    private ShoppingListAdapter purchasedAdapter;
-    private final List<ShoppingListRow> purchasedRows = new ArrayList<>();
+    private RecyclerView recycler;
+    private ShoppingRowsAdapter adapter;
 
-    // 🔢 סיכום
-    private TextView tvToBuyCount, tvPurchasedCount;
-    private LinearLayout completedSection;
-    private TextView btnClearPurchased;
+    private final List<ShoppingListRow> rows = new ArrayList<>();
+    private final List<ShoppingItem> allItems = new ArrayList<>();
+
+    // 🔢 COUNTS
+    private TextView tvActiveCount;
+    private TextView tvPurchasedCount;
 
     private FirebaseFirestore db;
     private ListenerRegistration shoppingListener;
-
-    private static final String MAIN_COLLECTION = "shopping_lists";
-    private static final String DOCUMENT_ID = "defaultList";
-    private static final String ITEMS_SUB_COLLECTION = "items";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,168 +56,239 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        recyclerToBuy = findViewById(R.id.recyclerToBuy);
-        recyclerPurchased = findViewById(R.id.recyclerPurchased);
-        completedSection = findViewById(R.id.completedSection);
-        btnClearPurchased = findViewById(R.id.btnClearPurchased);
-        recyclerToBuy.setHasFixedSize(false);
-        recyclerPurchased.setHasFixedSize(false);
+        recycler = findViewById(R.id.recyclerShopping);
+        recycler.setLayoutManager(new LinearLayoutManager(this));
 
-        tvToBuyCount = findViewById(R.id.cardToBuy).findViewById(R.id.tvCount);
-        tvPurchasedCount = findViewById(R.id.cardPurchased).findViewById(R.id.tvCount);
+        adapter = new ShoppingRowsAdapter(rows);
+        recycler.setAdapter(adapter);
 
-        recyclerToBuy.setLayoutManager(new LinearLayoutManager(this));
-        recyclerPurchased.setLayoutManager(new LinearLayoutManager(this));
+        adapter.setOnQuantityChangeListener(this::updateQuantity);
+        adapter.setOnItemCheckedChange(this::updatePurchased);
+        adapter.setOnClearPurchasedClick(this::clearPurchasedItems);
 
-        toBuyAdapter = new ShoppingListAdapter(toBuyRows);
-        purchasedAdapter = new ShoppingListAdapter(purchasedRows);
+        // ===== COUNTERS =====
+        View statActive = findViewById(R.id.statActive);
+        tvActiveCount = statActive.findViewById(R.id.tvValue);
+        ((TextView) statActive.findViewById(R.id.tvLabel)).setText("לקניה");
 
-        recyclerToBuy.setAdapter(toBuyAdapter);
-        recyclerPurchased.setAdapter(purchasedAdapter);
-
-        disableChangeAnimations(recyclerToBuy);
-        disableChangeAnimations(recyclerPurchased);
-
-        attachAdapterListeners(toBuyAdapter);
-        attachAdapterListeners(purchasedAdapter);
-
-        btnClearPurchased.setOnClickListener(v -> {
-            for (ShoppingListRow row : purchasedRows) {
-                if (row.getType() == ShoppingListRow.TYPE_ITEM) {
-                    ShoppingItem item = row.getItem();
-                    db.collection(MAIN_COLLECTION)
-                            .document(DOCUMENT_ID)
-                            .collection(ITEMS_SUB_COLLECTION)
-                            .document(item.getDocumentId())
-                            .delete();
-                }
-            }
-        });
+        View statPurchased = findViewById(R.id.statCompleted);
+        tvPurchasedCount = statPurchased.findViewById(R.id.tvValue);
+        ((TextView) statPurchased.findViewById(R.id.tvLabel)).setText("נקנו");
 
         findViewById(R.id.fabAdd).setOnClickListener(v ->
                 startActivity(new Intent(this, Add_Shopping.class))
         );
+
+        startShoppingListener();
     }
 
-    private void attachAdapterListeners(ShoppingListAdapter adapter) {
-
-        adapter.setOnQuantityChangeListener((item, newQuantity) ->
-                db.collection(MAIN_COLLECTION)
-                        .document(DOCUMENT_ID)
-                        .collection(ITEMS_SUB_COLLECTION)
-                        .document(item.getDocumentId())
-                        .update("quantity", newQuantity)
-        );
-
-        adapter.setOnItemCheckedChange((item, checked) -> {
-            Map<String, Object> updates = new java.util.HashMap<>();
-            updates.put("isPurchased", checked);
-            updates.put("purchased", checked);
-
-            db.collection(MAIN_COLLECTION)
-                    .document(DOCUMENT_ID)
-                    .collection(ITEMS_SUB_COLLECTION)
-                    .document(item.getDocumentId())
-                    .update(updates);
-        });
+    // =========================
+    // groupId
+    // =========================
+    private String getGroupId() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        return prefs.getString(KEY_GROUP_ID, null);
     }
 
-    private void disableChangeAnimations(RecyclerView rv) {
-        RecyclerView.ItemAnimator animator = rv.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+    // =========================
+    // Firestore Listener
+    // =========================
+    private void startShoppingListener() {
+
+        String groupId = getGroupId();
+        if (groupId == null) return;
+
+        shoppingListener =
+                db.collection("groups")
+                        .document(groupId)
+                        .collection("shopping")
+                        .addSnapshotListener((snapshots, e) -> {
+
+                            if (e != null || snapshots == null) {
+                                Log.e(TAG, "Snapshot error", e);
+                                return;
+                            }
+
+                            allItems.clear();
+
+                            for (QueryDocumentSnapshot doc : snapshots) {
+                                ShoppingItem item = new ShoppingItem();
+                                item.setDocumentId(doc.getId());
+                                item.setName(doc.getString("name"));
+
+                                Long q = doc.getLong("quantity");
+                                item.setQuantity(q == null ? 1 : q.intValue());
+
+                                Boolean purchased = doc.getBoolean("isPurchased");
+                                item.setPurchased(purchased != null && purchased);
+
+                                item.setCategoryId(doc.getString("categoryId"));
+
+                                allItems.add(item);
+                            }
+
+                            rebuildRows();
+                        });
+    }
+
+    // =========================
+    // Build rows + COUNTS ✅
+    // =========================
+    private void rebuildRows() {
+
+        rows.clear();
+
+        int activeCount = 0;
+        int purchasedCount = 0;
+
+        rows.add(ShoppingListRow.header("לקנות"));
+
+        Map<String, List<ShoppingItem>> byCategory = new LinkedHashMap<>();
+
+        for (ShoppingItem item : allItems) {
+            if (item.isPurchased()) {
+                purchasedCount++;
+                continue;
+            }
+
+            activeCount++;
+
+            String cat = item.getCategoryId() == null ? "other" : item.getCategoryId();
+            byCategory.computeIfAbsent(cat, k -> new ArrayList<>()).add(item);
+        }
+
+        for (String cat : byCategory.keySet()) {
+            rows.add(ShoppingListRow.header(getCategoryTitle(cat)));
+            for (ShoppingItem item : byCategory.get(cat)) {
+                rows.add(ShoppingListRow.item(item));
+            }
+        }
+
+        List<ShoppingItem> purchased = new ArrayList<>();
+        for (ShoppingItem item : allItems) {
+            if (item.isPurchased()) purchased.add(item);
+        }
+
+        if (!purchased.isEmpty()) {
+            rows.add(ShoppingListRow.clearPurchased());
+            for (ShoppingItem item : purchased) {
+                rows.add(ShoppingListRow.item(item));
+            }
+        }
+
+        // 🔢 UPDATE COUNTS
+        tvActiveCount.setText(String.valueOf(activeCount));
+        tvPurchasedCount.setText(String.valueOf(purchasedCount));
+
+        adapter.notifyDataSetChanged();
+    }
+
+    // =========================
+    // Updates
+    // =========================
+    private void updateQuantity(ShoppingItem item, int q) {
+        String groupId = getGroupId();
+        if (groupId == null || item.getDocumentId() == null) return;
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("shopping")
+                .document(item.getDocumentId())
+                .set(Map.of("quantity", q), SetOptions.merge());
+    }
+
+    private void updatePurchased(ShoppingItem item, boolean checked) {
+        String groupId = getGroupId();
+        if (groupId == null || item.getDocumentId() == null) return;
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("shopping")
+                .document(item.getDocumentId())
+                .set(Map.of("isPurchased", checked), SetOptions.merge());
+
+        if (checked) {
+            incrementShoppingStat(item.getName());
         }
     }
 
-    // 🔄 Firestore Listener
-    private void listenToShoppingItems() {
+    // =========================
+    // Shopping stats
+    // =========================
+    private void incrementShoppingStat(String name) {
 
-        shoppingListener = db
-                .collection(MAIN_COLLECTION)
-                .document(DOCUMENT_ID)
-                .collection(ITEMS_SUB_COLLECTION)
-                .orderBy("createdAt", Query.Direction.ASCENDING)
-                .addSnapshotListener((snapshots, e) -> {
+        String groupId = getGroupId();
+        if (groupId == null || name == null) return;
 
-                    if (e != null || snapshots == null) {
-                        Log.e("SHOPPING", "Listen failed", e);
-                        return;
-                    }
+        DocumentReference ref =
+                db.collection("groups")
+                        .document(groupId)
+                        .collection("shopping_stats")
+                        .document(name);
 
-                    toBuyRows.clear();
-                    purchasedRows.clear();
+        db.runTransaction(tx -> {
+            DocumentSnapshot doc = tx.get(ref);
 
-                    Map<String, List<ShoppingItem>> grouped = new LinkedHashMap<>();
-
-                    for (QueryDocumentSnapshot doc : snapshots) {
-                        ShoppingItem item = doc.toObject(ShoppingItem.class);
-                        if (item == null) continue;
-
-                        item.setDocumentId(doc.getId());
-
-                        Boolean p = doc.getBoolean("isPurchased");
-                        if (p == null) p = doc.getBoolean("purchased");
-                        item.setPurchased(p != null && p);
-
-                        if (item.isPurchased()) {
-                            purchasedRows.add(ShoppingListRow.item(item));
-                        } else {
-                            grouped
-                                    .computeIfAbsent(item.getCategoryId(), k -> new ArrayList<>())
-                                    .add(item);
-                        }
-                    }
-
-                    int toBuyCount = 0;
-
-                    for (Map.Entry<String, List<ShoppingItem>> entry : grouped.entrySet()) {
-                        if (entry.getValue().isEmpty()) continue;
-
-                        toBuyRows.add(
-                                ShoppingListRow.header(getCategoryName(entry.getKey()))
-                        );
-
-                        for (ShoppingItem item : entry.getValue()) {
-                            toBuyRows.add(ShoppingListRow.item(item));
-                            toBuyCount++;
-                        }
-                    }
-
-                    tvToBuyCount.setText(String.valueOf(toBuyCount));
-                    tvPurchasedCount.setText(String.valueOf(purchasedRows.size()));
-                    completedSection.setVisibility(
-                            purchasedRows.isEmpty() ? View.GONE : View.VISIBLE
-                    );
-
-                    toBuyAdapter.notifyDataSetChanged();
-                    purchasedAdapter.notifyDataSetChanged();
-                });
+            if (doc.exists()) {
+                Long count = doc.getLong("count");
+                tx.update(ref,
+                        "count", count == null ? 1 : count + 1,
+                        "lastBoughtAt", FieldValue.serverTimestamp()
+                );
+            } else {
+                Map<String, Object> data = new HashMap<>();
+                data.put("name", name);
+                data.put("count", 1);
+                data.put("lastBoughtAt", FieldValue.serverTimestamp());
+                tx.set(ref, data);
+            }
+            return null;
+        });
     }
 
-    private String getCategoryName(String id) {
+    private void clearPurchasedItems() {
+        String groupId = getGroupId();
+        if (groupId == null) return;
+
+        WriteBatch batch = db.batch();
+
+        for (ShoppingItem item : allItems) {
+            if (!item.isPurchased() || item.getDocumentId() == null) continue;
+
+            DocumentReference ref =
+                    db.collection("groups")
+                            .document(groupId)
+                            .collection("shopping")
+                            .document(item.getDocumentId());
+
+            batch.delete(ref);
+        }
+
+        batch.commit();
+    }
+
+    private String getCategoryTitle(String id) {
         if (id == null) return "אחר";
+
         switch (id) {
             case "veg": return "ירקות ופירות";
             case "dairy": return "מוצרי חלב";
             case "meat": return "בשרים ועופות";
             case "dry": return "יבשים";
+            case "bakery": return "מאפים ולחמים";
+            case "frozen": return "קפואים";
+            case "drinks": return "שתייה";
             case "cleaning": return "ניקיון והיגיינה";
+            case "snacks": return "מתוקים וחטיפים";
             default: return "אחר";
         }
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        listenToShoppingItems();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
         if (shoppingListener != null) {
             shoppingListener.remove();
-            shoppingListener = null;
         }
     }
 }

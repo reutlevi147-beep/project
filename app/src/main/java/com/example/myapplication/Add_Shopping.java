@@ -1,10 +1,14 @@
 package com.example.myapplication;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -12,33 +16,54 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.SetOptions;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class Add_Shopping extends AppCompatActivity {
 
-    // ===== Fields =====
-    private EditText etItemName, etQuantity, etNotes;
+    private static final String PREFS_NAME = "app_prefs";
+    private static final String KEY_GROUP_ID = "group_id";
+
+    private EditText etItemName, etNotes;
     private Switch switchUrgent;
 
-    // ===== Categories =====
+    // ✅ כמות עם + / -
+    private int quantity = 1;
+    private TextView tvQuantity;
+    private ImageButton btnPlus, btnMinus;
+
+    // קטגוריות
     private RecyclerView recyclerCategories;
     private CategoriesAdapter categoriesAdapter;
     private final ArrayList<ShoppingCategory> categories = new ArrayList<>();
     private String selectedCategoryId = null;
 
-    // ===== Firestore =====
-    private FirebaseFirestore db;
+    // הצעות
+    private RecyclerView recyclerSuggestions;
+    private SuggestedItemsAdapter suggestedItemsAdapter;
+    private TextView tvSuggestedTitle;
 
-    private static final String MAIN_COLLECTION = "shopping_lists";
-    private static final String DOCUMENT_ID = "defaultList";
-    private static final String ITEMS_SUB_COLLECTION = "items";
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,145 +72,277 @@ public class Add_Shopping extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // 🔙 Back
-        ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
+        // חזרה
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        // 📝 Fields
+        // Views
         etItemName = findViewById(R.id.etItemName);
-        etQuantity = findViewById(R.id.etQuantity);
         etNotes = findViewById(R.id.etNotes);
         switchUrgent = findViewById(R.id.switchUrgent);
+        tvSuggestedTitle = findViewById(R.id.tvSuggestedTitle);
 
-        // 🧩 Categories (Grid)
+        // כמות
+        tvQuantity = findViewById(R.id.tvQuantity);
+        btnPlus = findViewById(R.id.btnPlus);
+        btnMinus = findViewById(R.id.btnMinus);
+
+        tvQuantity.setText(String.valueOf(quantity));
+
+        btnPlus.setOnClickListener(v -> {
+            if (quantity < 100) {
+                quantity++;
+                tvQuantity.setText(String.valueOf(quantity));
+            }
+        });
+
+        btnMinus.setOnClickListener(v -> {
+            if (quantity > 1) {
+                quantity--;
+                tvQuantity.setText(String.valueOf(quantity));
+            }
+        });
+
+        ImageButton btnConfirmName = findViewById(R.id.btnConfirmName);
+        Button btnSave = findViewById(R.id.btnSave);
+
+        // קטגוריות
         recyclerCategories = findViewById(R.id.recyclerCategories);
         recyclerCategories.setLayoutManager(new GridLayoutManager(this, 2));
 
         categories.add(new ShoppingCategory("veg", "ירקות ופירות", "🥬"));
         categories.add(new ShoppingCategory("dairy", "מוצרי חלב", "🥛"));
-        categories.add(new ShoppingCategory("meat", "בשרים ועופות", "🍖"));
-        categories.add(new ShoppingCategory("dry", "יבשים", "🌾"));
+        categories.add(new ShoppingCategory("meat", "בשרים עופות ודגים", "🍖"));
+        categories.add(new ShoppingCategory("bakery", "מאפים ולחם", "🥖"));
+        categories.add(new ShoppingCategory("dry", "יבשים ומזווה", "🌾"));
+        categories.add(new ShoppingCategory("snacks", "מתוקים וחטיפים", "🍫"));
+        categories.add(new ShoppingCategory("frozen", "קפואים", "🧊"));
+        categories.add(new ShoppingCategory("drinks", "שתייה", "🥤"));
         categories.add(new ShoppingCategory("cleaning", "ניקיון והיגיינה", "🧼"));
         categories.add(new ShoppingCategory("other", "אחר", "🛒"));
 
-        categoriesAdapter = new CategoriesAdapter(categories, category ->
-                selectedCategoryId = category.getId()
+        categoriesAdapter = new CategoriesAdapter(
+                categories,
+                category -> selectedCategoryId = category.getId()
         );
         recyclerCategories.setAdapter(categoriesAdapter);
 
-        // 🔘 Buttons
-        Button btnCancel = findViewById(R.id.btnCancel);
-        Button btnSave = findViewById(R.id.btnSave);
+        // הצעות
+        recyclerSuggestions = findViewById(R.id.recyclerSuggestions);
+        recyclerSuggestions.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerSuggestions.setVisibility(View.GONE);
+        tvSuggestedTitle.setVisibility(View.GONE);
+        loadSuggestedItems();
 
-        btnCancel.setOnClickListener(v -> finish());
+        // אישור שם מוצר
+        btnConfirmName.setOnClickListener(v -> {
+            String name = etItemName.getText().toString().trim();
+            if (name.isEmpty()) return;
+
+            etItemName.clearFocus();
+
+            InputMethodManager imm =
+                    (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            }
+
+            detectCategorySmart(name);
+        });
+
         btnSave.setOnClickListener(v -> saveItem());
     }
 
-    // =====================
-    // 💾 Save to Firestore
-    // =====================
+    private String getGroupId() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        return prefs.getString(KEY_GROUP_ID, null);
+    }
+
+    // ================= SAVE =================
+
     private void saveItem() {
+        String groupId = getGroupId();
+        if (groupId == null) {
+            Toast.makeText(this, "❌ לא נמצא קוד קבוצה", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String name = etItemName.getText().toString().trim();
-        String qtyStr = etQuantity.getText().toString().trim();
-
         if (name.isEmpty()) {
-            etItemName.setError("חובה להזין שם מוצר");
+            etItemName.setError("יש להזין שם מוצר");
             return;
         }
 
-        int quantity;
-        if (qtyStr.isEmpty()) {
-            quantity = 1; // ברירת מחדל
-        } else {
-            try {
-                quantity = Integer.parseInt(qtyStr);
-            } catch (NumberFormatException e) {
-                etQuantity.setError("כמות לא תקינה");
-                return;
-            }
-        }
+        final int finalQty = quantity;
 
-        if (quantity <= 0) {
-            etQuantity.setError("הכמות חייבת להיות לפחות 1");
-            return;
-        }
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("shopping_lists")
-                .document("defaultList")
-                .collection("items")
+        db.collection("groups")
+                .document(groupId)
+                .collection("shopping")
                 .whereEqualTo("name", name)
+                .limit(1)
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
                     if (snapshot.isEmpty()) {
-                        addNewItem(db, name, quantity);
+                        addNewItem(groupId, name, finalQty);
                     } else {
                         DocumentSnapshot doc = snapshot.getDocuments().get(0);
+                        Long q = doc.getLong("quantity");
+                        int existingQty = q != null ? q.intValue() : 0;
 
-                        Long qtyLong = doc.getLong("quantity");
-                        int existingQty = qtyLong != null ? qtyLong.intValue() : 0;
-
-                        showDuplicateDialog(db, doc.getId(), existingQty, quantity);
+                        showDuplicateDialog(
+                                groupId,
+                                doc.getId(),
+                                existingQty,
+                                finalQty,
+                                name
+                        );
                     }
                 });
     }
 
+    private void addNewItem(String groupId, String name, int quantity) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("name", name);
+        item.put("quantity", quantity);
+        item.put("isPurchased", false);
+        item.put("categoryId", selectedCategoryId != null ? selectedCategoryId : "other");
+        item.put("urgent", switchUrgent.isChecked());
+        item.put("notes", etNotes.getText().toString().trim());
+        item.put("createdAt", FieldValue.serverTimestamp());
 
-    private void showDuplicateDialog(FirebaseFirestore db,
-                                     String docId,
-                                     int existingQty,
-                                     int addedQty) {
+        db.collection("groups")
+                .document(groupId)
+                .collection("shopping")
+                .add(item)
+                .addOnSuccessListener(d -> finish());
+    }
 
+    private void showDuplicateDialog(
+            String groupId,
+            String docId,
+            int existingQty,
+            int addedQty,
+            String name
+    ) {
         new AlertDialog.Builder(this)
                 .setTitle("המוצר כבר קיים")
                 .setMessage("להוסיף את הכמות למוצר הקיים?")
-                .setPositiveButton("כן", (dialog, which) -> {
-
+                .setPositiveButton("כן", (d, w) -> {
                     int newQty = existingQty + addedQty;
-
-                    db.collection("shopping_lists")
-                            .document("defaultList")
-                            .collection("items")
+                    db.collection("groups")
+                            .document(groupId)
+                            .collection("shopping")
                             .document(docId)
-                            .update("quantity", newQty);
-
-                    Toast.makeText(this, "הכמות עודכנה ✔️", Toast.LENGTH_SHORT).show();
-                    finish();
+                            .update("quantity", newQty)
+                            .addOnSuccessListener(v -> finish());
                 })
                 .setNegativeButton("לא", null)
                 .show();
     }
 
+    private void detectCategorySmart(String name) {
+        String groupId = getGroupId();
+        if (groupId == null) return;
 
+        String docId = name.toLowerCase().trim();
 
-    private void addNewItem(FirebaseFirestore db, String name, int quantity) {
-
-        Map<String, Object> item = new HashMap<>();
-        item.put("name", name);
-        item.put("quantity", quantity);
-        item.put("isPurchased", false);
-        item.put("createdAt", FieldValue.serverTimestamp());
-
-
-        item.put("categoryId", selectedCategoryId);
-
-        db.collection("shopping_lists")
-                .document("defaultList")
-                .collection("items")
-                .add(item)
+        db.collection("groups")
+                .document(groupId)
+                .collection("shopping_stats")
+                .document(docId)
+                .get()
                 .addOnSuccessListener(doc -> {
-                    Toast.makeText(this, "המוצר נוסף ✔️", Toast.LENGTH_SHORT).show();
-                    finish();
+
+                    if (doc.exists()) {
+                        String cat = doc.getString("categoryId");
+                        if (cat != null) {
+                            selectedCategoryId = cat;
+                            categoriesAdapter.setSelectedCategory(cat);
+                            return;
+                        }
+                    }
+
+                    String local = detectCategoryLocal(name);
+                    if (local != null) {
+                        selectedCategoryId = local;
+                        categoriesAdapter.setSelectedCategory(local);
+                    }
                 });
     }
 
+    private void loadSuggestedItems() {
+        String groupId = getGroupId();
+        if (groupId == null) return;
 
+        Date sixtyDaysAgo = new Date(
+                System.currentTimeMillis() - 60L * 24 * 60 * 60 * 1000
+        );
 
+        db.collection("groups")
+                .document(groupId)
+                .collection("shopping_stats")
+                .whereGreaterThanOrEqualTo("count", 3)
+                .whereGreaterThanOrEqualTo("lastAddedAt", sixtyDaysAgo)
+                .orderBy("lastAddedAt", Query.Direction.DESCENDING)
+                .limit(8)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.isEmpty()) {
+                        showSuggestions(snapshot.getDocuments());
+                    }
+                });
+    }
 
+    private void showSuggestions(List<DocumentSnapshot> suggestions) {
 
+        if (suggestions == null || suggestions.isEmpty()) {
+            tvSuggestedTitle.setVisibility(View.GONE);
+            recyclerSuggestions.setVisibility(View.GONE);
+            return;
+        }
+
+        tvSuggestedTitle.setVisibility(View.VISIBLE);
+        recyclerSuggestions.setVisibility(View.VISIBLE);
+
+        suggestedItemsAdapter = new SuggestedItemsAdapter(
+                suggestions,
+                item -> {
+                    etItemName.setText(item.getString("name"));
+
+                    String cat = item.getString("categoryId");
+                    if (cat != null) {
+                        selectedCategoryId = cat;
+                        categoriesAdapter.setSelectedCategory(cat);
+                    }
+
+                    quantity = 1;
+                    tvQuantity.setText("1");
+                }
+        );
+
+        recyclerSuggestions.setAdapter(suggestedItemsAdapter);
+    }
+
+    private String detectCategoryLocal(String name) {
+        name = name.toLowerCase();
+
+        if (name.contains("חלב") || name.contains("גבינה") || name.contains("יוגורט"))
+            return "dairy";
+        if (name.contains("לחם") || name.contains("פיתה") || name.contains("באגט"))
+            return "bakery";
+        if (name.contains("עגב") || name.contains("מלפפון") || name.contains("פלפל"))
+            return "veg";
+        if (name.contains("בננה") || name.contains("תפוח") || name.contains("תפוז"))
+            return "veg";
+        if (name.contains("עוף") || name.contains("בשר") || name.contains("דג"))
+            return "meat";
+        if (name.contains("שוקולד") || name.contains("ביסלי") || name.contains("חטיף"))
+            return "snacks";
+        if (name.contains("קולה") || name.contains("מים") || name.contains("מיץ"))
+            return "drinks";
+
+        return null;
+    }
 
 
 }

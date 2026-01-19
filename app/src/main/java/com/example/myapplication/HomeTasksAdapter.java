@@ -5,13 +5,12 @@ import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
@@ -21,7 +20,26 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private static final int TYPE_DIVIDER = 1;
 
     private final List<Object> items;
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    // ===== listeners =====
+    public interface OnTaskCheckedChangeListener {
+        void onTaskChecked(Task task, boolean completed);
+    }
+
+    public interface OnDeleteCompletedClickListener {
+        void onDeleteCompleted();
+    }
+
+    private OnTaskCheckedChangeListener checkedListener;
+    private OnDeleteCompletedClickListener deleteListener;
+
+    public void setOnTaskCheckedChangeListener(OnTaskCheckedChangeListener l) {
+        checkedListener = l;
+    }
+
+    public void setOnDeleteCompletedClickListener(OnDeleteCompletedClickListener l) {
+        deleteListener = l;
+    }
 
     public HomeTasksAdapter(List<Object> items) {
         this.items = items;
@@ -47,11 +65,11 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         if (viewType == TYPE_DIVIDER) {
             View v = inflater.inflate(R.layout.item_tasks_divider, parent, false);
-            return new DividerViewHolder(v);
+            return new DividerVH(v);
         }
 
         View v = inflater.inflate(R.layout.task_item, parent, false);
-        return new TaskViewHolder(v);
+        return new TaskVH(v);
     }
 
     // ================= BIND =================
@@ -59,26 +77,29 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-        if (holder instanceof DividerViewHolder) {
+        if (holder instanceof DividerVH) {
+            DividerVH h = (DividerVH) holder;
+            h.btnDelete.setOnClickListener(v -> {
+                if (deleteListener != null) {
+                    deleteListener.onDeleteCompleted();
+                }
+            });
             return;
         }
 
-        TaskViewHolder h = (TaskViewHolder) holder;
+        TaskVH h = (TaskVH) holder;
         Task task = (Task) items.get(position);
 
-        // ========= RESET מוחלט =========
+        // RESET
         h.tvTitle.setPaintFlags(h.tvTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
         h.tvTitle.setTextColor(Color.parseColor("#111827"));
-        h.tvPriority.setAlpha(1f);
         h.tvCategory.setAlpha(1f);
-        h.imgCheck.setAlpha(1f);
-        h.imgCheck.setColorFilter(null);
-        h.imgCheck.setBackgroundResource(R.drawable.bg_check_circle);
+        h.tvPriority.setAlpha(1f);
 
-        // ===== כותרת =====
         h.tvTitle.setText(task.getTitle());
+        h.tvCategory.setText(task.getCategory() != null ? task.getCategory() : "");
 
-        // ===== עדיפות =====
+        // PRIORITY
         String priority = task.getPriority();
         if ("high".equals(priority)) {
             h.tvPriority.setText("גבוהה");
@@ -97,68 +118,34 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             h.tvPriority.setBackground(null);
         }
 
-        // ===== קטגוריה =====
-        String category = task.getCategory();
-        h.tvCategory.setText(category != null ? category : "");
-        h.tvCategory.setTextColor(Color.WHITE);
-        h.tvCategory.setPadding(20, 8, 20, 8);
-
-        if ("בית".equals(category)) {
-            h.tvCategory.setBackgroundColor(Color.parseColor("#6366F1"));
-        } else if ("עבודה".equals(category)) {
-            h.tvCategory.setBackgroundColor(Color.parseColor("#F59E0B"));
-        } else if ("קניות".equals(category)) {
-            h.tvCategory.setBackgroundColor(Color.parseColor("#10B981"));
-        } else if ("אישי".equals(category)) {
-            h.tvCategory.setBackgroundColor(Color.parseColor("#EC4899"));
-        } else {
-            h.tvCategory.setBackgroundColor(Color.parseColor("#6B7280"));
-        }
-
-        // ===== בוצע / לא בוצע =====
         applyCompletedState(h, task.isCompleted());
 
-        // ===== לחיצה =====
         h.imgCheck.setOnClickListener(v -> {
             boolean newState = !task.isCompleted();
             task.setCompleted(newState);
-
             applyCompletedState(h, newState);
 
-            if (task.getId() != null) {
-                db.collection("home_tasks")
-                        .document("defaultList")
-                        .collection("items")
-                        .document(task.getId())
-                        .update("completed", newState);
+            if (checkedListener != null) {
+                checkedListener.onTaskChecked(task, newState);
             }
         });
     }
 
-    // ================= STATE =================
-
-    private void applyCompletedState(TaskViewHolder h, boolean completed) {
+    private void applyCompletedState(TaskVH h, boolean completed) {
         if (completed) {
             h.imgCheck.setBackgroundResource(R.drawable.bg_check_done);
             h.imgCheck.setColorFilter(Color.parseColor("#16A34A"));
-
             h.tvTitle.setPaintFlags(
                     h.tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
             );
             h.tvTitle.setTextColor(Color.parseColor("#6B7280"));
-
-            h.tvPriority.setAlpha(0.4f);
-            h.tvCategory.setAlpha(0.4f);
+            h.tvCategory.setAlpha(0.5f);
+            h.tvPriority.setAlpha(0.5f);
         } else {
             h.imgCheck.setBackgroundResource(R.drawable.bg_check_circle);
             h.imgCheck.setColorFilter(Color.parseColor("#9CA3AF"));
-
-            h.tvPriority.setAlpha(1f);
-            h.tvCategory.setAlpha(1f);
         }
     }
-
-    // ================= COUNT =================
 
     @Override
     public int getItemCount() {
@@ -167,22 +154,25 @@ public class HomeTasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     // ================= HOLDERS =================
 
-    static class TaskViewHolder extends RecyclerView.ViewHolder {
+    static class TaskVH extends RecyclerView.ViewHolder {
         ImageView imgCheck;
-        TextView tvTitle, tvPriority, tvCategory;
+        TextView tvTitle, tvCategory, tvPriority;
 
-        TaskViewHolder(@NonNull View v) {
+        TaskVH(@NonNull View v) {
             super(v);
             imgCheck = v.findViewById(R.id.imgCheck);
             tvTitle = v.findViewById(R.id.tvTitle);
-            tvPriority = v.findViewById(R.id.tvPriority);
             tvCategory = v.findViewById(R.id.tvCategory);
+            tvPriority = v.findViewById(R.id.tvPriority);
         }
     }
 
-    static class DividerViewHolder extends RecyclerView.ViewHolder {
-        DividerViewHolder(@NonNull View v) {
+    static class DividerVH extends RecyclerView.ViewHolder {
+        Button btnDelete;
+
+        DividerVH(@NonNull View v) {
             super(v);
+            btnDelete = v.findViewById(R.id.btnDeleteCompleted);
         }
     }
 }

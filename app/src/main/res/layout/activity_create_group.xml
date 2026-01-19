@@ -83,6 +83,16 @@
                 android:drawableEnd="@drawable/ic_key"
                 android:hint="הזן קוד ייחודי" />
 
+            <Button
+                android:id="@+id/btnSuggestCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔄 הצע קוד אחר"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/indigo_600"
+                android:textColor="@android:color/white"/>
+
+
             <!-- Phone -->
             <TextView
                 android:layout_width="wrap_content"

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F9FAFB"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- ===== HEADER ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:background="@drawable/bg_gradient_indigo"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_right"
+                app:tint="@android:color/white"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="כלכלה"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="מעקב אחר הכנסות והוצאות"
+                android:textColor="@android:color/white"
+                android:alpha="0.85"/>
+
+        </LinearLayout>
+
+        <!-- ===== CONTENT ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:orientation="vertical">
+
+            <!-- ===== SUMMARY CARDS ===== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_teal"
+                    android:padding="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="הכנסות החודש"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:text="₪8,000"
+                        android:textColor="@android:color/white"
+                        android:textSize="22sp"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="12dp"
+                    android:layout_height="1dp"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_card_slate"
+                    android:padding="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="הוצאות החודש"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:text="₪4,200"
+                        android:textColor="@android:color/white"
+                        android:textSize="22sp"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ===== BALANCE CARD ===== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:padding="20dp"
+                android:background="@drawable/bg_card_indigo"
+                android:orientation="vertical">
+
+                <TextView
+                    android:text="יתרה חודשית"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:text="₪3,800"
+                    android:textColor="@android:color/white"
+                    android:textSize="32sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:text="יעד חיסכון חודשי"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="12dp"/>
+
+                <ProgressBar
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:progress="60"
+                    android:progressDrawable="@drawable/progress_white"
+                    android:background="@android:color/transparent"/>
+
+            </LinearLayout>
+
+            <!-- ===== PERIOD TOGGLE ===== -->
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/togglePeriod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnWeek"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="שבוע"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMonth"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="חודש"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnYear"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="שנה"/>
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <!-- ===== PLACEHOLDERS ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="פילוח הוצאות (בהמשך)"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"/>
+
+            <TextView
+                android:text="גרפים · קטגוריות · היסטוריה"
+                android:textColor="#6B7280"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

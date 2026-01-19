@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="12dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="מוצרים שנקנו"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="#6B7280"/>
+
+    <Button
+        android:id="@+id/btnClearPurchased"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="נקה הכל"
+        android:backgroundTint="#DC2626"
+        android:textColor="@android:color/white"/>
+</LinearLayout>

@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#F9FAFB">
 
-    <!-- MAIN COLUMN -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,10 +13,10 @@
         <!-- HEADER -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="238dp"
+            android:background="@drawable/bg_gradient_teal"
             android:orientation="vertical"
-            android:padding="20dp"
-            android:background="@drawable/bg_gradient_teal">
+            android:padding="20dp">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -32,90 +31,44 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="רשימת קניות"
+                android:textColor="@android:color/white"
                 android:textSize="28sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white" />
-        </LinearLayout>
+                android:textStyle="bold" />
 
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
 
-                <!-- SUMMARY -->
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <include
+                    android:id="@+id/statActive"
+                    layout="@layout/item_task_stat"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:weightSum="2"
-                    android:layout_marginBottom="20dp">
+                    android:layout_weight="1" />
 
-                    <include
-                        android:id="@+id/cardToBuy"
-                        layout="@layout/item_summary_card" />
-
-                    <include
-                        android:id="@+id/cardPurchased"
-                        layout="@layout/item_summary_card" />
-                </LinearLayout>
-
-                <!-- 🛒 לקנות -->
-                <TextView
-                    android:layout_width="wrap_content"
+                <include
+                    android:id="@+id/statCompleted"
+                    layout="@layout/item_task_stat"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="לקנות"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerToBuy"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
-
-                <!-- ✅ נקנו + מחיקה -->
-                <LinearLayout
-                    android:id="@+id/completedSection"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="נקנו"
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/btnClearPurchased"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="נקה הכל"
-                        android:textColor="#EF4444"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerPurchased"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
-
+                    android:layout_weight="1" />
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
+
+        </LinearLayout>
+
+        <!-- ✅ RecyclerView יחיד -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerShopping"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="16dp"
+            android:clipToPadding="false"/>
 
     </LinearLayout>
 

@@ -4,9 +4,10 @@ public class ShoppingListRow {
 
     public static final int TYPE_HEADER = 0;
     public static final int TYPE_ITEM = 1;
+    public static final int TYPE_CLEAR_PURCHASED = 2;
 
     private int type;
-    private String headerTitle;
+    private String title;
     private ShoppingItem item;
 
     private ShoppingListRow(int type) {
@@ -14,26 +15,25 @@ public class ShoppingListRow {
     }
 
     public static ShoppingListRow header(String title) {
-        ShoppingListRow row = new ShoppingListRow(TYPE_HEADER);
-        row.headerTitle = title;
-        return row;
+        ShoppingListRow r = new ShoppingListRow(TYPE_HEADER);
+        r.title = title;
+        return r;
     }
 
     public static ShoppingListRow item(ShoppingItem item) {
-        ShoppingListRow row = new ShoppingListRow(TYPE_ITEM);
-        row.item = item;
-        return row;
+        ShoppingListRow r = new ShoppingListRow(TYPE_ITEM);
+        r.item = item;
+        return r;
     }
 
-    public int getType() {
-        return type;
+    public static ShoppingListRow clearPurchased() {
+        return new ShoppingListRow(TYPE_CLEAR_PURCHASED);
     }
 
-    public String getHeaderTitle() {
-        return headerTitle;
-    }
+    public int getType() { return type; }
+    public String getTitle() { return title; }
+    public ShoppingItem getItem() { return item; }
 
-    public ShoppingItem getItem() {
-        return item;
-    }
+
+
 }

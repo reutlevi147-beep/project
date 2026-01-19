@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,14 +15,21 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class EditUserActivity extends AppCompatActivity {
 
     // ===== UI =====
-    private EditText etName, etPhone, etEmail, etRole;
+    private EditText etName, etPhone, etEmail;
     private Button btnSave;
     private ImageView imgAvatar;
+
+    // Role selection
+    private MaterialButtonToggleGroup toggleRole;
+    private MaterialButton btnParent, btnChild;
+    private String selectedRole = "child"; // ברירת מחדל
 
     // ===== Firebase =====
     private FirebaseFirestore db;
@@ -50,15 +58,29 @@ public class EditUserActivity extends AppCompatActivity {
         etName = findViewById(R.id.etName);
         etPhone = findViewById(R.id.etPhone);
         etEmail = findViewById(R.id.etEmail);
-        etRole = findViewById(R.id.etRole);
         btnSave = findViewById(R.id.btnSave);
         imgAvatar = findViewById(R.id.imgAvatar);
+
+        toggleRole = findViewById(R.id.toggleRole);
+        btnParent = findViewById(R.id.btnParent);
+        btnChild = findViewById(R.id.btnChild);
 
         // ===== Firebase =====
         db = FirebaseFirestore.getInstance();
 
         // ===== Load user =====
         loadUser();
+
+        // ===== Role selection =====
+        toggleRole.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+
+            if (checkedId == R.id.btnParent) {
+                selectedRole = "parent";
+            } else if (checkedId == R.id.btnChild) {
+                selectedRole = "child";
+            }
+        });
 
         // ===== Clicks =====
         btnSave.setOnClickListener(v -> saveUser());
@@ -83,7 +105,15 @@ public class EditUserActivity extends AppCompatActivity {
                     etName.setText(doc.getString("name"));
                     etPhone.setText(doc.getString("phone"));
                     etEmail.setText(doc.getString("email"));
-                    etRole.setText(doc.getString("role"));
+
+                    String role = doc.getString("role");
+                    if ("parent".equals(role)) {
+                        toggleRole.check(R.id.btnParent);
+                        selectedRole = "parent";
+                    } else {
+                        toggleRole.check(R.id.btnChild);
+                        selectedRole = "child";
+                    }
 
                     String avatarColor = doc.getString("avatarColor");
                     if (avatarColor != null) {
@@ -94,11 +124,29 @@ public class EditUserActivity extends AppCompatActivity {
     }
 
     // ===============================
-    // Save user
+    // Save user (עם ולידציות)
     // ===============================
     private void saveUser() {
+
+        // ---- Name ----
         if (TextUtils.isEmpty(etName.getText())) {
             etName.setError("שם חובה");
+            return;
+        }
+
+        // ---- Phone ----
+        String phone = etPhone.getText().toString().trim();
+        if (!TextUtils.isEmpty(phone) && !isValidPhone(phone)) {
+            etPhone.setError("מספר טלפון לא תקין");
+            etPhone.requestFocus();
+            return;
+        }
+
+        // ---- Email ----
+        String email = etEmail.getText().toString().trim();
+        if (!TextUtils.isEmpty(email) && !isValidEmail(email)) {
+            etEmail.setError("אימייל לא תקין");
+            etEmail.requestFocus();
             return;
         }
 
@@ -111,15 +159,28 @@ public class EditUserActivity extends AppCompatActivity {
                 .document(userId)
                 .update(
                         "name", etName.getText().toString().trim(),
-                        "phone", etPhone.getText().toString().trim(),
-                        "email", etEmail.getText().toString().trim(),
-                        "role", etRole.getText().toString().trim(),
+                        "phone", phone,
+                        "email", email,
+                        "role", selectedRole,
                         "avatarColor", selectedAvatarColor
                 )
                 .addOnSuccessListener(v -> {
                     Toast.makeText(this, "נשמר בהצלחה", Toast.LENGTH_SHORT).show();
                     finish();
                 });
+    }
+
+    // ===============================
+    // Validations
+    // ===============================
+    private boolean isValidPhone(String phone) {
+        if (!phone.matches("\\d+")) return false;
+        if (phone.length() < 9 || phone.length() > 10) return false;
+        return phone.startsWith("0");
+    }
+
+    private boolean isValidEmail(String email) {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     // ===============================
@@ -133,28 +194,19 @@ public class EditUserActivity extends AppCompatActivity {
                 .create();
 
         view.findViewById(R.id.avatarBlue).setOnClickListener(v -> {
-            selectColor("blue");
-            dialog.dismiss();
+            selectColor("blue"); dialog.dismiss();
         });
-
         view.findViewById(R.id.avatarPurple).setOnClickListener(v -> {
-            selectColor("purple");
-            dialog.dismiss();
+            selectColor("purple"); dialog.dismiss();
         });
-
         view.findViewById(R.id.avatarRed).setOnClickListener(v -> {
-            selectColor("red");
-            dialog.dismiss();
+            selectColor("red"); dialog.dismiss();
         });
-
         view.findViewById(R.id.avatarPink).setOnClickListener(v -> {
-            selectColor("pink");
-            dialog.dismiss();
+            selectColor("pink"); dialog.dismiss();
         });
-
         view.findViewById(R.id.avatarTeal).setOnClickListener(v -> {
-            selectColor("teal");
-            dialog.dismiss();
+            selectColor("teal"); dialog.dismiss();
         });
 
         dialog.show();
@@ -165,36 +217,19 @@ public class EditUserActivity extends AppCompatActivity {
         applyAvatarColor(color);
     }
 
-    // ===============================
-    // Apply avatar color (רקע בלבד)
-    // ===============================
     private void applyAvatarColor(String color) {
-
-        // אייקון נשאר רגיל
         imgAvatar.setImageResource(R.drawable.ic_user);
         imgAvatar.setColorFilter(
                 ContextCompat.getColor(this, android.R.color.white)
         );
 
-
-        int bgColor = R.color.avatar_beige; // ברירת מחדל עדינה
-
+        int bgColor = R.color.avatar_beige;
         switch (color) {
-            case "blue":
-                bgColor = R.color.avatar_blue;
-                break;
-            case "purple":
-                bgColor = R.color.avatar_purple;
-                break;
-            case "red":
-                bgColor = R.color.avatar_red;
-                break;
-            case "pink":
-                bgColor = R.color.avatar_pink;
-                break;
-            case "teal":
-                bgColor = R.color.avatar_teal;
-                break;
+            case "blue": bgColor = R.color.avatar_blue; break;
+            case "purple": bgColor = R.color.avatar_purple; break;
+            case "red": bgColor = R.color.avatar_red; break;
+            case "pink": bgColor = R.color.avatar_pink; break;
+            case "teal": bgColor = R.color.avatar_teal; break;
         }
 
         imgAvatar.setBackgroundTintList(

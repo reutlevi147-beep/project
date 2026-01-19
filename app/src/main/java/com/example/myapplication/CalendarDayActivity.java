@@ -69,13 +69,11 @@ public class CalendarDayActivity extends AppCompatActivity {
         btnPrevMonth.setOnClickListener(v -> {
             selectedCalendar.add(Calendar.MONTH, -1);
             selectedCalendar.set(Calendar.DAY_OF_MONTH, 1);
-
             updateMonthTitle();
             buildMonthCalendar();
             monthAdapter.setSelectedDay(1);
             loadEventsForSelectedDate();
         });
-
 
         btnNextMonth.setOnClickListener(v -> {
             selectedCalendar.add(Calendar.MONTH, 1);
@@ -112,6 +110,13 @@ public class CalendarDayActivity extends AppCompatActivity {
         loadEventsForSelectedDate();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadEventsForSelectedDate();
+    }
+
+
     private void updateMonthTitle() {
         SimpleDateFormat monthFormat =
                 new SimpleDateFormat("MMMM yyyy", new Locale("he"));
@@ -134,17 +139,15 @@ public class CalendarDayActivity extends AppCompatActivity {
     }
 
     private void loadEventsForSelectedDate() {
-        SharedPreferences prefs =
-                getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
-
-        if (groupId == null) return;
+        if (groupId == null || groupId.isEmpty()) return;
 
         FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(groupId)
                 .collection("calendar_events")
-                .whereEqualTo("groupId", groupId)
                 .addSnapshotListener(this, (snapshot, e) -> {
-
                     if (snapshot == null) return;
 
                     events.clear();
