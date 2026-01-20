@@ -41,7 +41,7 @@
     <!-- שורת משימות (Footer Fragment) -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_footer"
-        android:name="com.example.myapplication.footerFragment"
+        android:name="com.mycasa.app.footerFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom" />
