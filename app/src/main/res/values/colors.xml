@@ -26,6 +26,9 @@
         <color name="indigo_600">#4F46E5</color>
     <color name="indigo">#6366F1</color>
 
+    <!-- Income / Expense -->
+    <color name="green_income">#16A34A</color>   <!-- ירוק נעים -->
+    <color name="red_expense">#DC2626</color>    <!-- אדום נעים -->
 
 
 </resources>

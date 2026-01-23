@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#F9FAFB">
 
-    <!-- ===== CONTENT ===== -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -17,7 +16,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- HEADER -->
+            <!-- ================= HEADER ================= -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -34,44 +33,73 @@
                     app:tint="@android:color/white"/>
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="הגדרת תזרים חודשי"
+                    android:layout_marginTop="12dp"
+                    android:text="בואי נגדיר את התזרים החודשי שלך"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/white"
-                    android:layout_marginTop="12dp"/>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="מסך חד־פעמי. אפשר לשנות הכול בהמשך"
+                    android:text="מסך חד־פעמי. אפשר לשנות הכל בהמשך"
                     android:textColor="@android:color/white"
-                    android:alpha="0.85"/>
+                    android:alpha="0.85"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
 
-            <!-- SUMMARY (include) -->
+            <!-- ================= SUMMARY ================= -->
             <include layout="@layout/view_flow_summary_sticky"/>
 
-            <!-- LIST -->
+            <!-- ================= הכנסות קבועות ================= -->
+            <include layout="@layout/view_section_header_income"/>
+
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvFlow"
+                android:id="@+id/rvIncome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:paddingHorizontal="16dp"
                 android:nestedScrollingEnabled="false"/>
+
+            <!-- ================= הוצאות קבועות ================= -->
+            <include layout="@layout/view_section_header_expense_fixed"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvExpenseFixed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:nestedScrollingEnabled="false"/>
+
+            <!-- ================= הוצאות משתנות ================= -->
+            <include layout="@layout/view_section_header_expense_variable"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvExpenseVariable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:nestedScrollingEnabled="false"/>
+
+            <!-- רווח לכפתור -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="80dp"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- BOTTOM ACTION -->
+    <!-- ================= BOTTOM BUTTON ================= -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnFinish"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_gravity="bottom"
-        android:text="סיימתי – המשך"
+        android:layout_margin="16dp"
+        android:text="סיימתי – המשך לכלכלה"
         android:textStyle="bold"
         android:textColor="@android:color/white"
+        app:cornerRadius="16dp"
         app:backgroundTint="@color/indigo_600"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

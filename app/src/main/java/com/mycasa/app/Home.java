@@ -107,9 +107,13 @@ public class Home extends AppCompatActivity {
             }
 
             if (id == R.id.nav_stats) {
-                startActivity(new Intent(this, Finance.class));
+                startActivity(new Intent(this, FinanceSetupActivity.class));
                 return true;
             }
+
+
+
+
 
             return false;
         });
