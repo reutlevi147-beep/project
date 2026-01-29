@@ -292,13 +292,51 @@
                             android:layout_width="match_parent"
                             android:layout_height="12dp"/>
 
+                        <com.google.android.material.button.MaterialButtonToggleGroup
+                            android:id="@+id/toggleExpenseType"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            app:singleSelection="true"
+                            app:selectionRequired="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnFixed"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="קבועות" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnVariable"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="משתנות" />
+                        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
                         <!-- List -->
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvCategoryExpenses"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:nestedScrollingEnabled="false"
+                            android:layout_height="-50dp"
+                            android:layout_weight="1"
                             android:overScrollMode="never"/>
+
+                        <com.github.mikephil.charting.charts.PieChart
+                            android:id="@+id/pieFixedExpenses"
+                            android:layout_width="match_parent"
+                            android:layout_height="260dp"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginBottom="16dp" />
+
+
+                        <com.github.mikephil.charting.charts.BarChart
+                            android:id="@+id/barMonthlySummary"
+                            android:layout_width="match_parent"
+                            android:layout_height="260dp"
+                            android:layout_marginTop="16dp" />
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>

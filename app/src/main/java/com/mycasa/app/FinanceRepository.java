@@ -1,13 +1,18 @@
 package com.mycasa.app;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FinanceRepository {
 
@@ -93,14 +98,39 @@ public class FinanceRepository {
                 .update("lastApprovedAt", item.getLastApprovedAt());
     }
 
-    public static void saveOrUpdateFlowItem(String groupId, FlowItem item) {
-        FirebaseFirestore.getInstance()
-                .collection("groups")
+    public static void saveOrUpdateFlowItem(
+            String groupId,
+            FlowItem item
+    ) {
+        if (groupId == null || item == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        DocumentReference ref = db.collection("groups")
                 .document(groupId)
                 .collection("finance_flow_items")
-                .document(item.getId()) // ⭐️ ID קבוע
-                .set(item);             // overwrite זה בסדר
+                .document(item.getId());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", item.getTitle());
+        data.put("categoryId", item.getCategoryId());
+        data.put("amount", item.getAmount());
+        data.put("frequency", item.getFrequency());
+        data.put("enabled", item.getAmount() > 0);
+
+        // ⭐️ זה החלק החשוב
+        data.put("updatedAt", FieldValue.serverTimestamp());
+
+        ref.get().addOnSuccessListener(snapshot -> {
+            if (!snapshot.exists()) {
+                // פריט חדש → תאריך יצירה
+                data.put("createdAt", FieldValue.serverTimestamp());
+            }
+
+            ref.set(data, SetOptions.merge());
+        });
     }
+
 
 
     // ===========================
