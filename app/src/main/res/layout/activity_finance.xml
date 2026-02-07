@@ -54,9 +54,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
-
+                android:orientation="vertical"
+                android:padding="16dp">
                 <!-- ===== SUMMARY CARDS ===== -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -71,6 +70,7 @@
                         android:background="@drawable/bg_card_teal"
                         android:padding="16dp"
                         android:orientation="vertical">
+
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -288,60 +288,143 @@
                                 app:tint="#6B7280"/>
                         </LinearLayout>
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="12dp"/>
-
-                        <com.google.android.material.button.MaterialButtonToggleGroup
-                            android:id="@+id/toggleExpenseType"
+                        <!-- ⬇️ זה החלק שייפתח / ייסגר ⬇️ -->
+                        <LinearLayout
+                            android:id="@+id/layoutExpensesContent"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            app:singleSelection="true"
-                            app:selectionRequired="true">
+                            android:orientation="vertical">
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnFixed"
-                                android:layout_width="0dp"
-                                android:layout_height="40dp"
-                                android:layout_weight="1"
-                                android:text="קבועות" />
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"/>
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnVariable"
-                                android:layout_width="0dp"
-                                android:layout_height="40dp"
-                                android:layout_weight="1"
-                                android:text="משתנות" />
-                        </com.google.android.material.button.MaterialButtonToggleGroup>
+                            <com.google.android.material.button.MaterialButtonToggleGroup
+                                android:id="@+id/toggleExpenseType"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                app:singleSelection="true"
+                                app:selectionRequired="true">
 
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnFixed"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="קבועות" />
 
-                        <!-- List -->
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rvCategoryExpenses"
-                            android:layout_width="match_parent"
-                            android:layout_height="-50dp"
-                            android:layout_weight="1"
-                            android:overScrollMode="never"/>
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnVariable"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="משתנות" />
+                            </com.google.android.material.button.MaterialButtonToggleGroup>
 
-                        <com.github.mikephil.charting.charts.PieChart
-                            android:id="@+id/pieFixedExpenses"
-                            android:layout_width="match_parent"
-                            android:layout_height="260dp"
-                            android:layout_marginTop="16dp"
-                            android:layout_marginBottom="16dp" />
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvCategoryExpenses"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:overScrollMode="never"/>
 
+                            <com.github.mikephil.charting.charts.PieChart
+                                android:id="@+id/pieFixedExpenses"
+                                android:layout_width="match_parent"
+                                android:layout_height="260dp"
+                                android:layout_marginTop="16dp"
+                                android:layout_marginBottom="16dp" />
 
-                        <com.github.mikephil.charting.charts.BarChart
-                            android:id="@+id/barMonthlySummary"
-                            android:layout_width="match_parent"
-                            android:layout_height="260dp"
-                            android:layout_marginTop="16dp" />
+                            <com.github.mikephil.charting.charts.BarChart
+                                android:id="@+id/barMonthlySummary"
+                                android:layout_width="match_parent"
+                                android:layout_height="260dp"
+                                android:layout_marginTop="16dp" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
             </LinearLayout>
+
+            <!-- ===== SAVINGS GOALS ===== -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGoals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#ECFDF5">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvGoalsTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="🎯 מטרות חיסכון"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#065F46"/>
+
+                        <ImageView
+                            android:id="@+id/imgGoalsArrow"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_chevron_up"
+                            app:tint="#065F46"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="12dp"/>
+
+                    <!-- Content -->
+                    <LinearLayout
+                        android:id="@+id/layoutGoalsContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvGoals"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            android:overScrollMode="never"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="12dp"/>
+
+                        <!-- Add Goal Button -->
+                        <Button
+                            android:id="@+id/btnAddGoal"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="➕ הוסף מטרה חדשה"
+                            android:textAllCaps="false"
+                            android:textColor="#065F46"
+                            android:backgroundTint="#D1FAE5"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
         </LinearLayout>
     </ScrollView>
 

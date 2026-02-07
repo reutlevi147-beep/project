@@ -1,6 +1,7 @@
 package com.mycasa.app;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FinanceCatalog {
@@ -195,6 +196,28 @@ public class FinanceCatalog {
         }
 
         return result;
+    }
+
+
+
+        public static List<String> getIncomeCategoryIds() {
+            return Arrays.asList(
+                    "income_salary",
+                    "income_bonus",
+                    "income_other"
+            );
+        }
+
+        public static List<String> getExpenseCategoryIds() {
+            return Arrays.asList(
+                    "expense_food",
+                    "expense_housing",
+                    "expense_transport",
+                    "expense_health",
+                    "expense_leisure",
+                    "expense_other"
+            );
+        }
     }
 
 

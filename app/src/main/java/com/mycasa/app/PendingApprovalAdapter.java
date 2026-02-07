@@ -78,13 +78,13 @@ public class PendingApprovalAdapter
             // 1️⃣ עדכון מקומי
             item.setAmount(newAmount);
             item.setLastApprovedAt(new Date());
+            item.setApproved(true); // ✅ זה התיקון הקריטי
 
             // 2️⃣ שמירה ל־Firebase
             FinanceRepository.saveOrUpdateFlowItem(
                     AppSession.getGroupId(),
                     item
             );
-
 
             // 3️⃣ הסרה מהרשימה
             items.remove(pos);
@@ -96,7 +96,6 @@ public class PendingApprovalAdapter
             }
         });
     }
-
 
     @Override
     public int getItemCount() {

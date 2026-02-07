@@ -13,6 +13,7 @@
     <color name="avatar_purple">#8B5CF6</color>
     <color name="avatar_green">#22C55E</color>
     <color name="avatar_orange">#F97316</color>
+    <color name="text_secondary">#6B7280</color>
 
     <color name="avatar_beige">#F5EFE6</color>
 
@@ -20,6 +21,9 @@
     <color name="avatar_pink">#EC4899</color>
     <color name="avatar_teal">#14B8A6</color>
     <color name="avatar_gray">#6B7280</color>
+    <color name="green_light_bg">#ECFDF5</color>
+    <color name="blue_light_bg">#EFF6FF</color>
+    <color name="gray_500">#6B7280</color>
 
 
     <color name="teal_600">#0D9488</color>

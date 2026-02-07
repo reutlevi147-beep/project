@@ -5,7 +5,7 @@ import java.util.Date;
 public class FlowItem {
 
     private String id;
-    private String categoryId;   // קטגוריה ראשית (expense_housing וכו')
+    private String categoryId;
     private String title;
 
     private int amount;
@@ -14,6 +14,9 @@ public class FlowItem {
     private String frequency = "חודשי";
 
     private Date lastApprovedAt;
+
+    // ⭐️ חדש – אינדיקציה לוגית לאישור
+    private Boolean approved;   // שימי לב: Boolean (לא boolean)
 
     public FlowItem() {
         // חובה ל-Firebase
@@ -25,6 +28,7 @@ public class FlowItem {
         this.title = title;
         this.amount = 0;
         this.enabled = true;
+        this.approved = false;
     }
 
     // ===== Getters =====
@@ -60,6 +64,10 @@ public class FlowItem {
         return lastApprovedAt;
     }
 
+    public Boolean isApproved() {
+        return approved;
+    }
+
     // ===== Setters =====
     public void setAmount(int amount) {
         this.amount = amount;
@@ -79,6 +87,10 @@ public class FlowItem {
 
     public void setLastApprovedAt(Date lastApprovedAt) {
         this.lastApprovedAt = lastApprovedAt;
+    }
+
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
     }
 
     // ===== Logic =====
