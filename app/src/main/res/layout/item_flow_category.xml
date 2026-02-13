@@ -54,6 +54,23 @@
             android:visibility="gone"
             android:nestedScrollingEnabled="false" />
 
+        <LinearLayout
+            android:id="@+id/rowAddIncome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/btnAddIncome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="➕ הוסף משכורת"
+                android:textColor="#4F46E5"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

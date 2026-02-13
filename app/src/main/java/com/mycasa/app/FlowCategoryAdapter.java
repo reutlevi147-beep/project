@@ -27,11 +27,19 @@ public class FlowCategoryAdapter
     public void setOnItemChangedListener(OnItemChangedListener listener) {
         this.listener = listener;
     }
+    public interface OnAddIncomeClickListener {
+        void onAddIncomeClicked();
+    }
 
     private final Context context;
     private final List<FlowCategory> categories;
     private final List<FlowItem> allItems;
     private final LayoutInflater inflater;
+    private OnAddIncomeClickListener addIncomeListener;
+
+    public void setOnAddIncomeClickListener(OnAddIncomeClickListener l) {
+        this.addIncomeListener = l;
+    }
 
     public FlowCategoryAdapter(
             Context context,
@@ -69,6 +77,21 @@ public class FlowCategoryAdapter
 
         holder.imgChevron.setRotation(expanded ? 180f : 0f);
         holder.rvItems.setVisibility(expanded ? View.VISIBLE : View.GONE);
+
+        // 👇 רק ל־income_work
+        if (category.getId().equals("income_work") && expanded) {
+
+            holder.showAddIncome(true);
+
+            holder.btnAddIncome.setOnClickListener(v -> {
+                if (addIncomeListener != null) {
+                    addIncomeListener.onAddIncomeClicked();
+                }
+            });
+
+        } else {
+            holder.showAddIncome(false);
+        }
 
         if (expanded) {
             List<FlowItem> itemsForCategory = new ArrayList<>();
@@ -112,6 +135,10 @@ public class FlowCategoryAdapter
         ImageView imgChevron;
         RecyclerView rvItems;
 
+        // ⭐️ חדש
+        LinearLayout addIncomeRow;
+        TextView btnAddIncome;
+
         CategoryVH(@NonNull View itemView) {
             super(itemView);
 
@@ -124,6 +151,18 @@ public class FlowCategoryAdapter
                     new LinearLayoutManager(itemView.getContext())
             );
             rvItems.setNestedScrollingEnabled(false);
+
+            // ⭐️ חיבור רכיבי "הוסף משכורת"
+            addIncomeRow = itemView.findViewById(R.id.rowAddIncome);
+            btnAddIncome = itemView.findViewById(R.id.btnAddIncome);
+        }
+
+        void showAddIncome(boolean show) {
+            if (addIncomeRow != null) {
+                addIncomeRow.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
         }
     }
+
+
 }

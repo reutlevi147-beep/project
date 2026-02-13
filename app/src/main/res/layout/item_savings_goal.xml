@@ -28,7 +28,6 @@
                 android:gravity="center_vertical">
 
                 <ImageView
-                    android:id="@+id/imgIcon"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:background="@drawable/bg_circle_light"
@@ -44,20 +43,18 @@
 
                     <TextView
                         android:id="@+id/tvTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="שם מטרה"
                         android:textStyle="bold"
                         android:textSize="15sp"
-                        android:textColor="#111827"/>
+                        android:textColor="#111827"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
 
                     <TextView
                         android:id="@+id/tvType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="חודשי"
                         android:textSize="12sp"
-                        android:textColor="#6B7280"/>
+                        android:textColor="#6B7280"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
                 </LinearLayout>
 
                 <ImageButton
@@ -66,55 +63,44 @@
                     android:layout_height="36dp"
                     android:background="@drawable/bg_circle_light"
                     android:src="@drawable/ic_plus"
-                    android:contentDescription="הוסף סכום"
-                    android:layout_gravity="end"
                     app:tint="@color/green_income"/>
             </LinearLayout>
 
             <!-- סכומים -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/tvCurrent"
+                    android:textStyle="bold"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="₪1,200"
-                    android:textStyle="bold"/>
+                    android:layout_height="wrap_content"/>
 
                 <TextView
                     android:id="@+id/tvTarget"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="₪2,000"
-                    android:textColor="#6B7280"/>
+                    android:textColor="#6B7280"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
 
-            <!-- Progress -->
             <ProgressBar
                 android:id="@+id/progressGoal"
                 style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="6dp"
                 android:layout_marginTop="6dp"
-                android:max="100"
-                android:progress="40"/>
+                android:layout_width="match_parent"
+                android:layout_height="6dp"/>
 
-            <!-- מצב -->
             <TextView
                 android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="נותר ₪800"
                 android:textSize="12sp"
-                android:textColor="#374151"/>
-
+                android:textColor="#374151"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -124,37 +110,44 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#CCFFFFFF"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true">
+        android:visibility="gone">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
             android:gravity="center"
-            android:orientation="vertical">
-
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@android:drawable/ic_lock_lock"
-                app:tint="@color/gray_500"/>
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <TextView
                 android:id="@+id/tvLockMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="היעד הושג"
                 android:textStyle="bold"
                 android:textSize="14sp"
-                android:layout_marginTop="8dp"/>
-
-            <Button
-                android:id="@+id/btnCopyGoal"
+                android:layout_marginBottom="12dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="העתק מטרה חדשה"
-                android:layout_marginTop="12dp"/>
+                android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/btnRestartGoal"
+                    android:background="@drawable/bg_circle_light"
+                    android:src="@drawable/ic_refresh"
+                    app:tint="@color/indigo_600"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"/>
+
+                <ImageButton
+                    android:id="@+id/btnDeleteGoal"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_circle_light"
+                    android:src="@drawable/ic_trash"
+                    app:tint="@color/red_expense"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"/>
+            </LinearLayout>
         </LinearLayout>
     </FrameLayout>
 

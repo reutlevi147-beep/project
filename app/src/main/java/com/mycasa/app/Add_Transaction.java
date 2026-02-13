@@ -3,7 +3,6 @@ package com.mycasa.app;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -20,7 +19,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class Add_Transaction extends AppCompatActivity {
@@ -29,12 +27,11 @@ public class Add_Transaction extends AppCompatActivity {
     private EditText etAmount, etTitle, etDate, etNotes;
     private MaterialButton btnSave, btnCancel;
     private MaterialButtonToggleGroup toggleType;
-    private MaterialButton btnExpense, btnIncome;
     private RecyclerView rvCategories;
 
     // ===== State =====
-    private String selectedCategoryId = null;
-    private boolean isIncome = false; // default: הוצאה
+    private String selectedSubCategoryId = null;   // תת־קטגוריה נבחרת
+    private boolean isIncome = false;              // ברירת מחדל: הוצאה
     private Date selectedDate = new Date();
 
     // Firebase
@@ -59,9 +56,6 @@ public class Add_Transaction extends AppCompatActivity {
         btnCancel = findViewById(R.id.btnCancel);
 
         toggleType = findViewById(R.id.toggleType);
-        btnExpense = findViewById(R.id.btnExpense);
-        btnIncome = findViewById(R.id.btnIncome);
-
         rvCategories = findViewById(R.id.rvCategories);
 
         // ===== Default =====
@@ -73,6 +67,7 @@ public class Add_Transaction extends AppCompatActivity {
             if (!isChecked) return;
 
             isIncome = checkedId == R.id.btnIncome;
+            selectedSubCategoryId = null; // 🔑 איפוס חובה
             loadCategories();
         });
 
@@ -102,12 +97,11 @@ public class Add_Transaction extends AppCompatActivity {
         CategoryChipsAdapter adapter =
                 new CategoryChipsAdapter(
                         categories,
-                        categoryId -> selectedCategoryId = categoryId
+                        categoryId -> selectedSubCategoryId = categoryId
                 );
 
         rvCategories.setAdapter(adapter);
     }
-
 
     // =========================
     // Date Picker
@@ -161,7 +155,7 @@ public class Add_Transaction extends AppCompatActivity {
             return;
         }
 
-        if (selectedCategoryId == null) {
+        if (selectedSubCategoryId == null) {
             Toast.makeText(this, "יש לבחור קטגוריה", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -174,14 +168,22 @@ public class Add_Transaction extends AppCompatActivity {
             return;
         }
 
+        // ===== קטגוריית־על חד־פעמי =====
+        String oneTimeCategoryId = isIncome
+                ? "income_one_time"
+                : "expense_one_time";
+
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("amount", amount);
-        data.put("categoryId", selectedCategoryId);
+
+        data.put("categoryId", oneTimeCategoryId);
+        data.put("subCategoryId", selectedSubCategoryId);
+        data.put("isOneTime", true);
+
         data.put("enabled", true);
-        data.put("frequency", "חד פעמי");
+        data.put("transactionDate", selectedDate); // 🔑 זה התאריך החשוב
         data.put("createdAt", FieldValue.serverTimestamp());
-        data.put("updatedAt", selectedDate);
 
         if (!TextUtils.isEmpty(notes)) {
             data.put("notes", notes);
@@ -194,7 +196,9 @@ public class Add_Transaction extends AppCompatActivity {
                 .addOnSuccessListener(doc -> {
                     Toast.makeText(
                             this,
-                            isIncome ? "הכנסה נשמרה 💚" : "הוצאה נשמרה",
+                            isIncome
+                                    ? "הכנסה חד־פעמית נשמרה 💚"
+                                    : "הוצאה חד־פעמית נשמרה",
                             Toast.LENGTH_SHORT
                     ).show();
                     finish();

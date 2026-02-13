@@ -1,5 +1,6 @@
 package com.mycasa.app;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +25,16 @@ public class FixedExpenseDrillAdapter
 
     public FixedExpenseDrillAdapter(List<CategoryWithItems> categories) {
         this.categories = categories;
+
+        Log.d("ADAPTER_DEBUG", "parents=" + categories.size());
+        for (CategoryWithItems c : categories) {
+            Log.d("ADAPTER_DEBUG", "parent=" + c.title + " children=" + c.items.size());
+        }
         buildRows();
+        Log.d("ADAPTER_DEBUG", "rows=" + rows.size());
     }
+
+
 
 
     private void buildRows() {
@@ -106,10 +115,10 @@ public class FixedExpenseDrillAdapter
 
     @Override
     public int getItemCount() {
+        android.util.Log.d("ADAPTER_ROWS", "rows.size=" + rows.size());
         return rows.size();
     }
 
-    // ===== ViewHolders =====
 
     static class ParentVH extends RecyclerView.ViewHolder {
         View dot;
@@ -134,4 +143,5 @@ public class FixedExpenseDrillAdapter
             tvAmount = v.findViewById(R.id.tvChildAmount);
         }
     }
+
 }

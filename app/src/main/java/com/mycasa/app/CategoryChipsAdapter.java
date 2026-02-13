@@ -1,5 +1,6 @@
 package com.mycasa.app;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,22 +9,41 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CategoryChipsAdapter
         extends RecyclerView.Adapter<CategoryChipsAdapter.ViewHolder> {
 
     public interface OnCategoryClickListener {
-        void onCategoryClick(String category);
+        void onCategoryClick(String categoryId);
     }
 
-    private final List<String> categories;
+    private final List<String> categoryIds;
     private final OnCategoryClickListener listener;
     private int selectedPosition = RecyclerView.NO_POSITION;
 
-    public CategoryChipsAdapter(List<String> categories,
-                                OnCategoryClickListener listener) {
-        this.categories = categories;
+    // 🔹 מיפוי ID → עברית
+    private static final Map<String, String> CATEGORY_TITLES = new HashMap<>();
+    static {
+        CATEGORY_TITLES.put("income_salary", "משכורת");
+        CATEGORY_TITLES.put("income_bonus", "בונוס");
+        CATEGORY_TITLES.put("income_other", "הכנסה אחרת");
+
+        CATEGORY_TITLES.put("expense_food", "אוכל");
+        CATEGORY_TITLES.put("expense_housing", "דיור");
+        CATEGORY_TITLES.put("expense_transport", "תחבורה");
+        CATEGORY_TITLES.put("expense_health", "בריאות");
+        CATEGORY_TITLES.put("expense_leisure", "פנאי");
+        CATEGORY_TITLES.put("expense_other", "שונות");
+    }
+
+    public CategoryChipsAdapter(
+            List<String> categoryIds,
+            OnCategoryClickListener listener
+    ) {
+        this.categoryIds = categoryIds;
         this.listener = listener;
     }
 
@@ -43,11 +63,25 @@ public class CategoryChipsAdapter
             @NonNull ViewHolder holder,
             int position
     ) {
-        String category = categories.get(position);
-        holder.tvCategory.setText(category);
+        String categoryId = categoryIds.get(position);
+        String title = CATEGORY_TITLES.get(categoryId);
 
-        // מצב בחירה
-        holder.itemView.setSelected(position == selectedPosition);
+        holder.tvCategory.setText(
+                title != null ? title : categoryId
+        );
+
+        boolean selected = position == selectedPosition;
+
+        // 🎨 עיצוב בחירה
+        holder.itemView.setBackgroundResource(
+                selected
+                        ? R.drawable.bg_chip_selected
+                        : R.drawable.bg_chip_normal
+        );
+
+        holder.tvCategory.setTextColor(
+                selected ? Color.WHITE : Color.parseColor("#374151")
+        );
 
         holder.itemView.setOnClickListener(v -> {
             int oldPos = selectedPosition;
@@ -57,14 +91,14 @@ public class CategoryChipsAdapter
             notifyItemChanged(selectedPosition);
 
             if (listener != null) {
-                listener.onCategoryClick(category);
+                listener.onCategoryClick(categoryId); // 🔑 ID אמיתי
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return categories.size();
+        return categoryIds.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -73,12 +107,17 @@ public class CategoryChipsAdapter
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvCategory = itemView.findViewById(android.R.id.text1);
 
-            // אם אין id – נופלים על TextView הראשון
+            tvCategory = itemView.findViewById(R.id.tvCategory);
+
+            // 🛡️ גיבוי – אם מישהו שכח id ב-XML
             if (tvCategory == null && itemView instanceof ViewGroup) {
-                tvCategory = (TextView) ((ViewGroup) itemView).getChildAt(0);
+                ViewGroup vg = (ViewGroup) itemView;
+                if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof TextView) {
+                    tvCategory = (TextView) vg.getChildAt(0);
+                }
             }
         }
     }
+
 }

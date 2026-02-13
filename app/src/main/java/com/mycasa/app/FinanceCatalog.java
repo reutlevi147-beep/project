@@ -7,10 +7,12 @@ import java.util.List;
 public class FinanceCatalog {
 
     /* =====================================================
-     * הכנסות קבועות
+     * הכנסות (כולל חד־פעמי)
      * ===================================================== */
     public static List<FlowCategory> getFixedIncomeCategories() {
         List<FlowCategory> list = new ArrayList<>();
+
+
 
         list.add(new FlowCategory("income_work", "עבודה והכנסות", true));
         list.add(new FlowCategory("income_other", "הכנסות נוספות", true));
@@ -37,10 +39,12 @@ public class FinanceCatalog {
     }
 
     /* =====================================================
-     * הוצאות משתנות
+     * הוצאות משתנות (כולל חד־פעמי)
      * ===================================================== */
     public static List<FlowCategory> getVariableExpenseCategories() {
         List<FlowCategory> list = new ArrayList<>();
+
+
 
         list.add(new FlowCategory("expense_food", "אוכל וקניות", false));
         list.add(new FlowCategory("expense_health", "בריאות", false));
@@ -53,13 +57,13 @@ public class FinanceCatalog {
     }
 
     /* =====================================================
-     * כל תתי־הקטגוריות
+     * תתי־קטגוריות רגילות (לא חד־פעמי)
      * ===================================================== */
     public static List<FlowItem> getAllItems() {
         List<FlowItem> list = new ArrayList<>();
 
         /* ===== הכנסות ===== */
-        list.add(new FlowItem("salary", "income_work", "משכורת"));
+        list.add(new FlowItem("salary_main", "income_work", "משכורת"));
         list.add(new FlowItem("bonus", "income_work", "בונוס"));
         list.add(new FlowItem("freelance", "income_work", "עצמאי / פרילנס"));
 
@@ -136,89 +140,24 @@ public class FinanceCatalog {
         return list;
     }
 
-    public static List<FlowItem> getPendingDemoItems() {
-
-        List<FlowItem> list = new ArrayList<>();
-
-        list.add(new FlowItem("electric", "expense_fixed", "חשמל"));
-        list.get(0).setAmount(350);
-        list.get(0).setFrequency("חודשי");
-
-        list.add(new FlowItem("water", "expense_fixed", "מים"));
-        list.get(1).setAmount(180);
-        list.get(1).setFrequency("דו-חודשי");
-
-        list.add(new FlowItem("mortgage", "expense_fixed", "משכנתא"));
-        list.get(2).setAmount(3750);
-        list.get(2).setFrequency("חודשי");
-
-        list.add(new FlowItem("salary", "income_fixed", "משכורת"));
-        list.get(3).setAmount(9000);
-        list.get(3).setFrequency("חודשי");
-
-        return list;
-    }
-    public static List<FlowItem> getPendingItemsForPeriod(String period) {
-
-        List<FlowItem> result = new ArrayList<>();
-
-        for (FlowItem item : getAllItems()) {
-
-            // רק פריטים שמוגדרים (יש סכום)
-            if (!item.isConfigured()) continue;
-
-            String freq = item.getFrequency();
-
-            if (period.equals("month") && freq.equals("חודשי")) {
-                result.add(item);
-            }
-
-            if (period.equals("year") && freq.equals("שנתי")) {
-                result.add(item);
-            }
-
-            if (period.equals("week")) {
-                // כרגע אין שבועי – אפשר להרחיב בעתיד
-            }
-        }
-
-        return result;
+    /* =====================================================
+     * IDs לשימוש במסך ההוספה (לא נוגעים)
+     * ===================================================== */
+    public static List<String> getIncomeCategoryIds() {
+        return Arrays.asList(
+                "income_work",
+                "income_other"
+        );
     }
 
-    public static List<FlowItem> getAllPendingItems() {
-
-        List<FlowItem> result = new ArrayList<>();
-
-        for (FlowItem item : getAllItems()) {
-            if (item.isConfigured()) {
-                result.add(item);
-            }
-        }
-
-        return result;
+    public static List<String> getExpenseCategoryIds() {
+        return Arrays.asList(
+                "expense_food",
+                "expense_housing",
+                "expense_transport",
+                "expense_health",
+                "expense_leisure",
+                "expense_home_misc"
+        );
     }
-
-
-
-        public static List<String> getIncomeCategoryIds() {
-            return Arrays.asList(
-                    "income_salary",
-                    "income_bonus",
-                    "income_other"
-            );
-        }
-
-        public static List<String> getExpenseCategoryIds() {
-            return Arrays.asList(
-                    "expense_food",
-                    "expense_housing",
-                    "expense_transport",
-                    "expense_health",
-                    "expense_leisure",
-                    "expense_other"
-            );
-        }
-    }
-
-
 }

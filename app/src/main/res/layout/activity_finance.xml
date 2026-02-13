@@ -7,12 +7,13 @@
     android:background="#F9FAFB">
 
     <!-- ===== CONTENT ===== -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
 
-        <LinearLayout
+
+    <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -24,7 +25,11 @@
                 android:padding="20dp"
                 android:background="@drawable/bg_gradient_indigo"
                 android:orientation="vertical">
-
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
                 <ImageButton
                     android:id="@+id/btnBack"
                     android:layout_width="40dp"
@@ -33,6 +38,19 @@
                     android:src="@drawable/ic_arrow_right"
                     app:tint="@android:color/white" />
 
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+                <ImageButton
+                    android:id="@+id/btnFinanceSettings"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_settings"
+                    android:contentDescription="הגדרות כלכלה"
+                    app:tint="@android:color/white" />
+                </LinearLayout>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -49,6 +67,44 @@
                     android:textColor="@android:color/white"
                     android:alpha="0.85" />
             </LinearLayout>
+
+            <!-- ===== Month Selector ===== -->
+            <LinearLayout
+                android:id="@+id/layoutMonthSelector"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="12dp">
+
+                <ImageButton
+                    android:id="@+id/btnPrevMonth"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_chevron_left"
+                    android:contentDescription="חודש קודם" />
+
+                <TextView
+                    android:id="@+id/tvSelectedMonth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:text="מרץ 2026"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#111827" />
+
+                <ImageButton
+                    android:id="@+id/btnNextMonth"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_chevron_right"
+                    android:contentDescription="חודש הבא" />
+
+            </LinearLayout>
+
 
             <!-- ===== BODY ===== -->
             <LinearLayout
@@ -239,11 +295,12 @@
                             android:layout_height="8dp"/>
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rvPending"
+                            android:id="@+id/rvPendingApprovals"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:nestedScrollingEnabled="false"
                             android:overScrollMode="never"/>
+
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -326,7 +383,9 @@
                                 android:id="@+id/rvCategoryExpenses"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
                                 android:overScrollMode="never"/>
+
 
                             <com.github.mikephil.charting.charts.PieChart
                                 android:id="@+id/pieFixedExpenses"
@@ -426,7 +485,7 @@
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 
 

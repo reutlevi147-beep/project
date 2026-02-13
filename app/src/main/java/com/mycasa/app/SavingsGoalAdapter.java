@@ -1,5 +1,6 @@
 package com.mycasa.app;
 
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +17,13 @@ import java.util.List;
 public class SavingsGoalAdapter
         extends RecyclerView.Adapter<SavingsGoalAdapter.VH> {
 
+    // =========================
+    // Listener – פעולות על מטרה
+    // =========================
     public interface OnGoalActionListener {
         void onAddAmount(SavingsGoal goal);
+        void onRestartGoal(SavingsGoal goal);
+        void onDeleteGoal(SavingsGoal goal);
     }
 
     private OnGoalActionListener listener;
@@ -57,40 +63,26 @@ public class SavingsGoalAdapter
                             / goal.getTargetAmount()
             );
         }
-
-        // לא חוסמים מעל 100 – רק ויזואלית
         h.progressBar.setProgress(Math.min(progress, 100));
 
-        // ===== צבע פס לפי סוג =====
+        // ===== צבע פס =====
         if ("SAVE".equals(goal.getGoalMode())) {
-
-            // חיסכון – תמיד ירוק
             h.progressBar.setProgressTintList(
-                    android.content.res.ColorStateList.valueOf(
+                    ColorStateList.valueOf(
                             h.itemView.getContext()
                                     .getColor(R.color.green_income)
                     )
             );
-
-        } else { // LIMIT – הוצאה
-
-            if (goal.isOverTarget()) {
-                // חריגה – אדום
-                h.progressBar.setProgressTintList(
-                        android.content.res.ColorStateList.valueOf(
-                                h.itemView.getContext()
-                                        .getColor(R.color.red_expense)
-                        )
-                );
-            } else {
-                // בתוך היעד – אפור
-                h.progressBar.setProgressTintList(
-                        android.content.res.ColorStateList.valueOf(
-                                h.itemView.getContext()
-                                        .getColor(android.R.color.darker_gray)
-                        )
-                );
-            }
+        } else {
+            h.progressBar.setProgressTintList(
+                    ColorStateList.valueOf(
+                            goal.isOverTarget()
+                                    ? h.itemView.getContext()
+                                    .getColor(R.color.red_expense)
+                                    : h.itemView.getContext()
+                                    .getColor(android.R.color.darker_gray)
+                    )
+            );
         }
 
         // ===== סטטוס =====
@@ -107,18 +99,12 @@ public class SavingsGoalAdapter
                 int remaining = goal.getTargetAmount() - goal.getCurrentAmount();
                 h.tvStatus.setText("נותר ₪" + Math.max(remaining, 0));
             } else {
-                if (goal.isOverTarget()) {
-                    h.tvStatus.setText("חריגה ₪" +
-                            (goal.getCurrentAmount() - goal.getTargetAmount()));
-                } else {
-                    h.tvStatus.setText("בתוך התקציב");
-                }
+                h.tvStatus.setText(
+                        goal.isOverTarget()
+                                ? "חריגה ₪" + (goal.getCurrentAmount() - goal.getTargetAmount())
+                                : "בתוך התקציב"
+                );
             }
-
-            h.tvStatus.setTextColor(
-                    h.itemView.getContext()
-                            .getColor(android.R.color.darker_gray)
-            );
 
             h.btnAddAmount.setOnClickListener(v -> {
                 if (listener != null) {
@@ -128,65 +114,54 @@ public class SavingsGoalAdapter
 
         } else {
 
-            // 🔒 נעול – רק כשהתאריך עבר
+            // 🔒 נעול
             h.overlayLocked.setVisibility(View.VISIBLE);
             h.btnAddAmount.setEnabled(false);
             h.itemView.setAlpha(0.6f);
 
             if (status == SavingsGoal.GoalStatus.SUCCESS) {
-
-                if ("SAVE".equals(goal.getGoalMode())) {
-                    h.tvLockMessage.setText("🎉 היעד הושג");
-                } else {
-                    h.tvLockMessage.setText("👏 עמדת בתקציב");
-                }
-
-                h.tvStatus.setTextColor(
-                        h.itemView.getContext()
-                                .getColor(R.color.green_income)
+                h.tvLockMessage.setText(
+                        "SAVE".equals(goal.getGoalMode())
+                                ? "🎉 היעד הושג"
+                                : "👏 עמדת בתקציב"
                 );
-
-            } else { // FAILED
-
-                if ("SAVE".equals(goal.getGoalMode())) {
-                    h.tvLockMessage.setText("⏰ הזמן נגמר לפני היעד");
-                } else {
-                    h.tvLockMessage.setText("⚠️ חרגת מהתקציב");
-                }
-
-                h.tvStatus.setTextColor(
-                        h.itemView.getContext()
-                                .getColor(R.color.red_expense)
+            } else {
+                h.tvLockMessage.setText(
+                        "SAVE".equals(goal.getGoalMode())
+                                ? "⏰ הזמן נגמר לפני היעד"
+                                : "⚠️ חרגת מהתקציב"
                 );
             }
+
+            h.btnRestart.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onRestartGoal(goal);
+                }
+            });
+
+            h.btnDelete.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onDeleteGoal(goal);
+                }
+            });
         }
     }
-
 
     @Override
     public int getItemCount() {
         return goals.size();
     }
 
-    public interface OnGoalManageListener {
-        void onRestart(SavingsGoal goal);
-        void onDelete(SavingsGoal goal);
-    }
-
-    private OnGoalManageListener manageListener;
-
-    public void setOnGoalManageListener(OnGoalManageListener l) {
-        this.manageListener = l;
-    }
-
+    // =========================
+    // ViewHolder
     // =========================
     static class VH extends RecyclerView.ViewHolder {
 
-        TextView tvTitle, tvCurrent, tvTarget, tvStatus;
+        TextView tvTitle, tvCurrent, tvTarget, tvStatus, tvLockMessage;
         ProgressBar progressBar;
         ImageButton btnAddAmount;
+        ImageButton btnRestart, btnDelete;
         FrameLayout overlayLocked;
-
 
         VH(View v) {
             super(v);
@@ -194,9 +169,13 @@ public class SavingsGoalAdapter
             tvCurrent = v.findViewById(R.id.tvCurrent);
             tvTarget = v.findViewById(R.id.tvTarget);
             tvStatus = v.findViewById(R.id.tvStatus);
+            tvLockMessage = v.findViewById(R.id.tvLockMessage);
             progressBar = v.findViewById(R.id.progressGoal);
             btnAddAmount = v.findViewById(R.id.btnAddAmount);
             overlayLocked = v.findViewById(R.id.overlayLocked);
+
+            btnRestart = v.findViewById(R.id.btnRestartGoal);
+            btnDelete = v.findViewById(R.id.btnDeleteGoal);
         }
     }
 }
