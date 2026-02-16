@@ -173,11 +173,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         if (isGroupCodeVisible) {
             tvGroupCode.setText("קוד קבוצה: -----");
-            btnToggleGroupCode.setImageResource(android.R.drawable.ic_menu_view);
+            btnToggleGroupCode.setImageResource(R.drawable.outline_visibility_24);
         } else {
             tvGroupCode.setText("קוד קבוצה: " + groupId);
-            btnToggleGroupCode.setImageResource(android.R.drawable.ic_secure);
-        }
+            btnToggleGroupCode.setImageResource(R.drawable.outline_visibility_off_24);        }
 
         isGroupCodeVisible = !isGroupCodeVisible;
     }

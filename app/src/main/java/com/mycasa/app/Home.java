@@ -1,11 +1,15 @@
 package com.mycasa.app;
 
+import static com.github.mikephil.charting.utils.Utils.formatNumber;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,8 +17,35 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import android.view.View;
+import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class Home extends AppCompatActivity {
+    FirebaseFirestore db;
+    String groupId;
+
+    MaterialCardView cardTasksSummary;
+    MaterialCardView cardShoppingSummary;
+    MaterialCardView cardEventSummary;
+    MaterialCardView cardBalance;
+    MaterialCardView cardIncome;
+    MaterialCardView cardExpense;
+
+    LinearLayout layoutDailySummary;
+
+    TextView tvTasksSummary;
+    TextView tvShoppingSummary;
+    TextView tvEventTitle;
+    TextView tvEventTime;
+    TextView tvIncome, tvExpense, tvBalance;
+    TextView tvGrowth;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -23,14 +54,21 @@ public class Home extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
+        db = FirebaseFirestore.getInstance();
+        layoutDailySummary = findViewById(R.id.layoutDailySummary);
+        tvIncome = findViewById(R.id.tvIncome);
+        tvExpense = findViewById(R.id.tvExpense);
+        tvBalance = findViewById(R.id.tvBalance);
+        tvGrowth = findViewById(R.id.tvGrowth);
+        cardBalance = findViewById(R.id.cardBalance);
+        cardIncome = findViewById(R.id.cardIncome);
+        cardExpense = findViewById(R.id.cardExpense);
+        cardBalance = findViewById(R.id.cardBalance);
 
-        // =====================
-        // SharedPreferences
-        // =====================
         SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
 
         String userId = prefs.getString("user_id", null);
-        String groupId = prefs.getString("group_id", null);
+        groupId = prefs.getString("group_id", null);
         String userName = prefs.getString("user_name", null);
         String familyName = prefs.getString("family_name", null);
 
@@ -63,6 +101,31 @@ public class Home extends AppCompatActivity {
         } else {
             tvHello.setText("שלום");
         }
+
+        View.OnClickListener goToFinance = v ->
+                startActivity(new Intent(Home.this, FinanceSetupActivity.class));
+
+        cardIncome.setOnClickListener(goToFinance);
+        cardExpense.setOnClickListener(goToFinance);
+        cardBalance.setOnClickListener(goToFinance);
+
+        cardTasksSummary = findViewById(R.id.cardTasksSummary);
+        cardShoppingSummary = findViewById(R.id.cardShoppingSummary);
+        cardEventSummary = findViewById(R.id.cardEventSummary);
+
+        tvTasksSummary = findViewById(R.id.tvTasksSummary);
+        tvShoppingSummary = findViewById(R.id.tvShoppingSummary);
+        tvEventTitle = findViewById(R.id.tvEventTitle);
+        tvEventTime = findViewById(R.id.tvEventTime);
+
+        cardTasksSummary.setOnClickListener(v ->
+                startActivity(new Intent(this, TasksActivity.class)));
+
+        cardShoppingSummary.setOnClickListener(v ->
+                startActivity(new Intent(this, ShoppingListActivity.class)));
+
+        cardEventSummary.setOnClickListener(v ->
+                startActivity(new Intent(this, CalendarDayActivity.class)));
 
 
 
@@ -112,10 +175,199 @@ public class Home extends AppCompatActivity {
             }
 
 
-
-
-
             return false;
         });
+
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        loadTasksSummary();
+        loadShoppingSummary();
+        loadClosestEvent();
+        loadFinanceSummary();
+
+    }
+
+    private void loadFinanceSummary() {
+
+        if (groupId == null) return;
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("finance_flow_items")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    double income = 0;
+                    double expense = 0;
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+
+                        Double amount = doc.getDouble("amount");
+                        if (amount == null) continue;
+
+                        String categoryId = doc.getString("categoryId");
+                        if (categoryId == null) continue;
+
+                        if (categoryId.startsWith("income_")) {
+                            income += amount;
+                        }
+                        else if (categoryId.startsWith("expense_")) {
+                            expense += amount;
+                        }
+                    }
+
+                    double balance = income - expense;
+                    double percent = 0;
+
+                    if (expense > 0) {
+                        percent = (balance / expense) * 100;
+                    }
+
+                    String sign = percent > 0 ? "+" : "";
+                    tvGrowth.setText(sign + String.format(Locale.getDefault(), "%.0f%%", percent));
+
+                    tvIncome.setText("₪" + formatNumber(income));
+                    tvExpense.setText("₪" + formatNumber(expense));
+                    tvBalance.setText("₪" + formatNumber(balance));
+
+
+                    // ❗ צבע לא משתנה יותר
+                    cardBalance.setBackgroundResource(R.drawable.bg_balance_indigo);
+                });
+    }
+
+
+    private void updateBalanceColor(double balance) {
+
+        if (balance < 0) {
+            cardBalance.setBackgroundResource(R.drawable.bg_balance_negative);
+        } else {
+            cardBalance.setBackgroundResource(R.drawable.bg_balance_indigo);
+        }
+    }
+
+
+    private double adjustAmountByFrequency(double amount, String frequency) {
+
+        if (frequency == null) return amount;
+
+        switch (frequency) {
+
+            case "weekly":
+                return amount * 4.33;
+
+            case "yearly":
+                return amount / 12.0;
+
+            case "daily":
+                return amount * 30;
+
+            case "monthly":
+            default:
+                return amount;
+        }
+    }
+
+
+    private String formatNumber(double value) {
+        return String.format("%,.0f", value);
+    }
+
+    private void loadTasksSummary() {
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("home_tasks")
+                .whereEqualTo("completed", false)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    int count = snapshot.size();
+
+                    if (count > 0) {
+                        layoutDailySummary.setVisibility(View.VISIBLE);
+                        cardTasksSummary.setVisibility(View.VISIBLE);
+                        tvTasksSummary.setText(count + " משימות פתוחות");
+                    }
+                });
+    }
+
+
+
+    private void loadShoppingSummary() {
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("shopping")
+                .whereEqualTo("isPurchased", false)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    int count = snapshot.size();
+
+                    if (count > 0) {
+                        layoutDailySummary.setVisibility(View.VISIBLE);
+                        cardShoppingSummary.setVisibility(View.VISIBLE);
+                        tvShoppingSummary.setText(count + " מוצרים ברשימה");
+                    }
+
+                });
+    }
+
+
+    private void loadClosestEvent() {
+
+        String today = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                .format(new Date());
+
+        String nowTime = new SimpleDateFormat("HH:mm", Locale.getDefault())
+                .format(new Date());
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("calendar_events")
+                .whereEqualTo("date", today)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    String closestTitle = null;
+                    String closestStart = null;
+                    String closestEnd = null;
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+
+                        String start = doc.getString("startTime");
+                        String end = doc.getString("endTime");
+
+                        if (start == null) continue;
+
+                        if (start.compareTo(nowTime) >= 0 ||
+                                (end != null && end.compareTo(nowTime) >= 0)) {
+
+                            if (closestStart == null ||
+                                    start.compareTo(closestStart) < 0) {
+
+                                closestStart = start;
+                                closestEnd = end;
+                                closestTitle = doc.getString("title");
+                            }
+                        }
+                    }
+
+                    if (closestTitle != null) {
+
+                        layoutDailySummary.setVisibility(View.VISIBLE);
+                        cardEventSummary.setVisibility(View.VISIBLE);
+                        tvEventTitle.setText(closestTitle);
+                        tvEventTime.setText(closestStart + " - " + closestEnd);
+                    }
+                });
+    }
+
+
+
 }

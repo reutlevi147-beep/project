@@ -17,6 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -31,6 +32,7 @@ public class AddGoalActivity extends AppCompatActivity {
 
     // ===== State =====
     private String goalMode = "SAVE"; // SAVE | LIMIT
+    private Calendar selectedDeadlineCalendar;
 
     // Firebase
     private FirebaseFirestore db;
@@ -92,18 +94,20 @@ public class AddGoalActivity extends AppCompatActivity {
     // Date Picker
     // =========================
     private void openDatePicker() {
+
         Calendar cal = Calendar.getInstance();
 
         new DatePickerDialog(
                 this,
                 (view, year, month, day) -> {
-                    Calendar selected = Calendar.getInstance();
-                    selected.set(year, month, day);
+
+                    selectedDeadlineCalendar = Calendar.getInstance();
+                    selectedDeadlineCalendar.set(year, month, day, 0, 0, 0);
 
                     String formatted = new SimpleDateFormat(
                             "MMMM yyyy",
                             new Locale("he")
-                    ).format(selected.getTime());
+                    ).format(selectedDeadlineCalendar.getTime());
 
                     etDeadline.setText(formatted);
                 },
@@ -113,6 +117,7 @@ public class AddGoalActivity extends AppCompatActivity {
         ).show();
     }
 
+
     // =========================
     // Save to Firebase
     // =========================
@@ -121,7 +126,10 @@ public class AddGoalActivity extends AppCompatActivity {
         String title = etTitle.getText().toString().trim();
         String targetStr = etTarget.getText().toString().trim();
         String currentStr = etCurrent.getText().toString().trim();
-        String deadline = etDeadline.getText().toString().trim();
+        Date deadlineDate = null;
+        if (selectedDeadlineCalendar != null) {
+            deadlineDate = selectedDeadlineCalendar.getTime();
+        }
 
         if (TextUtils.isEmpty(title) || TextUtils.isEmpty(targetStr)) {
             Toast.makeText(this, "יש למלא שם וסכום יעד", Toast.LENGTH_SHORT).show();
@@ -157,8 +165,9 @@ public class AddGoalActivity extends AppCompatActivity {
         data.put("targetAmount", target);
         data.put("currentAmount", current);
         data.put("goalMode", goalMode); // SAVE | LIMIT
-        data.put("deadline", deadline.isEmpty() ? null : deadline);
+        data.put("deadline", deadlineDate);
         data.put("createdAt", FieldValue.serverTimestamp());
+        data.put("lastProgressAlertDate", null);
 
         db.collection("groups")
                 .document(groupId)

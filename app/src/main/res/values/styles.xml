@@ -61,7 +61,25 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
     </style>
+    <style name="FinanceToggleButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">28dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="backgroundTint">@color/toggle_background_selector</item>
+        <item name="android:textColor">@color/toggle_text_selector</item>
+        <item name="elevation">0dp</item>
+    </style>
 
+    <style name="FinanceSegmentButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">24dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:backgroundTint">@color/segment_bg_selector</item>
+        <item name="android:textColor">@color/segment_text_selector</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">#E5E7EB</item>
+    </style>
 
 
 

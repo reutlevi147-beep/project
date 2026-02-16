@@ -7,14 +7,18 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,6 +43,7 @@ public class Finance extends AppCompatActivity {
     private ImageButton btnBack, btnPrevMonth, btnNextMonth, btnSettings;
     private FloatingActionButton btnAddTransaction;
     private View btnAddGoal;
+    private double currentMonthlySurplus = 0;
 
     private TextView tvIncomeMonth, tvExpenseMonth, tvBalanceMonth, tvSelectedMonth;
     private RecyclerView rvCategoryExpenses;
@@ -51,6 +56,7 @@ public class Finance extends AppCompatActivity {
     private TextView tvPendingTitle;
     private PendingApprovalAdapter pendingAdapter;
     private final List<FlowItem> pendingItems = new ArrayList<>();
+    private CardView cardPending;
 
     private SavingsGoalAdapter goalsAdapter;
     private final List<SavingsGoal> goalsList = new ArrayList<>();
@@ -66,6 +72,30 @@ public class Finance extends AppCompatActivity {
     private FirebaseFirestore db;
     private String groupId;
     private Calendar firstDataMonth = null;
+    private RecyclerView rvGoalAlerts;
+    private GoalAlertAdapter alertAdapter;
+    private List<GoalAlert> goalAlerts = new ArrayList<>();
+    private LinearLayout layoutExpensesContent;
+    private ImageView imgExpandCategories;
+
+    private LinearLayout layoutGoalsContent;
+    private ImageView imgGoalsArrow;
+
+    private ImageView imgPendingArrow;
+
+    private ImageView imgGoalAlertsArrow;
+    // Top goal alerts (האדום העליון)
+    private LinearLayout layoutGoalAlertsContentTop;
+    private ImageView imgGoalAlertsArrowTop;
+
+    // Pending content wrapper
+    private LinearLayout layoutPendingContent;
+
+    // Headers
+    private View headerGoalAlertsTop;
+    private View headerPending;
+    private View headerExpenses;
+    private View headerGoals;
 
     // ===== Category titles =====
     private static final Map<String, String> CATEGORY_TITLES = new HashMap<>();
@@ -90,17 +120,49 @@ public class Finance extends AppCompatActivity {
             Color.parseColor("#64748B")
     };
 
+    private static final Map<String, Integer> CATEGORY_COLORS = new HashMap<>();
+
+    static {
+
+        // ===== קבועות – עמוקות יותר =====
+        CATEGORY_COLORS.put("expense_communication", Color.parseColor("#00ACC1")); // Cyan חזק
+        CATEGORY_COLORS.put("expense_housing",       Color.parseColor("#3949AB")); // Indigo עמוק
+        CATEGORY_COLORS.put("expense_kids",          Color.parseColor("#FB8C00")); // Orange חד
+        CATEGORY_COLORS.put("expense_insurance",     Color.parseColor("#E53935")); // Red חזק
+        CATEGORY_COLORS.put("expense_transport",     Color.parseColor("#00897B")); // Teal עמוק
+        CATEGORY_COLORS.put("expense_finance",       Color.parseColor("#FDD835")); // Yellow חזק
+        CATEGORY_COLORS.put("expense_savings",       Color.parseColor("#43A047")); // Green חד
+        CATEGORY_COLORS.put("expense_other_fixed",   Color.parseColor("#546E7A")); // Blue Grey
+
+        // ===== משתנות – קצת יותר חיות אבל רגועות =====
+        CATEGORY_COLORS.put("expense_food",      Color.parseColor("#1E88E5")); // Blue חי
+        CATEGORY_COLORS.put("expense_health",    Color.parseColor("#8E24AA")); // Purple חזק
+        CATEGORY_COLORS.put("expense_leisure",   Color.parseColor("#FF7043")); // Coral
+        CATEGORY_COLORS.put("expense_personal",  Color.parseColor("#D81B60")); // Pink חד
+        CATEGORY_COLORS.put("expense_pets",      Color.parseColor("#7CB342")); // Lime ירוק
+        CATEGORY_COLORS.put("expense_home_misc", Color.parseColor("#5E35B1")); // Violet עמוק
+        CATEGORY_COLORS.put("expense_one_time",  Color.parseColor("#00BFA5")); // Aqua
+
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.e("Finance", "onCreate START");
 
         setContentView(R.layout.activity_finance);
+        cardPending = findViewById(R.id.cardPending);
+        rvGoalAlerts = findViewById(R.id.rvGoalAlerts);
+        rvGoalAlerts.setLayoutManager(new LinearLayoutManager(this));
 
+        alertAdapter = new GoalAlertAdapter(goalAlerts);
+        rvGoalAlerts.setAdapter(alertAdapter);
         db = FirebaseFirestore.getInstance();
 
         // ========= groupId =========
         groupId = AppSession.getGroupId();
+
 
         if (groupId == null) {
             SharedPreferences prefs =
@@ -126,6 +188,7 @@ public class Finance extends AppCompatActivity {
 
 
 
+
         // ========= Load start month from settings =========
         loadStartMonth();   // ⭐ זה הגבול האחורי לחודשים
 
@@ -135,6 +198,35 @@ public class Finance extends AppCompatActivity {
         lastRenderedYear = selectedMonth.get(Calendar.YEAR);
         loadYearBarChart();
         loadSavingsGoals();
+
+        imgGoalAlertsArrow = findViewById(R.id.imgGoalAlertsArrow);
+
+        setupToggle(
+                headerGoalAlertsTop,
+                layoutGoalAlertsContentTop,
+                imgGoalAlertsArrowTop
+        );
+
+        setupToggle(
+                headerPending,
+                layoutPendingContent,
+                imgPendingArrow
+        );
+
+        setupToggle(
+                headerExpenses,
+                layoutExpensesContent,
+                imgExpandCategories
+        );
+
+        setupToggle(
+                headerGoals,
+                layoutGoalsContent,
+                imgGoalsArrow
+        );
+
+
+
     }
 
 
@@ -196,13 +288,56 @@ public class Finance extends AppCompatActivity {
         rvCategoryExpenses.setNestedScrollingEnabled(false);
         rvCategoryExpenses.setHasFixedSize(false);
         rvCategoryExpenses.setItemViewCacheSize(50);
+        layoutExpensesContent = findViewById(R.id.layoutExpensesContent);
+        imgExpandCategories = findViewById(R.id.imgExpandCategories);
+
+        layoutGoalsContent = findViewById(R.id.layoutGoalsContent);
+
+
+        imgPendingArrow = findViewById(R.id.imgPendingArrow);
+
+        rvGoalAlerts = findViewById(R.id.rvGoalAlerts);
+// ===== Top Goal Alerts =====
+        headerGoalAlertsTop = findViewById(R.id.headerGoalAlertsTop);
+        layoutGoalAlertsContentTop = findViewById(R.id.layoutGoalAlertsContentTop);
+        imgGoalAlertsArrowTop = findViewById(R.id.imgGoalAlertsArrowTop);
+
+// ===== Pending =====
+        headerPending = findViewById(R.id.headerPending);
+        layoutPendingContent = findViewById(R.id.layoutPendingContent);
+        imgPendingArrow = findViewById(R.id.imgPendingArrow);
+
+// ===== Expenses =====
+        headerExpenses = findViewById(R.id.headerExpenses);
+
+// ===== Goals =====
+        headerGoals = findViewById(R.id.headerGoals);
+        imgGoalsArrow = findViewById(R.id.imgGoalAlertsArrow); // זה החץ הירוק
 
         pieExpenses = findViewById(R.id.pieFixedExpenses);
         barYear = findViewById(R.id.barMonthlySummary);
+        rvGoalAlerts = findViewById(R.id.rvGoalAlerts);
+        if (rvGoalAlerts != null) {
+            rvGoalAlerts.setLayoutManager(new LinearLayoutManager(this));
+            rvGoalAlerts.setNestedScrollingEnabled(false);
+
+
+
+            alertAdapter.setOnAlertActionListener(alert -> {
+
+                SavingsGoal goal = alert.getGoal();
+
+                if (goal != null) {
+                    addMoneyToGoal(goal);
+                }
+            });
+
+
+        }
 
         toggleExpenseType = findViewById(R.id.toggleExpenseType);
 
-        // ===== Pending approvals =====
+
         // ===== Pending approvals =====
         tvPendingTitle = findViewById(R.id.tvPendingTitle);
         rvPendingApprovals = findViewById(R.id.rvPendingApprovals);
@@ -214,6 +349,74 @@ public class Finance extends AppCompatActivity {
 
 
     }
+    private void generateGoalAlerts(double monthBalance) {
+
+        goalAlerts.clear();
+
+        if (goalsList == null || goalsList.isEmpty() || rvGoalAlerts == null) {
+            rvGoalAlerts.setVisibility(View.GONE);
+            alertAdapter.notifyDataSetChanged();
+            return;
+        }
+
+        Date today = new Date();
+
+        for (SavingsGoal g : goalsList) {
+
+            // ❌ בלי דדליין – אין התראות בכלל
+            if (g.getDeadline() == null) continue;
+
+            // ❌ לא היום המתאים
+            if (!shouldShowProgressAlertToday(g)) continue;
+
+            double timeProgress = g.getTimeProgress();
+            double moneyProgress = g.getMoneyProgress();
+
+            GoalAlert.AlertType type;
+            String title;
+            String message;
+
+            if (moneyProgress >= timeProgress) {
+
+                type = GoalAlert.AlertType.SUCCESS;
+                title = "✅ מצב מצוין - " + g.getTitle();
+                message = "הקצב תקין ואפילו מעל הנדרש";
+
+            } else if (moneyProgress >= timeProgress * 0.7) {
+
+                type = GoalAlert.AlertType.WARNING;
+                title = "⚠️ מעט מאחור - " + g.getTitle();
+                message = "כדאי לחזק מעט את ההפקדות";
+
+            } else {
+
+                type = GoalAlert.AlertType.URGENT;
+                title = "🚨 המטרה בסיכון - " + g.getTitle();
+                message = "ההתקדמות נמוכה ביחס לזמן שעבר";
+            }
+
+            goalAlerts.add(new GoalAlert(
+                    g,
+                    title,
+                    message,
+                    "בדוק מטרה",
+                    type
+            ));
+
+            // 🔥 עדכון תאריך הצגה
+            db.collection("groups")
+                    .document(groupId)
+                    .collection("savings_goals")
+                    .document(g.getGoalId())
+                    .update("lastProgressAlertDate", today);
+        }
+
+        rvGoalAlerts.setVisibility(goalAlerts.isEmpty() ? View.GONE : View.VISIBLE);
+        alertAdapter.notifyDataSetChanged();
+    }
+
+
+
 
     // ================= Month =================
     private void setupMonth() {
@@ -239,6 +442,12 @@ public class Finance extends AppCompatActivity {
         selectedMonth = next;
         updateMonthLabel();
         loadMonthData();
+
+        int newYear = selectedMonth.get(Calendar.YEAR);
+        if (newYear != lastRenderedYear) {
+            lastRenderedYear = newYear;
+            loadYearBarChart();
+        }
     }
 
 
@@ -307,7 +516,7 @@ public class Finance extends AppCompatActivity {
             CategoryWithItems parent = new CategoryWithItems(
                     cat.getId(),
                     cat.getTitle(),
-                    resolveColorForFixedCategory(cat.getId()),
+                    resolveColorForCategory(cat.getId()),
                     0,
                     new ArrayList<>()
             );
@@ -370,45 +579,22 @@ public class Finance extends AppCompatActivity {
                 });
     }
 
-    private int resolveColorForFixedCategory(String categoryId) {
-            switch (categoryId) {
-
-                // ===== קבועות =====
-                case "expense_communication": return Color.parseColor("#6366F1");
-                case "expense_housing": return Color.parseColor("#4B5563");
-                case "expense_kids": return Color.parseColor("#8B5CF6");
-                case "expense_insurance": return Color.parseColor("#EC4899");
-                case "expense_transport": return Color.parseColor("#10B981");
-                case "expense_finance": return Color.parseColor("#F59E0B");
-                case "expense_savings": return Color.parseColor("#14B8A6");
-                case "expense_other_fixed": return Color.parseColor("#9CA3AF");
-
-                // ===== משתנות =====
-                case "expense_food": return Color.parseColor("#22C55E");
-                case "expense_health": return Color.parseColor("#EF4444");
-                case "expense_leisure": return Color.parseColor("#F97316");
-                case "expense_personal": return Color.parseColor("#EC4899");
-                case "expense_pets": return Color.parseColor("#84CC16");
-                case "expense_home_misc": return Color.parseColor("#64748B");
-                case "expense_one_time": return Color.parseColor("#0EA5E9");
-
-                default:
-                    return Color.parseColor("#CBD5E1");
-            }
-        }
+    private int resolveColorForCategory(String categoryId) {
+        Integer color = CATEGORY_COLORS.get(categoryId);
+        return color != null ? color : Color.parseColor("#CBD5E1");
+    }
 
 
-        // ================= Summary =================
-    private void loadSummaryLive() {
 
-        db.collection("groups")
-                .document(groupId)
-                .collection("finance_flow_items")
-                .whereEqualTo("enabled", true)
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot snapshot) {
+    // ================= Summary =================
+        private void loadSummaryLive() {
+
+            db.collection("groups")
+                    .document(groupId)
+                    .collection("finance_flow_items")
+                    .whereEqualTo("enabled", true)
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
 
                         double income = 0;
                         double expense = 0;
@@ -427,22 +613,37 @@ public class Finance extends AppCompatActivity {
 
                             double v = amountForSelectedMonth(amount, freq, oneTime, date);
 
-                            if (cat.startsWith("income_")) income += v;
-                            else if (cat.startsWith("expense_")) expense += v;
+                            if (cat.startsWith("income_")) {
 
-                            Log.d("FinanceDebug",
-                                    "month=" + (selectedMonth.get(Calendar.MONTH) + 1)
-                                            + " amount=" + v
-                            );
+                                income += v;
 
+                                Log.e("INCOME_DEBUG",
+                                        "FOUND INCOME -> title=" + doc.getString("title") +
+                                                " amountRaw=" + amount +
+                                                " valueForMonth=" + v +
+                                                " freq=" + freq
+                                );
+                            }
+
+                            else if (cat.startsWith("expense_")) {
+                                expense += v;
+                            }
                         }
 
                         tvIncomeMonth.setText("₪" + format(income));
                         tvExpenseMonth.setText("₪" + format(expense));
                         tvBalanceMonth.setText("₪" + format(income - expense));
-                    }
-                });
-    }
+
+                        double monthlySurplus = income - expense;
+                        currentMonthlySurplus = monthlySurplus;
+
+                        double monthBalance = income - expense;
+                        generateGoalAlerts(monthBalance);
+
+
+                    });
+        }
+
 
     // ================= Expenses Pie =================
     private void loadExpensesLive() {
@@ -507,20 +708,27 @@ public class Finance extends AppCompatActivity {
             return;
         }
 
-        final double totalSum = sum; // ⭐ פתרון השגיאה
+        final double totalSum = sum;
 
         List<PieEntry> entries = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
 
-        for (String categoryId : totals.keySet()) {
+        for (Map.Entry<String, Double> entry : totals.entrySet()) {
 
-            double value = totals.get(categoryId);
+            String categoryId = entry.getKey();
+            double value = entry.getValue();
+
             if (value <= 0) continue;
 
             entries.add(new PieEntry((float) value, ""));
 
-            // 🔥 אותו צבע כמו ברשימה
-            colors.add(resolveColorForFixedCategory(categoryId));
+            // 🔥 צבע קבוע מתוך המפה שלך
+            Integer color = CATEGORY_COLORS.get(categoryId);
+            if (color != null) {
+                colors.add(color);
+            } else {
+                colors.add(Color.parseColor("#CBD5E1")); // fallback עדין
+            }
         }
 
         PieDataSet dataSet = new PieDataSet(entries, "");
@@ -553,27 +761,13 @@ public class Finance extends AppCompatActivity {
 
 
 
-    // ================= Bar Chart =================
+
     private void loadYearBarChart() {
 
         final int year = selectedMonth.get(Calendar.YEAR);
 
-        Calendar effectiveStart = Calendar.getInstance();
-        effectiveStart.set(year, Calendar.JANUARY, 1);
-
-// אם יש startMonth – משתמשים בו
-        if (startMonth != null && startMonth.get(Calendar.YEAR) == year) {
-            effectiveStart = (Calendar) startMonth.clone();
-        }
-
-        if (barYear == null) return;
-
-
         final double[] income = new double[12];
         final double[] expense = new double[12];
-
-        Calendar now = Calendar.getInstance();
-        now.set(Calendar.DAY_OF_MONTH, 1);
 
         db.collection("groups")
                 .document(groupId)
@@ -591,50 +785,19 @@ public class Finance extends AppCompatActivity {
                         if (cat == null) continue;
 
                         Date date = resolveItemDate(doc);
-                        boolean oneTime = Boolean.TRUE.equals(doc.getBoolean("isOneTime"));
-                        String freq = doc.getString("frequency");
+                        if (date == null) continue;
 
-                        // ===== חד־פעמי =====
-                        if (oneTime && date != null) {
+                        Calendar c = Calendar.getInstance();
+                        c.setTime(date);
 
-                            Calendar c = Calendar.getInstance();
-                            c.setTime(date);
+                        if (c.get(Calendar.YEAR) != year) continue;
 
-                            if (c.get(Calendar.YEAR) != year) continue;
+                        int monthIndex = c.get(Calendar.MONTH); // 0-11
 
-                            int m = c.get(Calendar.MONTH);
-
-                            if (c.before(startMonth) || c.after(now)) continue;
-
-                            if (cat.startsWith("income_")) income[m] += amount;
-                            else if (cat.startsWith("expense_")) expense[m] += amount;
-                        }
-
-                        // ===== חוזר =====
-                        else {
-
-                            double v = adjustRecurring(amount, freq);
-
-                            Calendar cursor;
-
-                            if (startMonth != null) {
-                                cursor = (Calendar) startMonth.clone();
-                            } else {
-                                cursor = Calendar.getInstance();
-                                cursor.set(year, Calendar.JANUARY, 1);
-                            }
-
-                            while (!cursor.after(now)) {
-
-                                if (cursor.get(Calendar.YEAR) == year) {
-                                    int m = cursor.get(Calendar.MONTH);
-
-                                    if (cat.startsWith("income_")) income[m] += v;
-                                    else if (cat.startsWith("expense_")) expense[m] += v;
-                                }
-
-                                cursor.add(Calendar.MONTH, 1);
-                            }
+                        if (cat.startsWith("income_")) {
+                            income[monthIndex] += amount;
+                        } else if (cat.startsWith("expense_")) {
+                            expense[monthIndex] += amount;
                         }
                     }
 
@@ -648,7 +811,7 @@ public class Finance extends AppCompatActivity {
         List<BarEntry> incomeEntries = new ArrayList<>();
         List<BarEntry> expenseEntries = new ArrayList<>();
 
-        // 12 חודשים תמיד
+        // תמיד 12 חודשים
         for (int i = 0; i < 12; i++) {
             incomeEntries.add(new BarEntry(i, (float) income[i]));
             expenseEntries.add(new BarEntry(i, (float) expense[i]));
@@ -662,7 +825,7 @@ public class Finance extends AppCompatActivity {
         dsExpense.setColor(Color.parseColor("#64748B"));
         dsExpense.setValueTextSize(11f);
 
-        // ❌ מסתירים ערכים = 0
+        // הסתרת 0 מעל עמודות
         ValueFormatter hideZeroFormatter = new ValueFormatter() {
             @Override
             public String getBarLabel(BarEntry barEntry) {
@@ -675,7 +838,6 @@ public class Finance extends AppCompatActivity {
 
         BarData data = new BarData(dsIncome, dsExpense);
 
-        // רוחב עמודות
         float barWidth = 0.35f;
         float barSpace = 0.05f;
         float groupSpace = 0.25f;
@@ -684,7 +846,7 @@ public class Finance extends AppCompatActivity {
 
         barYear.setData(data);
 
-        // ===== X Axis =====
+        // ===== חודשים =====
         String[] months = {
                 "ינו", "פבר", "מרץ", "אפר", "מאי", "יונ",
                 "יול", "אוג", "ספט", "אוק", "נוב", "דצ"
@@ -698,13 +860,31 @@ public class Finance extends AppCompatActivity {
         xAxis.setAxisMinimum(0f);
         xAxis.setAxisMaximum(12f);
 
-        // ===== Grouping =====
+        // Grouping
         barYear.groupBars(0f, groupSpace, barSpace);
 
-        // ===== Style =====
+        // ===== תיקון ציר Y =====
+        float maxValue = 0f;
+
+        for (BarEntry e : incomeEntries) {
+            if (e.getY() > maxValue) maxValue = e.getY();
+        }
+
+        for (BarEntry e : expenseEntries) {
+            if (e.getY() > maxValue) maxValue = e.getY();
+        }
+
+        if (maxValue == 0f) {
+            barYear.getAxisLeft().setAxisMinimum(0f);
+            barYear.getAxisLeft().setAxisMaximum(1f);
+        } else {
+            barYear.getAxisLeft().setAxisMinimum(0f);
+            barYear.getAxisLeft().setAxisMaximum(maxValue * 1.2f);
+        }
+
         barYear.getAxisRight().setEnabled(false);
+
         barYear.getDescription().setEnabled(false);
-        barYear.setExtraBottomOffset(8f);
         barYear.setFitBars(true);
 
         barYear.invalidate();
@@ -712,12 +892,68 @@ public class Finance extends AppCompatActivity {
 
 
 
+    private String getMonthShortName(int month) {
+
+        String[] months = {
+                "ינו", "פבר", "מרץ", "אפר",
+                "מאי", "יונ", "יול", "אוג",
+                "ספט", "אוק", "נוב", "דצ"
+        };
+
+        return months[month];
+    }
+
 
     // ================= Goals =================
     private void setupGoals() {
+
+        Log.e("DELETE_DEBUG", "setupGoals CALLED");
+
         goalsAdapter = new SavingsGoalAdapter(goalsList);
+
+        goalsAdapter.setOnGoalActionListener(new SavingsGoalAdapter.OnGoalActionListener() {
+
+            @Override
+            public void onAddAmountClicked(SavingsGoal goal) {
+                Log.e("DELETE_DEBUG", "ADD CLICKED");
+                showGoalActionSheet(goal);
+            }
+
+            @Override
+            public void onDeleteClicked(SavingsGoal goal) {
+                Log.e("DELETE_DEBUG", "DELETE CLICKED FROM ADAPTER");
+                deleteGoal(goal.getGoalId());
+            }
+
+        });
+
         rvGoals.setAdapter(goalsAdapter);
     }
+
+    private void setupToggle(View header,
+                             View content,
+                             ImageView arrow) {
+
+        header.setOnClickListener(v -> {
+
+            if (content.getVisibility() == View.VISIBLE) {
+
+                content.setVisibility(View.GONE);
+                arrow.animate().rotation(0f).setDuration(200).start();
+
+            } else {
+
+                content.setVisibility(View.VISIBLE);
+                arrow.animate().rotation(180f).setDuration(200).start();
+            }
+        });
+    }
+
+
+
+
+
+
 
     private void loadSavingsGoals() {
 
@@ -725,34 +961,157 @@ public class Finance extends AppCompatActivity {
                 .document(groupId)
                 .collection("savings_goals")
                 .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot snapshot) {
+                .addOnSuccessListener(snapshot -> {
 
-                        goalsList.clear();
+                    goalsList.clear();
 
-                        for (QueryDocumentSnapshot doc : snapshot) {
+                    for (QueryDocumentSnapshot doc : snapshot) {
 
-                            String title = doc.getString("title");
-                            Long target = doc.getLong("targetAmount");
-                            Long current = doc.getLong("currentAmount");
-                            String mode = doc.getString("goalMode");
+                        String title = doc.getString("title");
 
-                            Date deadline = safeReadDeadline(doc.get("deadline"));
+                        Long target = doc.getLong("targetAmount");
+                        Long current = doc.getLong("currentAmount");
 
-                            goalsList.add(new SavingsGoal(
-                                    title,
-                                    target != null ? target.intValue() : 0,
-                                    current != null ? current.intValue() : 0,
-                                    mode,
-                                    deadline
-                            ));
-                        }
+                        String modeStr = doc.getString("goalMode");
+                        String typeStr = doc.getString("goalType");
+                        String periodStr = doc.getString("periodType");
 
-                        goalsAdapter.notifyDataSetChanged();
+                        String linkedCategoryId = doc.getString("linkedCategoryId");
+
+                        Date deadline = safeReadDeadline(doc.get("deadline"));
+                        Date createdAt = safeReadDeadline(doc.get("createdAt"));
+                        Date lastAlert = safeReadDeadline(doc.get("lastProgressAlertDate"));
+
+                        Boolean handled = doc.getBoolean("successHandled");
+
+                        SavingsGoal goal = new SavingsGoal(
+                                doc.getId(),
+                                title,
+                                target != null ? target.intValue() : 0,
+                                current != null ? current.intValue() : 0,
+                                modeStr != null ? SavingsGoal.GoalMode.valueOf(modeStr) : SavingsGoal.GoalMode.SAVE,
+                                typeStr != null ? SavingsGoal.GoalType.valueOf(typeStr) : SavingsGoal.GoalType.TARGET,
+                                periodStr != null ? SavingsGoal.PeriodType.valueOf(periodStr) : SavingsGoal.PeriodType.NONE,
+                                linkedCategoryId,
+                                deadline
+                        );
+
+                        goal.setCreatedAt(createdAt);
+                        goal.setLastProgressAlertDate(lastAlert);
+                        goal.setSuccessHandled(handled != null && handled);
+
+                        goalsList.add(goal);
                     }
+
+
+
+                    goalsAdapter.notifyDataSetChanged();
+                    generateGoalAlerts(currentMonthlySurplus);
+
+                    for (SavingsGoal g : goalsList) {
+                        if (shouldAskPeriodDecision(g)) {
+                            showPeriodDecisionDialog(g);
+                            break; // שלא יפתח כמה דיאלוגים יחד
+                        }
+                    }
+
                 });
     }
+
+    private void deleteGoal(String goalId) {
+
+        Log.e("DELETE_DEBUG", "INSIDE deleteGoal with id = " + goalId);
+
+        if (groupId == null || goalId == null) {
+            Log.e("DELETE_DEBUG", "groupId or goalId is null");
+            Toast.makeText(this, "שגיאה במחיקה", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(groupId)
+                .collection("savings_goals")
+                .document(goalId)
+                .delete()
+                .addOnSuccessListener(unused -> {
+
+                    Log.e("DELETE_DEBUG", "DELETE SUCCESS");
+
+                    Toast.makeText(this,
+                            "המטרה נמחקה בהצלחה",
+                            Toast.LENGTH_SHORT).show();
+
+                    // רענון רשימת מטרות
+                    loadSavingsGoals();
+
+                    // רענון סיכומים והתראות
+                    loadSummaryLive();
+                })
+                .addOnFailureListener(e -> {
+
+                    Log.e("DELETE_DEBUG", "DELETE FAILED", e);
+
+                    Toast.makeText(this,
+                            "שגיאה במחיקה",
+                            Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+    private void confirmDeleteGoal(SavingsGoal goal) {
+
+        if (goal == null) return;
+
+        new AlertDialog.Builder(this)
+                .setTitle("⚠️ מחיקת מטרה")
+                .setMessage("האם את בטוחה שברצונך למחוק את המטרה:\n\n\""
+                        + goal.getTitle() + "\" ?\n\nלא ניתן לשחזר פעולה זו.")
+                .setPositiveButton("מחק", (dialog, which) -> {
+                    deleteGoal(goal.getGoalId());
+                })
+                .setNegativeButton("ביטול", null)
+                .show();
+    }
+
+
+
+    private void showGoalSuccessDialog(SavingsGoal goal) {
+
+        new AlertDialog.Builder(this)
+                .setTitle("🎉 כל הכבוד!")
+                .setMessage("המטרה \"" + goal.getTitle() + "\" הושגה.\n\nמה תרצי לעשות?")
+
+                .setPositiveButton("להמשיך לחסוך", (d, which) -> {
+                    markGoalSuccessHandled(goal);
+                })
+
+                .setNeutralButton("להגדיל יעד", (d, which) -> {
+                    increaseGoalTarget(goal);
+                    markGoalSuccessHandled(goal);
+                })
+
+                .setNegativeButton("🗑 מחק מטרה", (d, which) -> {
+                    deleteGoal(goal.getGoalId());
+                })
+
+                .setCancelable(false)
+                .show();
+    }
+
+
+    private void markGoalSuccessHandled(SavingsGoal goal) {
+
+        goal.setSuccessHandled(true);
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("savings_goals")
+                .document(goal.getGoalId())
+                .update("successHandled", true);
+    }
+
+
 
     private void loadStartMonth() {
 
@@ -783,10 +1142,287 @@ public class Finance extends AppCompatActivity {
                 });
     }
 
+    private boolean shouldAskPeriodDecision(SavingsGoal g) {
+
+        if (g.getGoalType() != SavingsGoal.GoalType.PERIOD) {
+            return false;
+        }
+
+        if (g.getPeriodType() == SavingsGoal.PeriodType.NONE) {
+            return false;
+        }
+
+        Calendar now = Calendar.getInstance();
+
+        Calendar lastDecision = Calendar.getInstance();
+        if (g.getLastPeriodDecision() != null) {
+            lastDecision.setTime(g.getLastPeriodDecision());
+        } else {
+            lastDecision.set(Calendar.YEAR, 1900);
+        }
+
+        // חודשי
+        if (g.getPeriodType() == SavingsGoal.PeriodType.MONTHLY) {
+
+            return now.get(Calendar.MONTH) != lastDecision.get(Calendar.MONTH) ||
+                    now.get(Calendar.YEAR) != lastDecision.get(Calendar.YEAR);
+        }
+
+        // שנתי
+        if (g.getPeriodType() == SavingsGoal.PeriodType.YEARLY) {
+
+            return now.get(Calendar.YEAR) != lastDecision.get(Calendar.YEAR);
+        }
+
+        return false;
+    }
+
+    private void showPeriodDecisionDialog(SavingsGoal g) {
+
+        String message;
+
+        if (g.getGoalMode() == SavingsGoal.GoalMode.LIMIT) {
+
+            message =
+                    "התקופה הסתיימה.\n\n" +
+                            "הוצאת ₪" + format(g.getCurrentAmount()) +
+                            " מתוך ₪" + format(g.getTargetAmount()) +
+                            ".\n\nמה תרצי לעשות?";
+        } else {
+
+            message =
+                    "התקופה הסתיימה.\n\n" +
+                            "חסכת ₪" + format(g.getCurrentAmount()) +
+                            " מתוך ₪" + format(g.getTargetAmount()) +
+                            ".\n\nאיך להמשיך?";
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("סיכום תקופה - " + g.getTitle())
+                .setMessage(message)
+
+                .setPositiveButton("להמשיך כרגיל", (d, which) -> {
+                    savePeriodDecision(g);
+                })
+
+                .setNeutralButton("לאפס סכום", (d, which) -> {
+                    resetGoalAmount(g);
+                    savePeriodDecision(g);
+                })
+
+                .setNegativeButton("להגדיל יעד", (d, which) -> {
+                    increaseGoalTarget(g);
+                    savePeriodDecision(g);
+                })
+
+                .setCancelable(false)
+                .show();
+    }
+
+    private void resetGoalAmount(SavingsGoal g) {
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("savings_goals")
+                .whereEqualTo("title", g.getTitle())
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+
+                        doc.getReference().update(
+                                "currentAmount", 0
+                        );
+                    }
+
+                    loadSavingsGoals(); // רענון
+                });
+    }
+    private void showGoalActionSheet(SavingsGoal goal) {
+
+        View view = getLayoutInflater()
+                .inflate(R.layout.bottom_sheet_goal_action, null);
+
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+
+        dialog.setContentView(view);
+
+        TextView tvTitle = view.findViewById(R.id.tvSheetTitle);
+        Button btnAddMoney = view.findViewById(R.id.btnAddMoney);
+        Button btnIncrease = view.findViewById(R.id.btnIncreaseTarget);
+        Button btnReset = view.findViewById(R.id.btnResetGoal);
+        Button btnDelete = view.findViewById(R.id.btnDeleteGoal);
+
+        tvTitle.setText("ניהול מטרה: " + goal.getTitle());
+
+        btnAddMoney.setOnClickListener(v -> {
+            dialog.dismiss();
+            addMoneyToGoal(goal);
+        });
+
+        btnIncrease.setOnClickListener(v -> {
+            dialog.dismiss();
+            increaseGoalTarget(goal);
+        });
+
+        btnReset.setOnClickListener(v -> {
+            dialog.dismiss();
+            resetGoalAmount(goal);
+        });
+
+        btnDelete.setOnClickListener(v -> {
+            dialog.dismiss();
+            confirmDeleteGoal(goal);
+        });
+
+
+        dialog.show();
+    }
+
+
+    private void addMoneyToGoal(SavingsGoal goal) {
+
+        if (goal == null) return;
+
+        EditText input = new EditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setHint("הכנס סכום להוספה");
+
+        new AlertDialog.Builder(this)
+                .setTitle("הוספת סכום - " + goal.getTitle())
+                .setView(input)
+                .setPositiveButton("אישור", (dialog, which) -> {
+
+                    String value = input.getText().toString().trim();
+
+                    if (value.isEmpty()) {
+                        Toast.makeText(this, "נא להזין סכום", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int amountToAdd = Integer.parseInt(value);
+
+                    if (amountToAdd <= 0) {
+                        Toast.makeText(this, "סכום לא תקין", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int newAmount = goal.getCurrentAmount() + amountToAdd;
+
+                    db.collection("groups")
+                            .document(groupId)
+                            .collection("savings_goals")
+                            .document(goal.getGoalId())
+                            .update("currentAmount", newAmount)
+                            .addOnSuccessListener(unused -> {
+
+                                Toast.makeText(this,
+                                        "נוספו ₪" + amountToAdd,
+                                        Toast.LENGTH_SHORT).show();
+
+                                loadSavingsGoals();
+                                loadSummaryLive();
+                            });
+
+                })
+                .setNegativeButton("ביטול", null)
+                .show();
+    }
+
+
+    private int extractAmountFromAlert(SavingsGoal goal) {
+
+        // במקרה שלנו את מציגה משהו כמו "הוסף ₪2,500"
+        // אז פשוט נחשב לפי יתרה חכמה
+
+        double monthBalance = currentMonthlySurplus;
+
+        double remaining = goal.getRemainingAmount();
+
+        double suggested = Math.min(monthBalance * 0.25, remaining * 0.5);
+
+        return (int) Math.round(suggested);
+    }
+
+
+
+
+    private void increaseGoalTarget(SavingsGoal goal) {
+
+        EditText input = new EditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setHint("הכנס יעד חדש");
+        input.setText(String.valueOf(goal.getTargetAmount())); // מציג יעד נוכחי כברירת מחדל
+
+        new AlertDialog.Builder(this)
+                .setTitle("עדכון יעד - " + goal.getTitle())
+                .setView(input)
+                .setPositiveButton("שמור", (dialog, which) -> {
+
+                    String value = input.getText().toString().trim();
+
+                    if (value.isEmpty()) {
+                        Toast.makeText(this, "נא להזין סכום יעד", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int newTarget = Integer.parseInt(value);
+
+                    if (newTarget <= 0) {
+                        Toast.makeText(this,
+                                "היעד חייב להיות גדול מ־0",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    db.collection("groups")
+                            .document(groupId)
+                            .collection("savings_goals")
+                            .document(goal.getGoalId())
+                            .update("targetAmount", newTarget)
+                            .addOnSuccessListener(unused -> {
+
+                                Toast.makeText(this,
+                                        "היעד עודכן בהצלחה",
+                                        Toast.LENGTH_SHORT).show();
+
+                                loadSavingsGoals();
+                                loadSummaryLive();
+                            });
+
+                })
+                .setNegativeButton("ביטול", null)
+                .show();
+    }
+
+
+
+    private void savePeriodDecision(SavingsGoal g) {
+
+        Date now = new Date();
+        g.setLastPeriodDecision(now);
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("savings_goals")
+                .document(g.getGoalId())   // ✅ התיקון
+                .update("lastPeriodDecision", now);
+    }
+
+
+
+
+
     // ================= Utils =================
     private Date resolveItemDate(QueryDocumentSnapshot doc) {
+
+        Date txDate = doc.getDate("transactionDate");
+        if (txDate != null) return txDate;
+
         Timestamp ts = doc.getTimestamp("lastApprovedAt");
         if (ts != null) return ts.toDate();
+
         return doc.getDate("createdAt");
     }
 
@@ -822,6 +1458,64 @@ public class Finance extends AppCompatActivity {
         return String.format(Locale.US, "%,.0f", v);
     }
 
+    private boolean isSameDay(Date d1, Date d2) {
+
+        Calendar c1 = Calendar.getInstance();
+        Calendar c2 = Calendar.getInstance();
+
+        c1.setTime(d1);
+        c2.setTime(d2);
+
+        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
+                && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR);
+    }
+
+
+
+    private boolean shouldShowProgressAlertToday(SavingsGoal g) {
+
+        if (g.getDeadline() == null) return false;
+
+        Date start = g.getCreatedAt();
+        Date end = g.getDeadline();
+
+        if (start == null || end == null) return false;
+
+        Date nowDate = new Date();
+
+        long total = end.getTime() - start.getTime();
+        if (total <= 0) return false;
+
+        long half = total / 2;
+        Date halfDate = new Date(start.getTime() + half);
+
+        // 🎯 בדיוק ביום מחצית הזמן
+        if (isSameDay(nowDate, halfDate)) {
+            return true;
+        }
+
+        // 🎯 אחרי מחצית הזמן – פעם בחודש
+        if (nowDate.after(halfDate)) {
+
+            Date lastShown = g.getLastProgressAlertDate();
+
+            if (lastShown == null) return true;
+
+            Calendar now = Calendar.getInstance();
+            Calendar last = Calendar.getInstance();
+
+            now.setTime(nowDate);
+            last.setTime(lastShown);
+
+            return now.get(Calendar.MONTH) != last.get(Calendar.MONTH)
+                    || now.get(Calendar.YEAR) != last.get(Calendar.YEAR);
+        }
+
+        return false;
+    }
+
+
+
 
     private void setupPendingApprovals() {
 
@@ -836,22 +1530,29 @@ public class Finance extends AppCompatActivity {
 
         rvPendingApprovals.setAdapter(pendingAdapter);
     }
+    private ListenerRegistration pendingListener;
+
     private void loadPendingApprovals() {
 
         if (groupId == null) return;
 
-        db.collection("groups")
+        // אם כבר יש מאזין – מבטלים
+        if (pendingListener != null) {
+            pendingListener.remove();
+        }
+
+        pendingListener = db.collection("groups")
                 .document(groupId)
                 .collection("finance_flow_items")
                 .whereEqualTo("enabled", true)
-                .get()
-                .addOnSuccessListener(snapshot -> {
+                .addSnapshotListener((snapshot, e) -> {
+
+                    if (e != null || snapshot == null) return;
 
                     pendingItems.clear();
 
                     for (QueryDocumentSnapshot doc : snapshot) {
 
-                        // ✅ תנאי "ממתין לאישור": אין lastApprovedAt
                         Timestamp lastApprovedAt = doc.getTimestamp("lastApprovedAt");
                         if (lastApprovedAt != null) continue;
 
@@ -861,14 +1562,15 @@ public class Finance extends AppCompatActivity {
                         String categoryId = doc.getString("categoryId");
                         if (categoryId == null) continue;
 
-                        // בד"כ חיובים לאישור = הוצאות (אם את רוצה גם הכנסות תורידי את זה)
                         if (!categoryId.startsWith("expense_")) continue;
 
                         String title = doc.getString("title");
                         if (title == null) title = "ללא כותרת";
 
                         Number num = (Number) doc.get("amount");
-                        int amount = (num != null) ? (int) Math.round(num.doubleValue()) : 0;
+                        int amount = (num != null)
+                                ? (int) Math.round(num.doubleValue())
+                                : 0;
 
                         FlowItem item = new FlowItem(doc.getId(), categoryId, title);
                         item.setAmount(amount);
@@ -878,13 +1580,27 @@ public class Finance extends AppCompatActivity {
                         pendingItems.add(item);
                     }
 
+                    // עדכון כותרת
                     if (tvPendingTitle != null) {
-                        tvPendingTitle.setText("יש לך חיובים לאישור (" + pendingItems.size() + ")");
+                        tvPendingTitle.setText(
+                                "יש לך חיובים לאישור (" + pendingItems.size() + ")"
+                        );
+                    }
+
+                    // הצגה / הסתרה
+                    if (cardPending != null) {
+                        cardPending.setVisibility(
+                                pendingItems.size() > 0
+                                        ? View.VISIBLE
+                                        : View.GONE
+                        );
                     }
 
                     pendingAdapter.notifyDataSetChanged();
                 });
     }
+
+
 
 
 }

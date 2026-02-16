@@ -1,13 +1,10 @@
 package com.mycasa.app;
 
-import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,15 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class SavingsGoalAdapter
-        extends RecyclerView.Adapter<SavingsGoalAdapter.VH> {
+        extends RecyclerView.Adapter<SavingsGoalAdapter.GoalViewHolder> {
 
-    // =========================
-    // Listener – פעולות על מטרה
-    // =========================
     public interface OnGoalActionListener {
-        void onAddAmount(SavingsGoal goal);
-        void onRestartGoal(SavingsGoal goal);
-        void onDeleteGoal(SavingsGoal goal);
+        void onAddAmountClicked(SavingsGoal goal);
+        void onDeleteClicked(SavingsGoal goal);
     }
 
     private OnGoalActionListener listener;
@@ -39,143 +32,120 @@ public class SavingsGoalAdapter
 
     @NonNull
     @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
+    public GoalViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_savings_goal, parent, false);
-        return new VH(v);
+        return new GoalViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
+    public void onBindViewHolder(@NonNull GoalViewHolder holder, int position) {
 
         SavingsGoal goal = goals.get(position);
 
-        // ===== טקסטים =====
-        h.tvTitle.setText(goal.getTitle());
-        h.tvCurrent.setText("₪" + goal.getCurrentAmount());
-        h.tvTarget.setText("₪" + goal.getTargetAmount());
+        holder.tvTitle.setText(goal.getTitle());
+        holder.tvCurrent.setText("₪" + goal.getCurrentAmount());
+        holder.tvTarget.setText("₪" + goal.getTargetAmount());
 
         // ===== Progress =====
-        int progress = 0;
-        if (goal.getTargetAmount() > 0) {
-            progress = (int) (
-                    (goal.getCurrentAmount() * 100f)
-                            / goal.getTargetAmount()
-            );
-        }
-        h.progressBar.setProgress(Math.min(progress, 100));
+        holder.progressGoal.setMax(100);
 
-        // ===== צבע פס =====
-        if ("SAVE".equals(goal.getGoalMode())) {
-            h.progressBar.setProgressTintList(
-                    ColorStateList.valueOf(
-                            h.itemView.getContext()
-                                    .getColor(R.color.green_income)
-                    )
-            );
-        } else {
-            h.progressBar.setProgressTintList(
-                    ColorStateList.valueOf(
-                            goal.isOverTarget()
-                                    ? h.itemView.getContext()
-                                    .getColor(R.color.red_expense)
-                                    : h.itemView.getContext()
-                                    .getColor(android.R.color.darker_gray)
-                    )
-            );
-        }
+        int progress = (int) (goal.getMoneyProgress() * 100);
+        holder.progressGoal.setProgress(progress);
 
-        // ===== סטטוס =====
-        SavingsGoal.GoalStatus status = goal.getStatus();
+        int color = getProgressColor(goal);
 
-        if (status == SavingsGoal.GoalStatus.ACTIVE) {
+        holder.progressGoal.setProgressTintList(
+                android.content.res.ColorStateList.valueOf(color)
+        );
 
-            // 🔓 פעיל
-            h.overlayLocked.setVisibility(View.GONE);
-            h.btnAddAmount.setEnabled(true);
-            h.itemView.setAlpha(1f);
+        holder.tvStatus.setText(getStatusText(goal));
 
-            if ("SAVE".equals(goal.getGoalMode())) {
-                int remaining = goal.getTargetAmount() - goal.getCurrentAmount();
-                h.tvStatus.setText("נותר ₪" + Math.max(remaining, 0));
-            } else {
-                h.tvStatus.setText(
-                        goal.isOverTarget()
-                                ? "חריגה ₪" + (goal.getCurrentAmount() - goal.getTargetAmount())
-                                : "בתוך התקציב"
-                );
+        holder.btnAddAmount.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onAddAmountClicked(goal);
             }
+        });
 
-            h.btnAddAmount.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onAddAmount(goal);
-                }
-            });
-
-        } else {
-
-            // 🔒 נעול
-            h.overlayLocked.setVisibility(View.VISIBLE);
-            h.btnAddAmount.setEnabled(false);
-            h.itemView.setAlpha(0.6f);
-
-            if (status == SavingsGoal.GoalStatus.SUCCESS) {
-                h.tvLockMessage.setText(
-                        "SAVE".equals(goal.getGoalMode())
-                                ? "🎉 היעד הושג"
-                                : "👏 עמדת בתקציב"
-                );
-            } else {
-                h.tvLockMessage.setText(
-                        "SAVE".equals(goal.getGoalMode())
-                                ? "⏰ הזמן נגמר לפני היעד"
-                                : "⚠️ חרגת מהתקציב"
-                );
+        holder.btnDeleteGoal.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onDeleteClicked(goal);
             }
-
-            h.btnRestart.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onRestartGoal(goal);
-                }
-            });
-
-            h.btnDelete.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onDeleteGoal(goal);
-                }
-            });
-        }
+        });
     }
+
+
 
     @Override
     public int getItemCount() {
         return goals.size();
     }
 
-    // =========================
-    // ViewHolder
-    // =========================
-    static class VH extends RecyclerView.ViewHolder {
+    static class GoalViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvTitle, tvCurrent, tvTarget, tvStatus, tvLockMessage;
-        ProgressBar progressBar;
-        ImageButton btnAddAmount;
-        ImageButton btnRestart, btnDelete;
-        FrameLayout overlayLocked;
+        TextView tvTitle, tvCurrent, tvTarget, tvStatus;
+        ProgressBar progressGoal;
+        ImageButton btnAddAmount, btnDeleteGoal;
 
-        VH(View v) {
-            super(v);
-            tvTitle = v.findViewById(R.id.tvTitle);
-            tvCurrent = v.findViewById(R.id.tvCurrent);
-            tvTarget = v.findViewById(R.id.tvTarget);
-            tvStatus = v.findViewById(R.id.tvStatus);
-            tvLockMessage = v.findViewById(R.id.tvLockMessage);
-            progressBar = v.findViewById(R.id.progressGoal);
-            btnAddAmount = v.findViewById(R.id.btnAddAmount);
-            overlayLocked = v.findViewById(R.id.overlayLocked);
+        GoalViewHolder(@NonNull View itemView) {
+            super(itemView);
 
-            btnRestart = v.findViewById(R.id.btnRestartGoal);
-            btnDelete = v.findViewById(R.id.btnDeleteGoal);
+            tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvCurrent = itemView.findViewById(R.id.tvCurrent);
+            tvTarget = itemView.findViewById(R.id.tvTarget);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            progressGoal = itemView.findViewById(R.id.progressGoal);
+            btnAddAmount = itemView.findViewById(R.id.btnAddAmount);
+            btnDeleteGoal = itemView.findViewById(R.id.btnDeleteGoal);
         }
     }
+
+    private String getStatusText(SavingsGoal goal) {
+        switch (goal.getStatus()) {
+            case SUCCESS: return "הושג ✔";
+            case FAILED:  return "נכשל ✖";
+            case ACTIVE:
+            default: return "בתהליך";
+        }
+    }
+
+    private int getProgressColor(SavingsGoal goal) {
+
+        double moneyProgress = goal.getMoneyProgress(); // 0.0 → 1.0
+
+        // ===== אם אין דדליין – רק לפי אחוז כסף =====
+        if (goal.getDeadline() == null) {
+
+            if (moneyProgress >= 1.0) {
+                return Color.parseColor("#15803D"); // ירוק כהה – הושג
+            }
+
+            if (moneyProgress >= 0.8) {
+                return Color.parseColor("#16A34A"); // ירוק
+            }
+
+            if (moneyProgress >= 0.5) {
+                return Color.parseColor("#F59E0B"); // כתום
+            }
+
+            return Color.parseColor("#DC2626"); // אדום
+        }
+
+        // ===== אם יש דדליין – לפי זמן מול כסף =====
+
+        double timeProgress = goal.getTimeProgress();
+
+        if (moneyProgress >= timeProgress) {
+            return Color.parseColor("#16A34A"); // ירוק
+        }
+
+        if (moneyProgress >= timeProgress * 0.7) {
+            return Color.parseColor("#F59E0B"); // כתום
+        }
+
+        return Color.parseColor("#DC2626"); // אדום
+    }
+
+
+
 }

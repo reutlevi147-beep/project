@@ -153,11 +153,55 @@ public class FinanceCatalog {
     public static List<String> getExpenseCategoryIds() {
         return Arrays.asList(
                 "expense_food",
-                "expense_housing",
-                "expense_transport",
                 "expense_health",
                 "expense_leisure",
+                "expense_personal",
+                "expense_pets",
                 "expense_home_misc"
         );
     }
+
+
+    public static String getCategoryTitle(String id) {
+
+        switch (id) {
+
+            case "expense_food": return "אוכל וקניות";
+            case "expense_health": return "בריאות";
+            case "expense_leisure": return "פנאי ובילויים";
+            case "expense_personal": return "טיפוח ויופי";
+            case "expense_pets": return "חיות מחמד";
+            case "expense_home_misc": return "שונות";
+
+            case "income_work": return "עבודה";
+            case "income_other": return "הכנסות נוספות";
+
+            default: return "קטגוריה";
+        }
+    }
+
+
+
+    public static String getCategoryIcon(String id) {
+
+        switch (id) {
+
+            case "expense_food": return "🍔";
+            case "expense_health": return "💊";
+            case "expense_leisure": return "🎬";
+            case "expense_personal": return "💄";
+            case "expense_pets": return "🐶";
+            case "expense_home_misc": return "📦";
+
+            case "income_work": return "💰";
+            case "income_other": return "📈";
+
+            default: return "❓";
+        }
+    }
+
+
+
+
+
 }

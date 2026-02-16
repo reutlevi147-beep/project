@@ -216,48 +216,17 @@
                         android:background="@android:color/transparent" />
                 </LinearLayout>
 
-                <!-- ===== PERIOD TOGGLE ===== -->
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/togglePeriod"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:singleSelection="true"
-                    app:selectionRequired="true">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnWeek"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_weight="1"
-                        android:text="שבוע" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnMonth"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_weight="1"
-                        android:text="חודש" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnYear"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_weight="1"
-                        android:text="שנה" />
-                </com.google.android.material.button.MaterialButtonToggleGroup>
-
-
-                <!-- ===== PENDING APPROVALS (Yellow Block) ===== -->
+                <!-- ===== SMART GOAL ALERTS ===== -->
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/cardPending"
+                    android:id="@+id/cardGoalAlerts"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
-                    app:cardBackgroundColor="#FFF9E6">
+                    app:cardBackgroundColor="#FFF1F2">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -267,6 +236,73 @@
 
                         <!-- Header -->
                         <LinearLayout
+                            android:id="@+id/headerGoalAlertsTop"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="⚠️ התראות למטרות"
+                                android:textStyle="bold"
+                                android:textSize="16sp"
+                                android:textColor="#7F1D1D"/>
+
+                            <ImageView
+                                android:id="@+id/imgGoalAlertsArrowTop"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_chevron_up"
+                                app:tint="#7F1D1D"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/layoutGoalAlertsContentTop"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="12dp"/>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvGoalAlerts"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+
+
+                <!-- ===== PENDING APPROVALS (Yellow Block) ===== -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardPending"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#FFF9E6">
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:id="@+id/headerPending"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
@@ -290,6 +326,12 @@
                                 app:tint="#6B7280"/>
                         </LinearLayout>
 
+                    <LinearLayout
+                        android:id="@+id/layoutPendingContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="8dp"/>
@@ -301,8 +343,9 @@
                             android:nestedScrollingEnabled="false"
                             android:overScrollMode="never"/>
 
-
                     </LinearLayout>
+
+                </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
                 <!-- ===== EXPENSES BY CATEGORY ===== -->
@@ -323,6 +366,7 @@
 
                         <!-- Header -->
                         <LinearLayout
+                            android:id="@+id/headerExpenses"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
@@ -345,7 +389,6 @@
                                 app:tint="#6B7280"/>
                         </LinearLayout>
 
-                        <!-- ⬇️ זה החלק שייפתח / ייסגר ⬇️ -->
                         <LinearLayout
                             android:id="@+id/layoutExpensesContent"
                             android:layout_width="match_parent"
@@ -359,24 +402,28 @@
                             <com.google.android.material.button.MaterialButtonToggleGroup
                                 android:id="@+id/toggleExpenseType"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="48dp"
                                 android:layout_marginTop="8dp"
                                 app:singleSelection="true"
-                                app:selectionRequired="true">
+                                app:selectionRequired="true"
+                                app:checkedButton="@id/btnFixed">
 
                                 <com.google.android.material.button.MaterialButton
                                     android:id="@+id/btnFixed"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                     android:layout_width="0dp"
-                                    android:layout_height="40dp"
+                                    android:layout_height="match_parent"
                                     android:layout_weight="1"
-                                    android:text="קבועות" />
+                                    android:text="קבועות"/>
 
                                 <com.google.android.material.button.MaterialButton
                                     android:id="@+id/btnVariable"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                     android:layout_width="0dp"
-                                    android:layout_height="40dp"
+                                    android:layout_height="match_parent"
                                     android:layout_weight="1"
-                                    android:text="משתנות" />
+                                    android:text="משתנות"/>
+
                             </com.google.android.material.button.MaterialButtonToggleGroup>
 
                             <androidx.recyclerview.widget.RecyclerView
@@ -415,7 +462,8 @@
                 android:layout_marginTop="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#ECFDF5">
+                app:cardBackgroundColor="#ECFDF5"
+                android:layout_marginBottom="96dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -425,28 +473,30 @@
 
                     <!-- Header -->
                     <LinearLayout
+                        android:id="@+id/headerGoals"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
 
                         <TextView
-                            android:id="@+id/tvGoalsTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="🎯 מטרות חיסכון"
-                            android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="#065F46"/>
+                            android:textSize="16sp"
+                            android:textColor="#7F1D1D"/>
 
                         <ImageView
-                            android:id="@+id/imgGoalsArrow"
+                            android:id="@+id/imgGoalAlertsArrow"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_chevron_up"
-                            app:tint="#065F46"/>
+                            app:tint="#7F1D1D"/>
                     </LinearLayout>
+
 
                     <View
                         android:layout_width="match_parent"
@@ -464,7 +514,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:nestedScrollingEnabled="false"
-                            android:overScrollMode="never"/>
+                            android:overScrollMode="never"
+                            />
 
                         <View
                             android:layout_width="match_parent"
@@ -478,7 +529,7 @@
                             android:text="➕ הוסף מטרה חדשה"
                             android:textAllCaps="false"
                             android:textColor="#065F46"
-                            android:backgroundTint="#D1FAE5"/>
+                            android:backgroundTint="#D1FAE5" />
                     </LinearLayout>
 
                 </LinearLayout>

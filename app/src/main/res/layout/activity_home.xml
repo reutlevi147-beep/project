@@ -39,15 +39,6 @@
                     android:paddingTop="10dp"
                     android:paddingBottom="18dp">
 
-                    <ImageButton
-                        android:id="@+id/btnBack"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@android:color/transparent"
-                        android:contentDescription="Back"
-                        android:src="@drawable/ic_arrow_back_24"
-                        app:tint="@color/neutral_700" />
-
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -55,26 +46,7 @@
 
                     <FrameLayout
                         android:layout_width="44dp"
-                        android:layout_height="44dp">
-
-                        <ImageButton
-                            android:id="@+id/btnBell"
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:background="@android:color/transparent"
-                            android:contentDescription="Notifications"
-                            android:src="@drawable/ic_notifications_24"
-                            app:tint="@color/neutral_700" />
-
-                        <View
-                            android:id="@+id/badgeDot"
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:layout_gravity="top|end"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginEnd="10dp"
-                            android:background="@drawable/bg_badge_dot" />
-                    </FrameLayout>
+                        android:layout_height="44dp"/>
                 </LinearLayout>
 
                 <TextView
@@ -100,337 +72,375 @@
                 android:layout_width="match_parent"
                 android:layout_height="18dp" />
 
-            <!-- סטטיסטיקות: 2 כרטיסים -->
+
+            <!-- ===== אזור פיננסי ===== -->
             <LinearLayout
+                android:id="@+id/layoutFinanceSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="120dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="8dp"
-                    app:strokeWidth="0dp"
-                    android:background="@drawable/bg_stat_teal">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:padding="18dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_trending_up_24"
-                            app:tint="@android:color/white"
-                            android:alpha="0.85" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="הכנסות חודשיות"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"
-                            android:alpha="0.9" />
-
-                        <TextView
-                            android:id="@+id/tvIncome"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="₪8,000"
-                            android:textColor="@android:color/white"
-                            android:textSize="22sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="120dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="8dp"
-                    app:strokeWidth="0dp"
-                    android:background="@drawable/bg_stat_slate">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:padding="18dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_trending_down_24"
-                            app:tint="@android:color/white"
-                            android:alpha="0.85" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="הוצאות חודשיות"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"
-                            android:alpha="0.9" />
-
-                        <TextView
-                            android:id="@+id/tvExpense"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="₪4,200"
-                            android:textColor="@android:color/white"
-                            android:textSize="22sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
-
-            <!-- מרווח -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp" />
-
-            <!-- יתרה - כרטיס רחב -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="10dp"
-                app:strokeWidth="0dp"
-                android:background="@drawable/bg_balance_indigo">
-
+                <!-- ===== שורת הכנסות / הוצאות ===== -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="18dp">
+                    android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="top">
+                    <!-- כרטיס הכנסות -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardIncome"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="10dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="#0D9488">
 
                         <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:padding="20dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_trending_up_24"
+                                app:tint="@android:color/white"
+                                android:alpha="0.85" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="יתרה נוכחית"
+                                android:layout_marginTop="10dp"
+                                android:text="הכנסות חודשיות"
                                 android:textColor="@android:color/white"
                                 android:textSize="12sp"
                                 android:alpha="0.9" />
 
                             <TextView
-                                android:id="@+id/tvBalance"
+                                android:id="@+id/tvIncome"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="₪3,800"
+                                android:layout_marginTop="4dp"
+                                android:text="₪8,000"
                                 android:textColor="@android:color/white"
-                                android:textSize="34sp"
+                                android:textSize="22sp"
                                 android:textStyle="bold" />
+
                         </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
-                        <TextView
-                            android:id="@+id/tvGrowth"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_pill_white_20"
-                            android:paddingStart="14dp"
-                            android:paddingEnd="14dp"
-                            android:paddingTop="8dp"
-                            android:paddingBottom="8dp"
-                            android:text="+47%"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
+                    <!-- רווח בין הכרטיסים -->
                     <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/bg_divider_white_20" />
+                        android:layout_width="16dp"
+                        android:layout_height="match_parent" />
+
+                    <!-- כרטיס הוצאות -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardExpense"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="10dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="#334155">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:padding="20dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_trending_down_24"
+                                app:tint="@android:color/white"
+                                android:alpha="0.85" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="הוצאות חודשיות"
+                                android:textColor="@android:color/white"
+                                android:textSize="12sp"
+                                android:alpha="0.9" />
+
+                            <TextView
+                                android:id="@+id/tvExpense"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="₪4,200"
+                                android:textColor="@android:color/white"
+                                android:textSize="22sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <!-- מרווח -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="18dp" />
+
+                <!-- ===== כרטיס יתרה ===== -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardBalance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp"
+                    android:background="@drawable/bg_balance_indigo">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="18dp">
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:orientation="horizontal"
+                            android:gravity="top">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="יתרה נוכחית"
+                                    android:textColor="@android:color/white"
+                                    android:textSize="12sp"
+                                    android:alpha="0.9" />
+
+                                <TextView
+                                    android:id="@+id/tvBalance"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:text="₪3,800"
+                                    android:textColor="@android:color/white"
+                                    android:textSize="34sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
 
                             <TextView
+                                android:id="@+id/tvGrowth"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="חיסכון"
+                                android:background="@drawable/bg_pill_white_20"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="8dp"
+                                android:text="+47%"
                                 android:textColor="@android:color/white"
-                                android:textSize="11sp"
-                                android:alpha="0.75" />
-
-                            <TextView
-                                android:id="@+id/tvSaving"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="₪1,200"
-                                android:textColor="@android:color/white"
-                                android:textSize="14sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold" />
+
                         </LinearLayout>
 
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="34dp"
-                            android:background="@drawable/bg_divider_white_20" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="14dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="יעד חודשי"
-                                android:textColor="@android:color/white"
-                                android:textSize="11sp"
-                                android:alpha="0.75" />
-
-                            <TextView
-                                android:id="@+id/tvGoal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="₪2,000"
-                                android:textColor="@android:color/white"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
                     </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+
 
             <!-- מרווח -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="22dp" />
 
-            <!-- משימות להיום -->
+            <!-- ===== אזור סיכום יומי ===== -->
             <LinearLayout
+                android:id="@+id/layoutDailySummary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="10dp">
+                android:orientation="vertical"
+                android:visibility="gone">
 
+                <!-- כותרת -->
                 <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="משימות להיום"
-                    android:textColor="@color/neutral_900"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/btnSeeAll"
+                    android:id="@+id/tvDailyTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="צפה בהכל"
-                    android:textColor="@color/indigo_600"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                    android:text="משימות היום"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/neutral_900"
+                    android:layout_marginBottom="14dp"/>
 
-            <!-- פריט משימה 1 -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/neutral_200"
-                app:strokeWidth="2dp">
-
-                <LinearLayout
+                <!-- ===== כרטיס משימות ===== -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTasksSummary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="14dp">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_icon_teal_50"
-                        android:foregroundGravity="center"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/ic_shopping_cart_24"
-                            app:tint="@color/teal_600" />
-                    </FrameLayout>
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/neutral_200">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="14dp"
-                        android:orientation="vertical">
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:id="@+id/tvTasksSummary"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="קניות שבועיות"
-                            android:textColor="@color/neutral_900"
+                            android:layout_weight="1"
+                            android:textSize="15sp"
                             android:textStyle="bold"
-                            android:textSize="14sp" />
+                            android:textColor="@color/neutral_900"
+                            android:text="יש 0 משימות פתוחות"/>
+
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_indigo_100"
+                            android:padding="12dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/ic_list_todo_24"
+                                app:tint="@color/indigo_600"/>
+                        </FrameLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <!-- ===== כרטיס קניות ===== -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardShoppingSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/neutral_200">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:id="@+id/tvShoppingSummary"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="3 פריטים נותרו"
-                            android:textColor="@color/neutral_500"
-                            android:textSize="12sp" />
+                            android:layout_weight="1"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/neutral_900"
+                            android:text="יש 0 מוצרים ברשימה"/>
+
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_teal_100"
+                            android:padding="12dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/ic_shopping_cart_24"
+                                app:tint="@color/teal_600"/>
+                        </FrameLayout>
+
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <ImageButton
-                        android:id="@+id/btnDone1"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="@drawable/bg_circle_stroke"
-                        android:contentDescription="Done"
-                        android:src="@drawable/ic_check_24"
-                        app:tint="@color/neutral_400" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <!-- אפשר להוסיף כאן עוד פריטי משימה באותו מבנה... -->
+                <!-- ===== כרטיס אירוע ===== -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardEventSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/neutral_200">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvEventTitle"
+                                android:text="פגישה"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/neutral_900"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                            <TextView
+                                android:id="@+id/tvEventTime"
+                                android:text="18:30 - 19:30"
+                                android:textSize="13sp"
+                                android:textColor="@color/teal_600"
+                                android:layout_marginTop="4dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_amber_100"
+                            android:padding="12dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/ic_calendar_24"
+                                app:tint="@color/avatar_orange"/>
+                        </FrameLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
 
             <!-- מרווח -->
             <View

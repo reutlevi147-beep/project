@@ -37,12 +37,16 @@ public class FinanceSetupActivity extends AppCompatActivity {
     private FlowCategoryAdapter fixedExpenseAdapter;
     private FlowCategoryAdapter variableExpenseAdapter;
 
+    private FirebaseFirestore db;
+    private String groupId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finance_setup);
 
-        // ========= האם הגיעו מה־⚙️ =========
+        db = FirebaseFirestore.getInstance();
+
         boolean fromSettings =
                 getIntent().getBooleanExtra("fromSettings", false);
 
@@ -58,11 +62,10 @@ public class FinanceSetupActivity extends AppCompatActivity {
             return;
         }
 
-        // ========= groupId =========
         SharedPreferences prefs =
                 getSharedPreferences("app_prefs", MODE_PRIVATE);
 
-        String groupId = prefs.getString("group_id", null);
+        groupId = prefs.getString("group_id", null);
         AppSession.setGroupId(groupId);
 
         if (groupId == null) {
@@ -71,16 +74,13 @@ public class FinanceSetupActivity extends AppCompatActivity {
             return;
         }
 
-        // ========= Back =========
         ImageButton btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        // ========= Totals =========
         txtIncomeTotal = findViewById(R.id.txtIncomeTotal);
         txtExpenseTotal = findViewById(R.id.txtExpenseTotal);
         txtBalance = findViewById(R.id.txtBalance);
 
-        // ========= RecyclerViews =========
         rvIncome = findViewById(R.id.rvIncome);
         rvExpenseFixed = findViewById(R.id.rvExpenseFixed);
         rvExpenseVariable = findViewById(R.id.rvExpenseVariable);
@@ -93,7 +93,6 @@ public class FinanceSetupActivity extends AppCompatActivity {
         rvExpenseFixed.setNestedScrollingEnabled(false);
         rvExpenseVariable.setNestedScrollingEnabled(false);
 
-        // ========= Categories =========
         List<FlowCategory> incomeCategories =
                 FinanceCatalog.getFixedIncomeCategories();
 
@@ -103,10 +102,8 @@ public class FinanceSetupActivity extends AppCompatActivity {
         List<FlowCategory> variableExpenseCategories =
                 FinanceCatalog.getVariableExpenseCategories();
 
-        // ========= Base items =========
         allItems = new ArrayList<>(FinanceCatalog.getAllItems());
 
-        // ========= Adapters =========
         incomeAdapter = new FlowCategoryAdapter(this, incomeCategories, allItems);
         fixedExpenseAdapter = new FlowCategoryAdapter(this, fixedExpenseCategories, allItems);
         variableExpenseAdapter = new FlowCategoryAdapter(this, variableExpenseCategories, allItems);
@@ -121,10 +118,8 @@ public class FinanceSetupActivity extends AppCompatActivity {
         rvExpenseFixed.setAdapter(fixedExpenseAdapter);
         rvExpenseVariable.setAdapter(variableExpenseAdapter);
 
-        // ⭐️ טעינה נכונה – קודם דינמי, אחר כך סכומים
-        loadDynamicIncomeItems();
+        loadExistingAmounts(); // ⭐ רק זה נשאר
 
-        // ========= Finish =========
         MaterialButton btnFinish = findViewById(R.id.btnFinish);
         btnFinish.setOnClickListener(v -> {
 
@@ -132,11 +127,11 @@ public class FinanceSetupActivity extends AppCompatActivity {
             c.set(Calendar.DAY_OF_MONTH, 1);
 
             Map<String, Object> settingsData = new HashMap<>();
-            settingsData.put("startMonth", new com.google.firebase.Timestamp(c.getTime()));
+            settingsData.put("startMonth",
+                    new com.google.firebase.Timestamp(c.getTime()));
 
-            FirebaseFirestore.getInstance()
-                    .collection("groups")
-                    .document(AppSession.getGroupId())
+            db.collection("groups")
+                    .document(groupId)
                     .collection("finance_settings")
                     .document("main")
                     .set(settingsData, SetOptions.merge());
@@ -145,51 +140,42 @@ public class FinanceSetupActivity extends AppCompatActivity {
                     .putBoolean("finance_setup_done", true)
                     .apply();
 
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-            for (FlowItem item : allItems) {
-
-                if (!"income_work".equals(item.getCategoryId())) continue;
-
-                Map<String, Object> incomeData = new HashMap<>();
-                incomeData.put("title", item.getTitle());
-                incomeData.put("amount", item.getAmount());
-                incomeData.put("categoryId", item.getCategoryId());
-                incomeData.put("enabled", true);
-
-                db.collection("groups")
-                        .document(AppSession.getGroupId())
-                        .collection("finance_items")
-                        .document(item.getId())
-                        .set(incomeData, SetOptions.merge());
-            }
-
             startActivity(new Intent(this, Finance.class));
             finish();
         });
     }
 
     // =====================
-    // Totals calculation
+    // Totals calculation (חודשי אמיתי)
     // =====================
     private void updateTotals() {
 
-        int totalIncome = 0;
-        int totalExpense = 0;
+        double totalIncome = 0;
+        double totalExpense = 0;
 
         for (FlowItem item : allItems) {
+
             if (!item.isConfigured()) continue;
 
-            if (item.getCategoryId().startsWith("income")) {
-                totalIncome += item.getAmount();
-            } else {
-                totalExpense += item.getAmount();
+            double amount = item.getAmount();
+            String freq = item.getFrequency();
+
+            // חישוב חודשי אמיתי
+            if (freq != null) {
+                if (freq.contains("שנת")) amount /= 12;
+                if (freq.contains("דו")) amount /= 2;
+            }
+
+            if (item.getCategoryId().startsWith("income_")) {
+                totalIncome += amount;
+            } else if (item.getCategoryId().startsWith("expense_")) {
+                totalExpense += amount;
             }
         }
 
-        txtIncomeTotal.setText("₪" + totalIncome);
-        txtExpenseTotal.setText("₪" + totalExpense);
-        txtBalance.setText("₪" + (totalIncome - totalExpense));
+        txtIncomeTotal.setText("₪" + (int) totalIncome);
+        txtExpenseTotal.setText("₪" + (int) totalExpense);
+        txtBalance.setText("₪" + (int) (totalIncome - totalExpense));
     }
 
     // =====================
@@ -210,57 +196,12 @@ public class FinanceSetupActivity extends AppCompatActivity {
     }
 
     // =====================
-    // Load dynamic incomes
-    // =====================
-    private void loadDynamicIncomeItems() {
-
-        FirebaseFirestore.getInstance()
-                .collection("groups")
-                .document(AppSession.getGroupId())
-                .collection("finance_items")
-                .whereEqualTo("enabled", true)
-                .get()
-                .addOnSuccessListener(snapshot -> {
-
-                    for (var doc : snapshot) {
-
-                        String id = doc.getId();
-
-                        boolean exists = false;
-                        for (FlowItem item : allItems) {
-                            if (item.getId().equals(id)) {
-                                exists = true;
-                                break;
-                            }
-                        }
-                        if (exists) continue;
-
-                        FlowItem item = new FlowItem(
-                                id,
-                                doc.getString("categoryId"),
-                                doc.getString("title")
-                        );
-
-                        Long amount = doc.getLong("amount");
-                        if (amount != null) {
-                            item.setAmount(amount.intValue());
-                        }
-
-                        allItems.add(item);
-                    }
-
-                    loadExistingAmounts();
-                });
-    }
-
-    // =====================
-    // Load existing amounts
+    // Load existing amounts (מקור אמת אחד בלבד)
     // =====================
     private void loadExistingAmounts() {
 
-        FirebaseFirestore.getInstance()
-                .collection("groups")
-                .document(AppSession.getGroupId())
+        db.collection("groups")
+                .document(groupId)
                 .collection("finance_flow_items")
                 .whereEqualTo("enabled", true)
                 .get()
@@ -268,24 +209,46 @@ public class FinanceSetupActivity extends AppCompatActivity {
 
                     for (var doc : snapshot) {
 
-                        String itemId = doc.getId(); // 👈 חשוב! זה ה־ID
+                        String itemId = doc.getId();
                         Long amount = doc.getLong("amount");
+                        String categoryId = doc.getString("categoryId");
+                        String title = doc.getString("title");
+                        String freq = doc.getString("frequency");
 
-                        if (amount == null) continue;
+                        if (amount == null || categoryId == null) continue;
+
+                        boolean found = false;
 
                         for (FlowItem item : allItems) {
                             if (item.getId().equals(itemId)) {
                                 item.setAmount(amount.intValue());
+                                item.setFrequency(freq);
+                                found = true;
                                 break;
                             }
+                        }
+
+                        // 🔥 אם לא קיים בקטלוג – נוסיף אותו דינמית
+                        if (!found) {
+
+                            FlowItem newItem = new FlowItem(
+                                    itemId,
+                                    categoryId,
+                                    title != null ? title : "ללא כותרת"
+                            );
+
+                            newItem.setAmount(amount.intValue());
+                            newItem.setFrequency(freq);
+
+                            allItems.add(newItem);
                         }
                     }
 
                     updateTotals();
 
-                    rvIncome.getAdapter().notifyDataSetChanged();
-                    rvExpenseFixed.getAdapter().notifyDataSetChanged();
-                    rvExpenseVariable.getAdapter().notifyDataSetChanged();
+                    incomeAdapter.notifyDataSetChanged();
+                    fixedExpenseAdapter.notifyDataSetChanged();
+                    variableExpenseAdapter.notifyDataSetChanged();
                 });
     }
 

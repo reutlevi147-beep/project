@@ -57,13 +57,22 @@
                         android:layout_height="wrap_content"/>
                 </LinearLayout>
 
-                <ImageButton
-                    android:id="@+id/btnAddAmount"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="@drawable/bg_circle_light"
-                    android:src="@drawable/ic_plus"
-                    app:tint="@color/green_income"/>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageButton
+                        android:id="@+id/btnAddAmount"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_circle_light"
+                        android:src="@drawable/ic_plus"
+                        app:tint="@color/green_income"/>
+
+
+                </LinearLayout>
+
             </LinearLayout>
 
             <!-- סכומים -->
@@ -92,7 +101,9 @@
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_marginTop="6dp"
                 android:layout_width="match_parent"
-                android:layout_height="6dp"/>
+                android:layout_height="6dp"
+                android:progressTint="@null"/>
+
 
             <TextView
                 android:id="@+id/tvStatus"

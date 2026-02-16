@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="הוספת תשלום"
+                android:text="הוספת תשלום חד פעמי"
                 android:textColor="@android:color/white"
                 android:textSize="26sp"
                 android:textStyle="bold" />
@@ -39,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="הוסף הכנסה או הוצאה חדשה"
+                android:text=" הוסף הכנסה או הוצאה חדשה חד פעמית"
                 android:textColor="@android:color/white"
                 android:alpha="0.9"
                 android:textSize="14sp" />
@@ -155,24 +155,6 @@
                         android:padding="14dp"
                         android:hint="לדוגמה: קניות בסופר" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- קטגוריה -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:text="קטגוריה *"
-                    android:textColor="#374151"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    android:layout_marginBottom="10dp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCategories"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
-
                 <!-- תאריך -->
                 <TextView
                     android:layout_width="wrap_content"
@@ -204,6 +186,26 @@
                         android:padding="14dp"
                         android:hint="בחרי תאריך" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- קטגוריה -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="קטגוריה *"
+                    android:textColor="#374151"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="10dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvCategories"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never"
+                    android:layout_marginBottom="8dp"/>
+
 
             </LinearLayout>
         </ScrollView>

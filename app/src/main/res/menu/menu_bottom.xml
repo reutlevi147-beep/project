@@ -6,7 +6,7 @@
         android:title="בית" />
     <item
         android:id="@+id/nav_stats"
-        android:icon="@drawable/ic_trending_up_24"
+        android:icon="@drawable/ic_trending_down_24"
         android:title="סטטיסטיקה" />
     <item
         android:id="@+id/nav_calendar"

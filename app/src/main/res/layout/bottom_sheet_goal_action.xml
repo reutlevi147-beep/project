@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@android:color/white">
+
+    <TextView
+        android:id="@+id/tvSheetTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ניהול מטרה"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#111827"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="16dp"/>
+
+    <Button
+        android:id="@+id/btnAddMoney"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="הוסף סכום"
+        android:textAllCaps="false"
+        android:backgroundTint="#FEE2E2"
+        android:textColor="#DC2626"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="12dp"/>
+
+    <Button
+        android:id="@+id/btnIncreaseTarget"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="הגדל יעד"
+        android:textAllCaps="false"
+        android:backgroundTint="#FEE2E2"
+        android:textColor="#DC2626"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="12dp"/>
+
+    <Button
+        android:id="@+id/btnResetGoal"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="אפס מטרה"
+        android:textAllCaps="false"
+        android:backgroundTint="#FEE2E2"
+        android:textColor="#DC2626"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="12dp"/>
+
+    <Button
+        android:id="@+id/btnDeleteGoal"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="🗑 מחק מטרה"
+        android:textAllCaps="false"
+        android:textColor="#DC2626"
+        android:backgroundTint="#FEE2E2"/>
+
+
+</LinearLayout>

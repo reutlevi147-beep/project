@@ -3,10 +3,12 @@ package com.mycasa.app;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,7 +32,7 @@ public class Add_Transaction extends AppCompatActivity {
     private RecyclerView rvCategories;
 
     // ===== State =====
-    private String selectedSubCategoryId = null;   // תת־קטגוריה נבחרת
+    private String selectedCategoryId = null; // תת־קטגוריה נבחרת
     private boolean isIncome = false;              // ברירת מחדל: הוצאה
     private Date selectedDate = new Date();
 
@@ -67,14 +69,18 @@ public class Add_Transaction extends AppCompatActivity {
             if (!isChecked) return;
 
             isIncome = checkedId == R.id.btnIncome;
-            selectedSubCategoryId = null; // 🔑 איפוס חובה
+            selectedCategoryId = null;
             loadCategories();
         });
 
         // ===== Categories =====
         rvCategories.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+                new GridLayoutManager(this, 3)
         );
+
+        rvCategories.setNestedScrollingEnabled(false);
+
+
         loadCategories();
 
         // ===== Date =====
@@ -94,14 +100,17 @@ public class Add_Transaction extends AppCompatActivity {
                 ? FinanceCatalog.getIncomeCategoryIds()
                 : FinanceCatalog.getExpenseCategoryIds();
 
-        CategoryChipsAdapter adapter =
-                new CategoryChipsAdapter(
+        Log.e("CATEGORIES_DEBUG", "SIZE = " + categories.size());
+
+        TransactionCategoryAdapter adapter =
+                new TransactionCategoryAdapter(
                         categories,
-                        categoryId -> selectedSubCategoryId = categoryId
+                        categoryId -> selectedCategoryId = categoryId
                 );
 
         rvCategories.setAdapter(adapter);
     }
+
 
     // =========================
     // Date Picker
@@ -155,7 +164,7 @@ public class Add_Transaction extends AppCompatActivity {
             return;
         }
 
-        if (selectedSubCategoryId == null) {
+        if (selectedCategoryId == null) {
             Toast.makeText(this, "יש לבחור קטגוריה", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -168,21 +177,13 @@ public class Add_Transaction extends AppCompatActivity {
             return;
         }
 
-        // ===== קטגוריית־על חד־פעמי =====
-        String oneTimeCategoryId = isIncome
-                ? "income_one_time"
-                : "expense_one_time";
-
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("amount", amount);
-
-        data.put("categoryId", oneTimeCategoryId);
-        data.put("subCategoryId", selectedSubCategoryId);
+        data.put("categoryId", selectedCategoryId);
         data.put("isOneTime", true);
-
         data.put("enabled", true);
-        data.put("transactionDate", selectedDate); // 🔑 זה התאריך החשוב
+        data.put("transactionDate", selectedDate);
         data.put("createdAt", FieldValue.serverTimestamp());
 
         if (!TextUtils.isEmpty(notes)) {
@@ -196,19 +197,14 @@ public class Add_Transaction extends AppCompatActivity {
                 .addOnSuccessListener(doc -> {
                     Toast.makeText(
                             this,
-                            isIncome
-                                    ? "הכנסה חד־פעמית נשמרה 💚"
-                                    : "הוצאה חד־פעמית נשמרה",
+                            isIncome ? "הכנסה נשמרה 💚" : "הוצאה נשמרה",
                             Toast.LENGTH_SHORT
                     ).show();
                     finish();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(
-                                this,
-                                "שגיאה בשמירה",
-                                Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(this, "שגיאה בשמירה", Toast.LENGTH_LONG).show()
                 );
     }
+
 }
