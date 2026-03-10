@@ -5,12 +5,14 @@
     android:layout_height="match_parent"
     android:background="#F9FAFB">
 
+    <!-- ================= MAIN CONTENT ================= -->
     <LinearLayout
+        android:id="@+id/mainContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- HEADER -->
+        <!-- ===== HEADER ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="238dp"
@@ -34,7 +36,6 @@
                 android:textColor="@android:color/white"
                 android:textSize="28sp"
                 android:textStyle="bold" />
-
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -61,18 +62,18 @@
 
         </LinearLayout>
 
-        <!-- ✅ RecyclerView יחיד -->
+        <!-- ===== RECYCLER ===== -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerShopping"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:padding="16dp"
-            android:clipToPadding="false"/>
+            android:clipToPadding="false" />
 
     </LinearLayout>
 
-    <!-- FAB -->
+    <!-- ===== FAB ===== -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAdd"
         android:layout_width="wrap_content"
@@ -82,5 +83,48 @@
         app:backgroundTint="#14B8A6"
         app:srcCompat="@drawable/ic_plus"
         app:tint="@android:color/white" />
+
+    <!-- ================= LOCK OVERLAY ================= -->
+    <!-- חייב להיות אחרון כדי לכסות גם את ה-FAB -->
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/lockOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_lock_white"
+                app:tint="@android:color/white"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="עמוד זה נעול"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="אין לך הרשאה לבצע פעולות בקניות"
+                android:textColor="#DDFFFFFF"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"/>
+
+        </LinearLayout>
+
+    </eightbitlab.com.blurview.BlurView>
 
 </FrameLayout>

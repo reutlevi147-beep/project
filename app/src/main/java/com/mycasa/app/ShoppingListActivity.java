@@ -2,9 +2,12 @@ package com.mycasa.app;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -12,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,8 +31,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShoppingListActivity extends AppCompatActivity {
+import eightbitlab.com.blurview.BlurView;
 
+public class ShoppingListActivity extends BaseActivity {
     private static final String TAG = "SHOPPING";
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_GROUP_ID = "group_id";
@@ -38,14 +43,14 @@ public class ShoppingListActivity extends AppCompatActivity {
 
     private final List<ShoppingListRow> rows = new ArrayList<>();
     private final List<ShoppingItem> allItems = new ArrayList<>();
-
+    private View lockOverlay;
     // 🔢 COUNTS
     private TextView tvActiveCount;
     private TextView tvPurchasedCount;
-
+    private BaseActivity.PagePermission currentPermission = PagePermission.VIEW_ONLY;
     private FirebaseFirestore db;
     private ListenerRegistration shoppingListener;
-
+    private static final String KEY_USER_ID = "user_id";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +59,12 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
+        // ===== USER + GROUP =====
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String groupId = prefs.getString(KEY_GROUP_ID, null);
+        String userId = prefs.getString(KEY_USER_ID, null);
+
+        // ===== UI =====
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         recycler = findViewById(R.id.recyclerShopping);
@@ -70,18 +81,78 @@ public class ShoppingListActivity extends AppCompatActivity {
         View statActive = findViewById(R.id.statActive);
         tvActiveCount = statActive.findViewById(R.id.tvValue);
         ((TextView) statActive.findViewById(R.id.tvLabel)).setText("לקניה");
-
+        lockOverlay = findViewById(R.id.lockOverlay);
         View statPurchased = findViewById(R.id.statCompleted);
         tvPurchasedCount = statPurchased.findViewById(R.id.tvValue);
         ((TextView) statPurchased.findViewById(R.id.tvLabel)).setText("נקנו");
+        FloatingActionButton fab = findViewById(R.id.fabAdd);
 
-        findViewById(R.id.fabAdd).setOnClickListener(v ->
+        // ===== FAB CLICK =====
+        fab.setOnClickListener(v ->
                 startActivity(new Intent(this, Add_Shopping.class))
         );
+        BlurView blurView = findViewById(R.id.lockOverlay);
 
+        View decorView = getWindow().getDecorView();
+        ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+
+        blurView.setupWith(rootView)
+                .setFrameClearDrawable(getWindow().getDecorView().getBackground())
+                .setBlurRadius(25f);
+
+        resolvePermissionFromServer(
+                AppPage.SHOPPING,
+                groupId,
+                userId,
+                permission -> {
+
+                    currentPermission = permission;
+
+                    if (permission == PagePermission.LOCKED || permission == null) {
+
+                        lockOverlay.setVisibility(View.VISIBLE);
+
+                        fab.setVisibility(View.GONE);
+
+                        recycler.setEnabled(false);
+
+                        return;
+                    }
+
+                    lockOverlay.setVisibility(View.GONE);
+
+                    switch (permission) {
+
+                        case VIEW_ONLY:
+
+                            fab.setVisibility(View.GONE);
+
+                            break;
+
+                        case ADD_ONLY:
+
+                            fab.setVisibility(View.VISIBLE);
+
+                            break;
+
+                        case ADD_EDIT:
+
+                            fab.setVisibility(View.VISIBLE);
+
+                            break;
+
+                        case FULL_ACCESS:
+
+                            fab.setVisibility(View.VISIBLE);
+
+                            break;
+                    }
+                }
+        );
+
+        // ===== DATA LISTENER =====
         startShoppingListener();
     }
-
     // =========================
     // groupId
     // =========================
@@ -187,6 +258,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     // Updates
     // =========================
     private void updateQuantity(ShoppingItem item, int q) {
+        if(currentPermission == PagePermission.VIEW_ONLY) return;
         String groupId = getGroupId();
         if (groupId == null || item.getDocumentId() == null) return;
 
@@ -198,6 +270,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
     private void updatePurchased(ShoppingItem item, boolean checked) {
+        if(currentPermission == PagePermission.VIEW_ONLY) return;
         String groupId = getGroupId();
         if (groupId == null || item.getDocumentId() == null) return;
 
@@ -247,6 +320,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
     private void clearPurchasedItems() {
+        if(currentPermission != PagePermission.FULL_ACCESS) return;
         String groupId = getGroupId();
         if (groupId == null) return;
 

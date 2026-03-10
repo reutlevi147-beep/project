@@ -5,7 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -24,7 +26,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class CalendarDayActivity extends AppCompatActivity {
+import eightbitlab.com.blurview.BlurView;
+
+public class CalendarDayActivity extends BaseActivity {
 
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_GROUP_ID = "group_id";
@@ -53,6 +57,9 @@ public class CalendarDayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar_day);
 
+        // =============================
+        // UI
+        // =============================
         btnBack = findViewById(R.id.btnBack);
         btnPrevMonth = findViewById(R.id.btnPrevMonth);
         btnNextMonth = findViewById(R.id.btnNextMonth);
@@ -64,8 +71,32 @@ public class CalendarDayActivity extends AppCompatActivity {
 
         selectedCalendar = Calendar.getInstance();
 
+        // =============================
+        // SharedPreferences
+        // =============================
+        SharedPreferences prefs =
+                getSharedPreferences("app_prefs", MODE_PRIVATE);
+
+        String groupId = prefs.getString("group_id", null);
+        String userId = prefs.getString("user_id", null);
+
+        // =============================
+        // כפתור חזרה
+        // =============================
         btnBack.setOnClickListener(v -> finish());
 
+        BlurView blurView = findViewById(R.id.lockOverlay);
+
+        View decorView = getWindow().getDecorView();
+        ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+
+        blurView.setupWith(rootView)
+                .setFrameClearDrawable(getWindow().getDecorView().getBackground())
+                .setBlurRadius(25f);
+
+        // =============================
+        // ניווט חודשים
+        // =============================
         btnPrevMonth.setOnClickListener(v -> {
             selectedCalendar.add(Calendar.MONTH, -1);
             selectedCalendar.set(Calendar.DAY_OF_MONTH, 1);
@@ -83,7 +114,11 @@ public class CalendarDayActivity extends AppCompatActivity {
             loadEventsForSelectedDate();
         });
 
+        // =============================
+        // לוח חודשי
+        // =============================
         recyclerMonth.setLayoutManager(new GridLayoutManager(this, 7));
+
         monthAdapter = new CalendarMonthAdapter(
                 monthDays,
                 daysWithEvents,
@@ -93,18 +128,84 @@ public class CalendarDayActivity extends AppCompatActivity {
                     loadEventsForSelectedDate();
                 }
         );
+
         recyclerMonth.setAdapter(monthAdapter);
 
+        // =============================
+        // רשימת אירועים
+        // =============================
         recyclerEvents.setLayoutManager(new LinearLayoutManager(this));
+
         eventsAdapter = new CalendarEventsAdapter(events);
         recyclerEvents.setAdapter(eventsAdapter);
 
+        // =============================
+        // FAB הוספה
+        // =============================
         fabAdd.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddCalendarEventActivity.class);
-            intent.putExtra("date", dbFormat.format(selectedCalendar.getTime()));
+            intent.putExtra("date",
+                    dbFormat.format(selectedCalendar.getTime()));
             startActivity(intent);
         });
 
+        // =============================
+        // הרשאות לפי שרת
+        // =============================
+        resolvePermissionFromServer(
+                AppPage.CALENDAR,
+                groupId,
+                userId,
+                permission -> {
+
+                    // 🔒 אין הרשאת צפייה
+                    if (permission == PagePermission.LOCKED || permission == null) {
+
+                        findViewById(R.id.lockOverlay).setVisibility(View.VISIBLE);
+
+                        fabAdd.setVisibility(View.GONE);
+                        recyclerMonth.setEnabled(false);
+                        recyclerEvents.setEnabled(false);
+
+                        return;
+                    }
+
+                    // מסך פתוח
+                    findViewById(R.id.lockOverlay).setVisibility(View.GONE);
+
+                    switch (permission) {
+
+                        case VIEW_ONLY:
+                            fabAdd.setVisibility(View.GONE);
+                            eventsAdapter.setAllowEdit(false);
+                            eventsAdapter.setAllowDelete(false);
+                            break;
+
+                        case ADD_ONLY:
+                            fabAdd.setVisibility(View.VISIBLE);
+                            eventsAdapter.setAllowEdit(false);
+                            eventsAdapter.setAllowDelete(false);
+                            break;
+
+                        case ADD_EDIT:
+                            fabAdd.setVisibility(View.VISIBLE);
+                            eventsAdapter.setAllowEdit(true);
+                            eventsAdapter.setAllowDelete(false);
+                            break;
+
+                        case FULL_ACCESS:
+                            fabAdd.setVisibility(View.VISIBLE);
+                            eventsAdapter.setAllowEdit(true);
+                            eventsAdapter.setAllowDelete(true);
+                            break;
+                    }
+                }
+
+        );
+
+        // =============================
+        // טעינה ראשונית
+        // =============================
         updateMonthTitle();
         buildMonthCalendar();
         loadEventsForSelectedDate();

@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -37,14 +38,16 @@ import com.google.firebase.firestore.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Finance extends AppCompatActivity {
+import eightbitlab.com.blurview.BlurView;
+
+public class Finance extends BaseActivity {
 
     // ===== UI =====
     private ImageButton btnBack, btnPrevMonth, btnNextMonth, btnSettings;
     private FloatingActionButton btnAddTransaction;
     private View btnAddGoal;
     private double currentMonthlySurplus = 0;
-
+    private View lockOverlay;
     private TextView tvIncomeMonth, tvExpenseMonth, tvBalanceMonth, tvSelectedMonth;
     private RecyclerView rvCategoryExpenses;
 
@@ -67,7 +70,7 @@ public class Finance extends AppCompatActivity {
     private Calendar selectedMonth;
     private int lastRenderedYear = -1;
     private Calendar startMonth = null;
-
+    private PagePermission currentPermission = PagePermission.VIEW_ONLY;
     // ===== Firebase =====
     private FirebaseFirestore db;
     private String groupId;
@@ -149,88 +152,198 @@ public class Finance extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e("Finance", "onCreate START");
-
         setContentView(R.layout.activity_finance);
-        cardPending = findViewById(R.id.cardPending);
-        rvGoalAlerts = findViewById(R.id.rvGoalAlerts);
-        rvGoalAlerts.setLayoutManager(new LinearLayoutManager(this));
-
-        alertAdapter = new GoalAlertAdapter(goalAlerts);
-        rvGoalAlerts.setAdapter(alertAdapter);
         db = FirebaseFirestore.getInstance();
 
-        // ========= groupId =========
-        groupId = AppSession.getGroupId();
+        // ===== GROUP =====
+        SharedPreferences prefs =
+                getSharedPreferences("app_prefs", MODE_PRIVATE);
+
+        groupId = prefs.getString("group_id", null);
+        String userId = prefs.getString("user_id", null);   // ✅ זה היה חסר
+        String role = prefs.getString("role", null);
+
+        AppSession.setUserId(userId);
+        AppSession.setGroupId(groupId);
+        AppSession.setUserRole(role);
+
+        Log.e("ROLE_DEBUG", "role=" + role);
+        Log.e("USER_DEBUG", "userId=" + userId);
+
+        Log.e("ROLE_DEBUG", "role=" + role);
+        bindViews();
+        BlurView blurView = findViewById(R.id.lockOverlay);
+        View decorView = getWindow().getDecorView();
+        ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+
+        blurView.setupWith(rootView)
+                .setBlurRadius(20f);
+        btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(Finance.this, FinanceSetupActivity.class);
+            intent.putExtra("mode", "edit");
+            startActivity(intent);
+        });
 
 
-        if (groupId == null) {
-            SharedPreferences prefs =
-                    getSharedPreferences("app_prefs", MODE_PRIVATE);
-            groupId = prefs.getString("group_id", null);
-            AppSession.setGroupId(groupId);
+        Map<String, ?> all = prefs.getAll();
+        for (Map.Entry<String, ?> entry : all.entrySet()) {
+            Log.e("PREF_DEBUG", entry.getKey() + " = " + entry.getValue());
         }
 
         if (groupId == null) {
-            Log.e("Finance", "groupId still null – closing Finance");
             finish();
             return;
         }
 
-        // ========= UI =========
-        bindViews();
-        setupMonth();
-        setupListeners();
-        setupGoals();
-        setupPendingApprovals();
-        loadPendingApprovals();
-        loadCategoryList(true); // ברירת מחדל – קבועות
+        // ======================================
+        // בדיקת Setup רק להורה
+        // ======================================
+        if ("parent".equalsIgnoreCase(AppSession.getUserRole())) {
+            db.collection("groups")
+                    .document(groupId)
+                    .collection("finance_settings")
+                    .document("main")
+                    .get()
+                    .addOnSuccessListener(doc -> {
 
+                        // אם אין הגדרות → פתיחת Setup
+                        if (!doc.exists() || doc.get("startMonth") == null) {
 
+                            startActivity(new Intent(Finance.this, FinanceSetupActivity.class));
+                            finish();
+                            return;
+                        }
 
+                        // יש הגדרות → ממשיכים למסך
+                        initFinanceScreen();
+                    });
 
-        // ========= Load start month from settings =========
-        loadStartMonth();   // ⭐ זה הגבול האחורי לחודשים
+        } else {
 
-        // ========= Data =========
-        loadMonthData();
-
-        lastRenderedYear = selectedMonth.get(Calendar.YEAR);
-        loadYearBarChart();
-        loadSavingsGoals();
-
-        imgGoalAlertsArrow = findViewById(R.id.imgGoalAlertsArrow);
-
-        setupToggle(
-                headerGoalAlertsTop,
-                layoutGoalAlertsContentTop,
-                imgGoalAlertsArrowTop
-        );
-
-        setupToggle(
-                headerPending,
-                layoutPendingContent,
-                imgPendingArrow
-        );
-
-        setupToggle(
-                headerExpenses,
-                layoutExpensesContent,
-                imgExpandCategories
-        );
-
-        setupToggle(
-                headerGoals,
-                layoutGoalsContent,
-                imgGoalsArrow
-        );
-
-
-
+            // משתמש ילד → נכנס ישר למסך
+            initFinanceScreen();
+        }
     }
 
 
+    private void initFinanceScreen() {
 
+        resolvePermissionFromServer(
+                AppPage.FINANCE,
+                groupId,
+                AppSession.getUserId(),
+                permission -> {
+
+                    Log.e("PERMISSION_DEBUG", "Finance permission = " + permission);
+
+                    currentPermission = permission;
+
+                    // 🔒 אין הרשאת צפייה
+                    if (permission == PagePermission.LOCKED || permission == null){
+
+                        lockOverlay.setVisibility(View.VISIBLE);
+                        lockOverlay.setClickable(true);
+                        lockOverlay.setFocusable(true);
+
+                        btnAddTransaction.setVisibility(View.GONE);
+                        btnAddGoal.setVisibility(View.GONE);
+                        btnSettings.setVisibility(View.GONE);
+
+                        btnBack.setEnabled(false);
+                        btnPrevMonth.setEnabled(false);
+                        btnNextMonth.setEnabled(false);
+
+                        return;
+                    }
+
+                    // אחרת המסך פתוח
+                    lockOverlay.setVisibility(View.GONE);
+                    lockOverlay.setClickable(false);
+                    lockOverlay.setFocusable(false);
+                    switch (permission) {
+
+                        case VIEW_ONLY:
+
+                            btnAddTransaction.setVisibility(View.GONE);
+                            btnAddGoal.setVisibility(View.GONE);
+                            btnSettings.setVisibility(View.GONE);
+
+                            if (headerPending != null)
+                                headerPending.setVisibility(View.GONE);
+
+                            if (layoutPendingContent != null)
+                                layoutPendingContent.setVisibility(View.GONE);
+
+                            if (headerGoalAlertsTop != null)
+                                headerGoalAlertsTop.setVisibility(View.GONE);
+
+                            if (layoutGoalAlertsContentTop != null)
+                                layoutGoalAlertsContentTop.setVisibility(View.GONE);
+
+                            break;
+
+                        case ADD_ONLY:
+
+                            btnAddTransaction.setVisibility(View.VISIBLE);
+                            btnAddGoal.setVisibility(View.GONE);
+                            btnSettings.setVisibility(View.GONE);
+
+                            if (headerPending != null)
+                                headerPending.setVisibility(View.GONE);
+
+                            if (layoutPendingContent != null)
+                                layoutPendingContent.setVisibility(View.GONE);
+
+                            if (headerGoalAlertsTop != null)
+                                headerGoalAlertsTop.setVisibility(View.GONE);
+
+                            if (layoutGoalAlertsContentTop != null)
+                                layoutGoalAlertsContentTop.setVisibility(View.GONE);
+
+                            break;
+
+                        case ADD_EDIT:
+                        case FULL_ACCESS:
+
+                            btnAddTransaction.setVisibility(View.VISIBLE);
+                            btnAddGoal.setVisibility(View.VISIBLE);
+                            btnSettings.setVisibility(View.VISIBLE);
+
+                            if (headerPending != null)
+                                headerPending.setVisibility(View.VISIBLE);
+
+                            if (layoutPendingContent != null)
+                                layoutPendingContent.setVisibility(View.VISIBLE);
+
+                            if (headerGoalAlertsTop != null)
+                                headerGoalAlertsTop.setVisibility(View.VISIBLE);
+
+                            if (layoutGoalAlertsContentTop != null)
+                                layoutGoalAlertsContentTop.setVisibility(View.VISIBLE);
+
+                            break;
+                    }
+
+                    // ===== טעינת המסך =====
+
+                    setupMonth();
+                    setupListeners();
+                    setupGoals();
+
+                    if (permission == PagePermission.ADD_EDIT ||
+                            permission == PagePermission.FULL_ACCESS) {
+
+                        setupPendingApprovals();
+                        loadPendingApprovals();
+                    }
+
+                    loadStartMonth();
+                    loadMonthData();
+                    loadYearBarChart();
+                    loadSavingsGoals();
+                }
+        );
+    }
 
     private void detectFirstDataMonth() {
 
@@ -273,7 +386,7 @@ public class Finance extends AppCompatActivity {
 
         btnAddTransaction = findViewById(R.id.btnAddTransaction);
         btnAddGoal = findViewById(R.id.btnAddGoal);
-
+        lockOverlay = findViewById(R.id.lockOverlay);
         tvSelectedMonth = findViewById(R.id.tvSelectedMonth);
         tvIncomeMonth = findViewById(R.id.tvIncomeMonth);
         tvExpenseMonth = findViewById(R.id.tvExpenseMonth);
@@ -282,7 +395,7 @@ public class Finance extends AppCompatActivity {
         LinearLayoutManager lm = new LinearLayoutManager(this);
         lm.setAutoMeasureEnabled(true);
         rvCategoryExpenses.setLayoutManager(lm);
-
+        cardPending = findViewById(R.id.cardPending);
         rvGoals = findViewById(R.id.rvGoals);
         rvGoals.setLayoutManager(new LinearLayoutManager(this));
         rvCategoryExpenses.setNestedScrollingEnabled(false);
@@ -317,22 +430,23 @@ public class Finance extends AppCompatActivity {
         pieExpenses = findViewById(R.id.pieFixedExpenses);
         barYear = findViewById(R.id.barMonthlySummary);
         rvGoalAlerts = findViewById(R.id.rvGoalAlerts);
+
         if (rvGoalAlerts != null) {
+
             rvGoalAlerts.setLayoutManager(new LinearLayoutManager(this));
             rvGoalAlerts.setNestedScrollingEnabled(false);
 
-
+            // 🔥 יצירת adapter לפני שימוש
+            alertAdapter = new GoalAlertAdapter(goalAlerts);
 
             alertAdapter.setOnAlertActionListener(alert -> {
-
                 SavingsGoal goal = alert.getGoal();
-
                 if (goal != null) {
                     addMoneyToGoal(goal);
                 }
             });
 
-
+            rvGoalAlerts.setAdapter(alertAdapter);
         }
 
         toggleExpenseType = findViewById(R.id.toggleExpenseType);
@@ -411,7 +525,15 @@ public class Finance extends AppCompatActivity {
                     .update("lastProgressAlertDate", today);
         }
 
-        rvGoalAlerts.setVisibility(goalAlerts.isEmpty() ? View.GONE : View.VISIBLE);
+        if (currentPermission == PagePermission.ADD_EDIT ||
+                currentPermission == PagePermission.FULL_ACCESS) {
+
+            rvGoalAlerts.setVisibility(goalAlerts.isEmpty() ? View.GONE : View.VISIBLE);
+
+        } else {
+
+            rvGoalAlerts.setVisibility(View.GONE);
+        }
         alertAdapter.notifyDataSetChanged();
     }
 
@@ -463,12 +585,6 @@ public class Finance extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnSettings.setOnClickListener(v -> {
-            Intent i = new Intent(Finance.this, FinanceSetupActivity.class);
-            i.putExtra("fromSettings", true);
-            startActivity(i);
-        });
-
         btnAddTransaction.setOnClickListener(v ->
                 startActivity(new Intent(this, Add_Transaction.class)));
 
@@ -482,13 +598,11 @@ public class Finance extends AppCompatActivity {
             if (!isChecked) return;
             showingFixed = checkedId == R.id.btnFixed;
 
-            loadCategoryList(showingFixed);   // 🔥 זה העיקר
-            loadExpensesLive();               // תרשים
-            loadSummaryLive();                // סיכומים
-
+            loadCategoryList(showingFixed);
+            loadExpensesLive();
+            loadSummaryLive();
         });
     }
-
     // ================= Month Data =================
     private void loadMonthData() {
         loadSummaryLive();
@@ -1587,13 +1701,21 @@ public class Finance extends AppCompatActivity {
                         );
                     }
 
-                    // הצגה / הסתרה
                     if (cardPending != null) {
-                        cardPending.setVisibility(
-                                pendingItems.size() > 0
-                                        ? View.VISIBLE
-                                        : View.GONE
-                        );
+
+                        if (currentPermission == PagePermission.ADD_EDIT ||
+                                currentPermission == PagePermission.FULL_ACCESS) {
+
+                            cardPending.setVisibility(
+                                    pendingItems.size() > 0
+                                            ? View.VISIBLE
+                                            : View.GONE
+                            );
+
+                        } else {
+
+                            cardPending.setVisibility(View.GONE);
+                        }
                     }
 
                     pendingAdapter.notifyDataSetChanged();

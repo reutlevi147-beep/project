@@ -19,9 +19,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-public class FinanceSetupActivity extends AppCompatActivity {
+public class FinanceSetupActivity extends BaseActivity {
 
     private RecyclerView rvIncome;
     private RecyclerView rvExpenseFixed;
@@ -47,36 +48,34 @@ public class FinanceSetupActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        boolean fromSettings =
-                getIntent().getBooleanExtra("fromSettings", false);
+        String mode = getIntent().getStringExtra("mode");
+        boolean isEditMode = "edit".equals(mode);
 
-        SharedPreferences financePrefs =
-                getSharedPreferences("finance_prefs", MODE_PRIVATE);
+        // ===== Load session =====
+        SharedPreferences prefs =
+                getSharedPreferences("app_prefs", MODE_PRIVATE);
 
-        boolean setupDone =
-                financePrefs.getBoolean("finance_setup_done", false);
+        groupId = prefs.getString("group_id", null);
+        String userRole = AppSession.getUserRole();
+        Log.e("ROLE_DEBUG", "role=" + userRole);
+        Log.e("SETUP_DEBUG", "groupId=" + groupId);
 
-        if (setupDone && !fromSettings) {
+        if (groupId == null) {
+            Log.e("SETUP_ERROR", "groupId is null");
+            finish();
+            return;
+        }
+
+        userRole = userRole == null ? "" : userRole.trim().toLowerCase();
+
+        // ===== Only parent can access =====
+        if (!userRole.equals("parent") && !isEditMode) {
             startActivity(new Intent(this, Finance.class));
             finish();
             return;
         }
 
-        SharedPreferences prefs =
-                getSharedPreferences("app_prefs", MODE_PRIVATE);
-
-        groupId = prefs.getString("group_id", null);
-        AppSession.setGroupId(groupId);
-
-        if (groupId == null) {
-            Log.e("FinanceSetup", "groupId is null – closing");
-            finish();
-            return;
-        }
-
-        ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
-
+        // ===== Bind views =====
         txtIncomeTotal = findViewById(R.id.txtIncomeTotal);
         txtExpenseTotal = findViewById(R.id.txtExpenseTotal);
         txtBalance = findViewById(R.id.txtBalance);
@@ -89,9 +88,8 @@ public class FinanceSetupActivity extends AppCompatActivity {
         rvExpenseFixed.setLayoutManager(new LinearLayoutManager(this));
         rvExpenseVariable.setLayoutManager(new LinearLayoutManager(this));
 
-        rvIncome.setNestedScrollingEnabled(false);
-        rvExpenseFixed.setNestedScrollingEnabled(false);
-        rvExpenseVariable.setNestedScrollingEnabled(false);
+        // ===== Load catalog =====
+        allItems = new ArrayList<>(FinanceCatalog.getAllItems());
 
         List<FlowCategory> incomeCategories =
                 FinanceCatalog.getFixedIncomeCategories();
@@ -102,26 +100,30 @@ public class FinanceSetupActivity extends AppCompatActivity {
         List<FlowCategory> variableExpenseCategories =
                 FinanceCatalog.getVariableExpenseCategories();
 
-        allItems = new ArrayList<>(FinanceCatalog.getAllItems());
+        incomeAdapter =
+                new FlowCategoryAdapter(this, incomeCategories, allItems);
 
-        incomeAdapter = new FlowCategoryAdapter(this, incomeCategories, allItems);
-        fixedExpenseAdapter = new FlowCategoryAdapter(this, fixedExpenseCategories, allItems);
-        variableExpenseAdapter = new FlowCategoryAdapter(this, variableExpenseCategories, allItems);
+        fixedExpenseAdapter =
+                new FlowCategoryAdapter(this, fixedExpenseCategories, allItems);
 
-        incomeAdapter.setOnAddIncomeClickListener(this::addNewIncomeItem);
-
-        incomeAdapter.setOnItemChangedListener(this::updateTotals);
-        fixedExpenseAdapter.setOnItemChangedListener(this::updateTotals);
-        variableExpenseAdapter.setOnItemChangedListener(this::updateTotals);
+        variableExpenseAdapter =
+                new FlowCategoryAdapter(this, variableExpenseCategories, allItems);
 
         rvIncome.setAdapter(incomeAdapter);
         rvExpenseFixed.setAdapter(fixedExpenseAdapter);
         rvExpenseVariable.setAdapter(variableExpenseAdapter);
 
-        loadExistingAmounts(); // ⭐ רק זה נשאר
+        incomeAdapter.setOnItemChangedListener(this::updateTotals);
+        fixedExpenseAdapter.setOnItemChangedListener(this::updateTotals);
+        variableExpenseAdapter.setOnItemChangedListener(this::updateTotals);
 
-        MaterialButton btnFinish = findViewById(R.id.btnFinish);
-        btnFinish.setOnClickListener(v -> {
+        incomeAdapter.setOnAddIncomeClickListener(this::addNewIncomeItem);
+
+        // ===== Load existing data =====
+        loadExistingAmounts();
+
+        // ===== Finish button =====
+        findViewById(R.id.btnFinish).setOnClickListener(v -> {
 
             Calendar c = Calendar.getInstance();
             c.set(Calendar.DAY_OF_MONTH, 1);
@@ -134,14 +136,17 @@ public class FinanceSetupActivity extends AppCompatActivity {
                     .document(groupId)
                     .collection("finance_settings")
                     .document("main")
-                    .set(settingsData, SetOptions.merge());
+                    .set(settingsData, SetOptions.merge())
+                    .addOnSuccessListener(unused -> {
 
-            financePrefs.edit()
-                    .putBoolean("finance_setup_done", true)
-                    .apply();
+                        Log.e("SETUP_DEBUG", "Finance setup saved");
 
-            startActivity(new Intent(this, Finance.class));
-            finish();
+                        startActivity(new Intent(this, Finance.class));
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("SETUP_ERROR", "Failed saving finance setup", e);
+                    });
         });
     }
 
@@ -199,7 +204,7 @@ public class FinanceSetupActivity extends AppCompatActivity {
     // Load existing amounts (מקור אמת אחד בלבד)
     // =====================
     private void loadExistingAmounts() {
-
+        if (groupId == null) return;
         db.collection("groups")
                 .document(groupId)
                 .collection("finance_flow_items")

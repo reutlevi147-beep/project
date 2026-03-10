@@ -1,247 +1,205 @@
 package com.mycasa.app;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class EditUserActivity extends AppCompatActivity {
 
-    // ===== UI =====
-    private EditText etName, etPhone, etEmail;
-    private Button btnSave;
-    private ImageView imgAvatar;
+    private TextInputEditText etName, etPhone, etEmail;
+    private MaterialButton btnSave;
 
-    // Role selection
-    private MaterialButtonToggleGroup toggleRole;
-    private MaterialButton btnParent, btnChild;
-    private String selectedRole = "child"; // ברירת מחדל
+    private MaterialCardView cardChild, cardParent;
+    private TextView tvChild, tvParent;
+    private ImageView iconChildCheck, iconParentCheck;
 
-    // ===== Firebase =====
     private FirebaseFirestore db;
 
     private String userId;
-    private String selectedAvatarColor;
+    private String groupId;
 
-    // ===== SharedPreferences =====
-    private static final String PREFS_NAME = "app_prefs";
-    private static final String KEY_GROUP_ID = "group_id";
+    private String selectedRole = "child";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_user);
 
-        // ===== userId =====
-        userId = getIntent().getStringExtra("userId");
-        if (userId == null || userId.isEmpty()) {
-            Toast.makeText(this, "❌ חסר userId", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        db = FirebaseFirestore.getInstance();
 
-        // ===== Bind UI =====
+        // ===== Views =====
         etName = findViewById(R.id.etName);
         etPhone = findViewById(R.id.etPhone);
         etEmail = findViewById(R.id.etEmail);
         btnSave = findViewById(R.id.btnSave);
-        imgAvatar = findViewById(R.id.imgAvatar);
 
-        toggleRole = findViewById(R.id.toggleRole);
-        btnParent = findViewById(R.id.btnParent);
-        btnChild = findViewById(R.id.btnChild);
+        cardChild = findViewById(R.id.cardChild);
+        cardParent = findViewById(R.id.cardParent);
 
-        // ===== Firebase =====
-        db = FirebaseFirestore.getInstance();
+        tvChild = findViewById(R.id.tvChild);
+        tvParent = findViewById(R.id.tvParent);
 
-        // ===== Load user =====
-        loadUser();
+        iconChildCheck = findViewById(R.id.iconChildCheck);
+        iconParentCheck = findViewById(R.id.iconParentCheck);
 
-        // ===== Role selection =====
-        toggleRole.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked) return;
+        // ===== קבלת נתונים מה Intent =====
+        userId = getIntent().getStringExtra("USER_ID");
+        groupId = getIntent().getStringExtra("GROUP_ID");
 
-            if (checkedId == R.id.btnParent) {
-                selectedRole = "parent";
-            } else if (checkedId == R.id.btnChild) {
-                selectedRole = "child";
-            }
-        });
+        if (userId == null || groupId == null) {
+            Toast.makeText(this, "נתוני משתמש חסרים", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
-        // ===== Clicks =====
-        btnSave.setOnClickListener(v -> saveUser());
-        imgAvatar.setOnClickListener(v -> openAvatarDialog());
+        // ===== לחיצות =====
+        cardChild.setOnClickListener(v -> selectRole("child"));
+        cardParent.setOnClickListener(v -> selectRole("parent"));
+
+        btnSave.setOnClickListener(v -> saveUserData());
+
+        // ברירת מחדל
+        selectRole("child");
+
+        loadUserData();
     }
 
-    // ===============================
-    // Load user
-    // ===============================
-    private void loadUser() {
-        String groupId = getGroupId();
-        if (groupId == null) return;
+    // ==========================
+    // בחירת תפקיד
+    // ==========================
+    private void selectRole(String role) {
+
+        selectedRole = role;
+
+        if ("child".equals(role)) {
+
+            // CHILD SELECTED
+            cardChild.setCardBackgroundColor(getColor(R.color.gray_dark));
+            cardChild.setStrokeWidth(3);
+            cardChild.setStrokeColor(getColor(R.color.gray_dark));
+            tvChild.setTextColor(getColor(android.R.color.white));
+            iconChildCheck.setVisibility(View.VISIBLE);
+
+            cardParent.setCardBackgroundColor(getColor(android.R.color.white));
+            cardParent.setStrokeWidth(2);
+            cardParent.setStrokeColor(getColor(R.color.gray_light));
+            tvParent.setTextColor(getColor(R.color.gray_dark));
+            iconParentCheck.setVisibility(View.GONE);
+
+        } else {
+
+            // PARENT SELECTED
+            cardParent.setCardBackgroundColor(getColor(R.color.gray_dark));
+            cardParent.setStrokeWidth(3);
+            cardParent.setStrokeColor(getColor(R.color.gray_dark));
+            tvParent.setTextColor(getColor(android.R.color.white));
+            iconParentCheck.setVisibility(View.VISIBLE);
+
+            cardChild.setCardBackgroundColor(getColor(android.R.color.white));
+            cardChild.setStrokeWidth(2);
+            cardChild.setStrokeColor(getColor(R.color.gray_light));
+            tvChild.setTextColor(getColor(R.color.gray_dark));
+            iconChildCheck.setVisibility(View.GONE);
+        }
+    }
+
+    // ==========================
+    // טעינת נתונים
+    // ==========================
+    private void loadUserData() {
+
+        btnSave.setEnabled(false);
 
         db.collection("groups")
                 .document(groupId)
                 .collection("users")
                 .document(userId)
                 .get()
-                .addOnSuccessListener(doc -> {
-                    if (!doc.exists()) return;
+                .addOnSuccessListener(snapshot -> {
 
-                    etName.setText(doc.getString("name"));
-                    etPhone.setText(doc.getString("phone"));
-                    etEmail.setText(doc.getString("email"));
+                    btnSave.setEnabled(true);
 
-                    String role = doc.getString("role");
-                    if ("parent".equals(role)) {
-                        toggleRole.check(R.id.btnParent);
-                        selectedRole = "parent";
-                    } else {
-                        toggleRole.check(R.id.btnChild);
-                        selectedRole = "child";
+                    if (snapshot.exists()) {
+
+                        String name = snapshot.getString("name");
+                        String phone = snapshot.getString("phone");
+                        String email = snapshot.getString("email");
+                        String role = snapshot.getString("role");
+
+                        etName.setText(name != null ? name : "");
+                        etPhone.setText(phone != null ? phone : "");
+                        etEmail.setText(email != null ? email : "");
+
+                        if ("parent".equals(role)) {
+                            selectRole("parent");
+                        } else {
+                            selectRole("child");
+                        }
                     }
-
-                    String avatarColor = doc.getString("avatarColor");
-                    if (avatarColor != null) {
-                        selectedAvatarColor = avatarColor;
-                        applyAvatarColor(avatarColor);
-                    }
+                })
+                .addOnFailureListener(e -> {
+                    btnSave.setEnabled(true);
+                    Toast.makeText(this, "שגיאה בטעינה", Toast.LENGTH_SHORT).show();
                 });
     }
 
-    // ===============================
-    // Save user (עם ולידציות)
-    // ===============================
-    private void saveUser() {
+    // ==========================
+    // שמירה
+    // ==========================
+    private void saveUserData() {
 
-        // ---- Name ----
-        if (TextUtils.isEmpty(etName.getText())) {
-            etName.setError("שם חובה");
+        String name = etName.getText() != null ? etName.getText().toString().trim() : "";
+        String phone = etPhone.getText() != null ? etPhone.getText().toString().trim() : "";
+        String email = etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
+
+        if (TextUtils.isEmpty(name)) {
+            etName.setError("השם חובה");
             return;
         }
 
-        // ---- Phone ----
-        String phone = etPhone.getText().toString().trim();
-        if (!TextUtils.isEmpty(phone) && !isValidPhone(phone)) {
-            etPhone.setError("מספר טלפון לא תקין");
-            etPhone.requestFocus();
-            return;
-        }
-
-        // ---- Email ----
-        String email = etEmail.getText().toString().trim();
-        if (!TextUtils.isEmpty(email) && !isValidEmail(email)) {
+        if (!TextUtils.isEmpty(email) &&
+                !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError("אימייל לא תקין");
-            etEmail.requestFocus();
             return;
         }
 
-        String groupId = getGroupId();
-        if (groupId == null) return;
+        btnSave.setEnabled(false);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", name);
+        map.put("phone", phone);
+        map.put("email", email);
+        map.put("role", selectedRole);
 
         db.collection("groups")
                 .document(groupId)
                 .collection("users")
                 .document(userId)
-                .update(
-                        "name", etName.getText().toString().trim(),
-                        "phone", phone,
-                        "email", email,
-                        "role", selectedRole,
-                        "avatarColor", selectedAvatarColor
-                )
-                .addOnSuccessListener(v -> {
-                    Toast.makeText(this, "נשמר בהצלחה", Toast.LENGTH_SHORT).show();
+                .update(map)
+                .addOnSuccessListener(unused -> {
+
+                    btnSave.setEnabled(true);
+                    Toast.makeText(this, "עודכן בהצלחה", Toast.LENGTH_SHORT).show();
                     finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnSave.setEnabled(true);
+                    Toast.makeText(this, "שגיאה בשמירה", Toast.LENGTH_SHORT).show();
                 });
-    }
-
-    // ===============================
-    // Validations
-    // ===============================
-    private boolean isValidPhone(String phone) {
-        if (!phone.matches("\\d+")) return false;
-        if (phone.length() < 9 || phone.length() > 10) return false;
-        return phone.startsWith("0");
-    }
-
-    private boolean isValidEmail(String email) {
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
-    }
-
-    // ===============================
-    // Avatar dialog
-    // ===============================
-    private void openAvatarDialog() {
-        View view = getLayoutInflater().inflate(R.layout.dialog_avatar_picker, null);
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(view)
-                .create();
-
-        view.findViewById(R.id.avatarBlue).setOnClickListener(v -> {
-            selectColor("blue"); dialog.dismiss();
-        });
-        view.findViewById(R.id.avatarPurple).setOnClickListener(v -> {
-            selectColor("purple"); dialog.dismiss();
-        });
-        view.findViewById(R.id.avatarRed).setOnClickListener(v -> {
-            selectColor("red"); dialog.dismiss();
-        });
-        view.findViewById(R.id.avatarPink).setOnClickListener(v -> {
-            selectColor("pink"); dialog.dismiss();
-        });
-        view.findViewById(R.id.avatarTeal).setOnClickListener(v -> {
-            selectColor("teal"); dialog.dismiss();
-        });
-
-        dialog.show();
-    }
-
-    private void selectColor(String color) {
-        selectedAvatarColor = color;
-        applyAvatarColor(color);
-    }
-
-    private void applyAvatarColor(String color) {
-        imgAvatar.setImageResource(R.drawable.ic_user);
-        imgAvatar.setColorFilter(
-                ContextCompat.getColor(this, android.R.color.white)
-        );
-
-        int bgColor = R.color.avatar_beige;
-        switch (color) {
-            case "blue": bgColor = R.color.avatar_blue; break;
-            case "purple": bgColor = R.color.avatar_purple; break;
-            case "red": bgColor = R.color.avatar_red; break;
-            case "pink": bgColor = R.color.avatar_pink; break;
-            case "teal": bgColor = R.color.avatar_teal; break;
-        }
-
-        imgAvatar.setBackgroundTintList(
-                ContextCompat.getColorStateList(this, bgColor)
-        );
-    }
-
-    // ===============================
-    // groupId
-    // ===============================
-    private String getGroupId() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        return prefs.getString(KEY_GROUP_ID, null);
     }
 }

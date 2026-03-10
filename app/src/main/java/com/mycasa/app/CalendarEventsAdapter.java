@@ -25,6 +25,19 @@ public class CalendarEventsAdapter
 
     private final List<DocumentSnapshot> events;
 
+    private boolean allowEdit = true;
+    private boolean allowDelete = true;
+
+    public void setAllowEdit(boolean value) {
+        allowEdit = value;
+        notifyDataSetChanged();
+    }
+
+    public void setAllowDelete(boolean value) {
+        allowDelete = value;
+        notifyDataSetChanged();
+    }
+
     public CalendarEventsAdapter(List<DocumentSnapshot> events) {
         this.events = events;
     }
@@ -48,10 +61,14 @@ public class CalendarEventsAdapter
 
         DocumentSnapshot doc = events.get(position);
 
-        // ===== כותרת =====
+        // =====================
+        // כותרת
+        // =====================
         holder.tvTitle.setText(doc.getString("title"));
 
-        // ===== שעה =====
+        // =====================
+        // שעה
+        // =====================
         String start = doc.getString("startTime");
         String end = doc.getString("endTime");
 
@@ -63,7 +80,9 @@ public class CalendarEventsAdapter
             holder.tvTime.setText("");
         }
 
-        // ===== מיועד ל– =====
+        // =====================
+        // מיועד ל
+        // =====================
         String assignedToLabel = doc.getString("assignedToLabel");
 
         if (TextUtils.isEmpty(assignedToLabel)) {
@@ -72,106 +91,91 @@ public class CalendarEventsAdapter
             holder.tvAssignedTo.setText("מיועד ל־" + assignedToLabel);
         }
 
-        // ===== צבע =====
-        String colorId = doc.getString("color");
-        if (!TextUtils.isEmpty(colorId)) {
+        // =====================
+        // עריכה (לחיצה על האירוע)
+        // =====================
+        if (allowEdit) {
 
-            int baseColor;
-            switch (colorId) {
-                case "teal": baseColor = Color.parseColor("#14B8A6"); break;
-                case "amber": baseColor = Color.parseColor("#F59E0B"); break;
-                case "rose": baseColor = Color.parseColor("#F43F5E"); break;
-                case "slate": baseColor = Color.parseColor("#64748B"); break;
-                case "emerald": baseColor = Color.parseColor("#10B981"); break;
-                case "indigo":
-                default: baseColor = Color.parseColor("#6366F1"); break;
-            }
+            holder.container.setOnClickListener(v -> {
+                Intent intent = new Intent(
+                        holder.itemView.getContext(),
+                        AddCalendarEventActivity.class
+                );
+                intent.putExtra("eventId", doc.getId());
+                holder.itemView.getContext().startActivity(intent);
+            });
 
-            int softColor = Color.argb(
-                    40,
-                    Color.red(baseColor),
-                    Color.green(baseColor),
-                    Color.blue(baseColor)
-            );
-
-            GradientDrawable bg = new GradientDrawable();
-            bg.setColor(softColor);
-            bg.setCornerRadius(24f);
-            holder.container.setBackground(bg);
         } else {
-            holder.container.setBackground(null);
+            holder.container.setOnClickListener(null);
         }
 
-        // ===== עריכה =====
-        holder.container.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    holder.itemView.getContext(),
-                    AddCalendarEventActivity.class
-            );
-            intent.putExtra("eventId", doc.getId());
-            holder.itemView.getContext().startActivity(intent);
-        });
+        // =====================
+        // מחיקה
+        // =====================
+        if (allowDelete) {
 
-        // ===== מחיקה עם דיאלוג =====
-        holder.btnDelete.setOnClickListener(v -> {
+            holder.btnDelete.setVisibility(View.VISIBLE);
 
-            String repeatType = doc.getString("repeatType");
-            String seriesId = doc.getString("seriesId");
+            holder.btnDelete.setOnClickListener(v -> {
 
-            // חד־פעמי
-            if (repeatType == null || repeatType.equals("once")) {
+                String repeatType = doc.getString("repeatType");
+                String seriesId = doc.getString("seriesId");
 
+                // חד פעמי
+                if (repeatType == null || repeatType.equals("once")) {
+
+                    new AlertDialog.Builder(v.getContext())
+                            .setTitle("מחיקת אירוע")
+                            .setMessage("האם למחוק את האירוע?")
+                            .setPositiveButton("מחק", (d, w) ->
+                                    doc.getReference().delete()
+                            )
+                            .setNegativeButton("ביטול", null)
+                            .show();
+                    return;
+                }
+
+                // חוזר
                 new AlertDialog.Builder(v.getContext())
-                        .setTitle("מחיקת אירוע")
-                        .setMessage("האם למחוק את האירוע?")
-                        .setPositiveButton("מחק", (d, w) ->
-                                FirebaseFirestore.getInstance()
-                                        .collection("calendar_events")
-                                        .document(doc.getId())
-                                        .delete()
+                        .setTitle("מחיקת אירוע חוזר")
+                        .setItems(
+                                new CharSequence[]{
+                                        "מחק רק את האירוע הזה",
+                                        "מחק את כל הסדרה",
+                                        "ביטול"
+                                },
+                                (dialog, which) ->
+                                        handleDeleteChoice(which, doc, seriesId)
                         )
-                        .setNegativeButton("ביטול", null)
                         .show();
-                return;
-            }
+            });
 
-            // חוזר
-            new AlertDialog.Builder(v.getContext())
-                    .setTitle("מחיקת אירוע חוזר")
-                    .setItems(
-                            new CharSequence[]{
-                                    "מחק רק את האירוע הזה",
-                                    "מחק את כל הסדרה",
-                                    "ביטול"
-                            },
-                            (dialog, which) ->
-                                    handleDeleteChoice(which, doc, seriesId)
-                    )
-                    .show();
-        });
+        } else {
+            holder.btnDelete.setVisibility(View.GONE);
+            holder.btnDelete.setOnClickListener(null);
+        }
     }
 
-    // ===== טיפול בבחירת מחיקה =====
     private void handleDeleteChoice(
             int which,
             DocumentSnapshot doc,
             String seriesId
     ) {
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         switch (which) {
 
-            case 0: // רק האירוע הזה
-                db.collection("calendar_events")
-                        .document(doc.getId())
-                        .update("excluded", true);
-
+            case 0:
+                doc.getReference().update("excluded", true);
                 break;
 
-            case 1: // כל הסדרה
+            case 1:
                 if (seriesId == null) return;
 
-                db.collection("calendar_events")
+                db.collection("groups")
+                        .document(doc.getReference().getParent().getParent().getId())
+                        .collection("calendar_events")
                         .whereEqualTo("seriesId", seriesId)
                         .get()
                         .addOnSuccessListener(snapshot -> {
@@ -179,9 +183,6 @@ public class CalendarEventsAdapter
                                 d.getReference().delete();
                             }
                         });
-                break;
-
-            default: // ביטול
                 break;
         }
     }
@@ -191,7 +192,6 @@ public class CalendarEventsAdapter
         return events.size();
     }
 
-    // ===== ViewHolder =====
     static class EventViewHolder extends RecyclerView.ViewHolder {
 
         LinearLayout container;

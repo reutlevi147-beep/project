@@ -2,91 +2,95 @@ package com.mycasa.app;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import com.google.firebase.firestore.ListenerRegistration;
 
-public class TasksActivity extends AppCompatActivity {
+import eightbitlab.com.blurview.BlurView;
 
-    // ===== UI =====
+public class TasksActivity extends BaseActivity {
+
     private RecyclerView recyclerTasks;
-    private HomeTasksAdapter adapter;
-    private final ArrayList<Object> items = new ArrayList<>();
+    private TasksAdapter adapter;
+    private final List<Task> tasks = new ArrayList<>();
 
     private TextView tvActiveCount;
     private TextView tvCompletedCount;
 
+    private FloatingActionButton fabAdd;
+
     private Button btnAll, btnFamily, btnHome, btnWork,
             btnShopping, btnPersonal, btnHealth, btnOther;
 
-    // ===== STATE =====
     private String selectedCategory = "הכל";
 
-    // ===== PREFS =====
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_GROUP_ID = "group_id";
+    private static final String KEY_USER_ID = "user_id";
+    private ListenerRegistration tasksListener;
+    private String groupId;
+    private View lockOverlay;
+    private PagePermission currentPermission = PagePermission.VIEW_ONLY;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tasks);
 
-        // ===== HEADER STATS =====
-        tvActiveCount = findViewById(R.id.statActive)
-                .findViewById(R.id.tvValue);
-        tvCompletedCount = findViewById(R.id.statCompleted)
-                .findViewById(R.id.tvValue);
-
-        // ===== CATEGORY BUTTONS =====
-        btnAll = findViewById(R.id.btnAll);
-        btnFamily = findViewById(R.id.btnFamily);
-        btnHome = findViewById(R.id.btnHome);
-        btnWork = findViewById(R.id.btnWork);
-        btnShopping = findViewById(R.id.btnShopping);
-        btnPersonal = findViewById(R.id.btnPersonal);
-        btnHealth = findViewById(R.id.btnHealth);
-        btnOther = findViewById(R.id.btnOther);
-
-        btnAll.setOnClickListener(v -> selectCategory("הכל"));
-        btnFamily.setOnClickListener(v -> selectCategory("משפחה"));
-        btnHome.setOnClickListener(v -> selectCategory("בית"));
-        btnWork.setOnClickListener(v -> selectCategory("עבודה"));
-        btnShopping.setOnClickListener(v -> selectCategory("קניות"));
-        btnPersonal.setOnClickListener(v -> selectCategory("אישי"));
-        btnHealth.setOnClickListener(v -> selectCategory("בריאות"));
-        btnOther.setOnClickListener(v -> selectCategory("אחר"));
-
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-
-        // ===== RECYCLER =====
         recyclerTasks = findViewById(R.id.recyclerTasks);
-        recyclerTasks.setLayoutManager(new LinearLayoutManager(this));
+        fabAdd = findViewById(R.id.fabAddTask);
 
-        adapter = new HomeTasksAdapter(items);
+        View statActive = findViewById(R.id.statActive);
+        tvActiveCount = statActive.findViewById(R.id.tvValue);
+        ((TextView) statActive.findViewById(R.id.tvLabel)).setText("פעילות");
+
+        View statCompleted = findViewById(R.id.statCompleted);
+        tvCompletedCount = statCompleted.findViewById(R.id.tvValue);
+        ((TextView) statCompleted.findViewById(R.id.tvLabel)).setText("בוצעו");
+
+        recyclerTasks.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new TasksAdapter(this, tasks);
         recyclerTasks.setAdapter(adapter);
 
-        // ===== SAVE COMPLETED TO FIREBASE =====
+        setupCategoryButtons();
+
+        SharedPreferences prefs =
+                getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+        groupId = prefs.getString(KEY_GROUP_ID, null);
+        String userId = prefs.getString(KEY_USER_ID, null);
+
+        fabAdd.setOnClickListener(v ->
+                startActivity(new Intent(this, Add_Tasks.class)));
+
+        // ===== מחיקה אמיתית =====
+        adapter.setOnTaskDeleteListener(task -> {
+            FirebaseFirestore.getInstance()
+                    .collection("groups")
+                    .document(groupId)
+                    .collection("home_tasks")
+                    .document(task.getId())
+                    .delete();
+        });
+
+        // ===== סימון בוצע =====
         adapter.setOnTaskCheckedChangeListener((task, completed) -> {
-
-            SharedPreferences prefs =
-                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            String groupId = prefs.getString(KEY_GROUP_ID, null);
-
-            if (groupId == null || task.getId() == null) return;
-
             FirebaseFirestore.getInstance()
                     .collection("groups")
                     .document(groupId)
@@ -95,37 +99,105 @@ public class TasksActivity extends AppCompatActivity {
                     .update("completed", completed);
         });
 
-        // ===== DELETE COMPLETED =====
-        adapter.setOnDeleteCompletedClickListener(this::showDeleteDialog);
+        BlurView blurView = findViewById(R.id.lockOverlay);
+        View decorView = getWindow().getDecorView();
+        ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+        lockOverlay = findViewById(R.id.lockOverlay);
+        blurView.setupWith(rootView)
+                .setFrameClearDrawable(getWindow().getDecorView().getBackground())
+                .setBlurRadius(25f);
 
-        // ===== DATA =====
-        listenToTasks();
+        // ===== הרשאות =====
+        resolvePermissionFromServer(
+                AppPage.TASKS,
+                groupId,
+                userId,
+                permission -> {
 
-        findViewById(R.id.fabAddTask).setOnClickListener(v ->
-                startActivity(new Intent(this, Add_Tasks.class))
+                    currentPermission = permission;
+
+                    // 🔒 אין הרשאת צפייה
+                    if (permission == PagePermission.LOCKED || permission == null) {
+
+                        lockOverlay.setVisibility(View.VISIBLE);
+
+                        fabAdd.setVisibility(View.GONE);
+
+                        recyclerTasks.setEnabled(false);
+
+                        adapter.setAllowEdit(false);
+                        adapter.setAllowDelete(false);
+                        adapter.setAllowToggle(false);
+
+                        return;
+                    }
+
+                    // מסך פתוח
+                    lockOverlay.setVisibility(View.GONE);
+
+                    switch (permission) {
+
+                        case VIEW_ONLY:
+
+                            fabAdd.setVisibility(View.GONE);
+
+                            adapter.setAllowEdit(false);
+                            adapter.setAllowDelete(false);
+                            adapter.setAllowToggle(false);
+
+                            break;
+
+                        case ADD_ONLY:
+
+                            fabAdd.setVisibility(View.VISIBLE);
+
+                            adapter.setAllowEdit(false);
+                            adapter.setAllowDelete(false);
+                            adapter.setAllowToggle(false);
+
+                            break;
+
+                        case ADD_EDIT:
+
+                            fabAdd.setVisibility(View.VISIBLE);
+
+                            adapter.setAllowEdit(true);
+                            adapter.setAllowDelete(false);
+                            adapter.setAllowToggle(true);
+
+                            break;
+
+                        case FULL_ACCESS:
+
+                            fabAdd.setVisibility(View.VISIBLE);
+
+                            adapter.setAllowEdit(true);
+                            adapter.setAllowDelete(true);
+                            adapter.setAllowToggle(true);
+
+                            break;
+                    }
+                }
         );
-    }
 
-    // ================= CATEGORY =================
 
-    private void selectCategory(String category) {
-        selectedCategory = category;
-        resetCategoryButtons();
-        highlightSelectedCategory(category);
         listenToTasks();
     }
 
-    // ================= FIRESTORE =================
+    // ===========================
+    // FIRESTORE
+    // ===========================
 
     private void listenToTasks() {
 
-        SharedPreferences prefs =
-                getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String groupId = prefs.getString(KEY_GROUP_ID, null);
-
         if (groupId == null) return;
 
-        FirebaseFirestore.getInstance()
+        // סוגר listener קודם אם קיים
+        if (tasksListener != null) {
+            tasksListener.remove();
+        }
+
+        tasksListener = FirebaseFirestore.getInstance()
                 .collection("groups")
                 .document(groupId)
                 .collection("home_tasks")
@@ -133,14 +205,15 @@ public class TasksActivity extends AppCompatActivity {
 
                     if (snapshot == null) return;
 
-                    ArrayList<Task> active = new ArrayList<>();
-                    ArrayList<Task> completed = new ArrayList<>();
+                    List<Task> active = new ArrayList<>();
+                    List<Task> completed = new ArrayList<>();
 
                     for (QueryDocumentSnapshot doc : snapshot) {
 
                         Task task = doc.toObject(Task.class);
                         task.setId(doc.getId());
 
+                        // ===== פילטר קטגוריה =====
                         if (!"הכל".equals(selectedCategory)) {
                             if (task.getCategory() == null ||
                                     !selectedCategory.equals(task.getCategory())) {
@@ -148,65 +221,39 @@ public class TasksActivity extends AppCompatActivity {
                             }
                         }
 
-                        if (task.isCompleted()) {
+                        // ===== חלוקה לפעיל / בוצע =====
+                        if (task.isCompleted())
                             completed.add(task);
-                        } else {
+                        else
                             active.add(task);
-                        }
                     }
 
+                    // ===== מיון =====
                     sortTasks(active);
                     sortTasks(completed);
 
-                    items.clear();
-                    items.addAll(active);
+                    // ===== בניית הרשימה =====
+                    tasks.clear();
+                    tasks.addAll(active);
 
                     if (!completed.isEmpty()) {
-                        items.add("DIVIDER");
-                        items.addAll(completed);
+                        tasks.add(null); // divider
+                        tasks.addAll(completed);
                     }
 
                     adapter.notifyDataSetChanged();
 
+                    // ===== עדכון סטטיסטיקות =====
                     tvActiveCount.setText(String.valueOf(active.size()));
                     tvCompletedCount.setText(String.valueOf(completed.size()));
                 });
     }
 
-    // ================= DELETE =================
+    // ===========================
+    // SORT
+    // ===========================
 
-    private void showDeleteDialog() {
-
-        SharedPreferences prefs =
-                getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String groupId = prefs.getString(KEY_GROUP_ID, null);
-
-        if (groupId == null) return;
-
-        new AlertDialog.Builder(this)
-                .setTitle("מחיקת משימות שבוצעו")
-                .setMessage("למחוק את כל המשימות שסומנו כבוצעו?")
-                .setPositiveButton("כן", (dialog, which) -> {
-
-                    FirebaseFirestore.getInstance()
-                            .collection("groups")
-                            .document(groupId)
-                            .collection("home_tasks")
-                            .whereEqualTo("completed", true)
-                            .get()
-                            .addOnSuccessListener(snapshot -> {
-                                for (QueryDocumentSnapshot doc : snapshot) {
-                                    doc.getReference().delete();
-                                }
-                            });
-                })
-                .setNegativeButton("ביטול", null)
-                .show();
-    }
-
-    // ================= SORT =================
-
-    private void sortTasks(ArrayList<Task> list) {
+    private void sortTasks(List<Task> list) {
         Collections.sort(list, (t1, t2) ->
                 priorityWeight(t1.getPriority()) -
                         priorityWeight(t2.getPriority())
@@ -220,9 +267,45 @@ public class TasksActivity extends AppCompatActivity {
         return 3;
     }
 
-    // ================= UI HELPERS =================
+    // ===========================
+    // CATEGORIES
+    // ===========================
+
+    private void setupCategoryButtons() {
+
+        btnAll = findViewById(R.id.btnAll);
+        btnFamily = findViewById(R.id.btnFamily);
+        btnHome = findViewById(R.id.btnHome);
+        btnWork = findViewById(R.id.btnWork);
+        btnShopping = findViewById(R.id.btnShopping);
+        btnPersonal = findViewById(R.id.btnPersonal);
+        btnHealth = findViewById(R.id.btnHealth);
+        btnOther = findViewById(R.id.btnOther);
+
+        View.OnClickListener listener = v -> {
+
+            resetCategoryButtons();
+
+            Button clicked = (Button) v;
+            clicked.setBackgroundResource(R.drawable.bg_category_selected);
+            clicked.setTextColor(getColor(android.R.color.black));
+
+            selectedCategory = clicked.getText().toString();
+            listenToTasks();
+        };
+
+        btnAll.setOnClickListener(listener);
+        btnFamily.setOnClickListener(listener);
+        btnHome.setOnClickListener(listener);
+        btnWork.setOnClickListener(listener);
+        btnShopping.setOnClickListener(listener);
+        btnPersonal.setOnClickListener(listener);
+        btnHealth.setOnClickListener(listener);
+        btnOther.setOnClickListener(listener);
+    }
 
     private void resetCategoryButtons() {
+
         Button[] buttons = {
                 btnAll, btnFamily, btnHome, btnWork,
                 btnShopping, btnPersonal, btnHealth, btnOther
@@ -230,27 +313,16 @@ public class TasksActivity extends AppCompatActivity {
 
         for (Button b : buttons) {
             b.setBackgroundResource(R.drawable.bg_category_unselected);
-            b.setTextColor(Color.BLACK);
+            b.setTextColor(getColor(R.color.gray_500));
         }
     }
 
-    private void highlightSelectedCategory(String category) {
-        Button selectedButton = null;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-        switch (category) {
-            case "הכל": selectedButton = btnAll; break;
-            case "משפחה": selectedButton = btnFamily; break;
-            case "בית": selectedButton = btnHome; break;
-            case "עבודה": selectedButton = btnWork; break;
-            case "קניות": selectedButton = btnShopping; break;
-            case "אישי": selectedButton = btnPersonal; break;
-            case "בריאות": selectedButton = btnHealth; break;
-            case "אחר": selectedButton = btnOther; break;
-        }
-
-        if (selectedButton != null) {
-            selectedButton.setBackgroundResource(R.drawable.bg_category_selected);
-            selectedButton.setTextColor(Color.parseColor("#374151"));
+        if (tasksListener != null) {
+            tasksListener.remove();
         }
     }
 }

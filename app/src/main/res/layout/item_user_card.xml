@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
     app:cardCornerRadius="24dp"
     app:cardElevation="6dp"
-    app:cardBackgroundColor="#F3EDF9">
+    app:cardBackgroundColor="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,63 +15,86 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- שורה עליונה: שם + תפקיד + אוואטר -->
+        <!-- ===== שורה עליונה ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- טקסטים -->
+            <!-- טקסטים (משקל 1 כדי שהאוואטר יהיה בצד ימין) -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvName"
+                <!-- שם + כתר -->
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="שרה"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="#212121" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
+                    <TextView
+                        android:id="@+id/tvName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="שרה"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121" />
+
+                    <TextView
+                        android:id="@+id/tvParentBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" 👑"
+                        android:textSize="14sp"
+                        android:textColor="#F59E0B"
+                        android:visibility="gone"
+                        android:layout_marginStart="6dp"/>
+                </LinearLayout>
+
+                <!-- תפקיד -->
                 <TextView
                     android:id="@+id/tvRole"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="הורה • משפחת כהן"
+                    android:text="הורה"
                     android:textSize="14sp"
-                    android:textColor="#757575" />
+                    android:textColor="#757575"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
             <!-- אוואטר -->
             <FrameLayout
                 android:layout_width="64dp"
-                android:layout_height="64dp">
+                android:layout_height="64dp"
+                android:layout_marginStart="12dp">
 
                 <ImageView
                     android:id="@+id/imgAvatar"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_user"
-                    android:padding="6dp"
+                    android:padding="8dp"
                     android:background="@drawable/bg_circle_avatar"/>
-
-
             </FrameLayout>
+
         </LinearLayout>
 
-        <!-- קו הפרדה -->
+        <!-- ===== קו הפרדה (נשלט מה-Adapter) ===== -->
         <View
+            android:id="@+id/viewDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="12dp"
-            android:background="#E0E0E0" />
+            android:background="#E0E0E0"
+            android:visibility="gone" />
 
-        <!-- פרטי קשר -->
+        <!-- ===== פרטי קשר ===== -->
         <TextView
             android:id="@+id/tvPhone"
             android:layout_width="wrap_content"
@@ -88,14 +112,14 @@
             android:textColor="#424242"
             android:layout_marginBottom="12dp" />
 
-        <!-- כפתור עריכה (בעתיד – רק למשתמש עצמו) -->
+        <!-- ===== כפתור עריכה ===== -->
         <Button
             android:id="@+id/btnEditProfile"
             android:layout_width="match_parent"
             android:layout_height="44dp"
             android:text="ערוך פרופיל"
-            android:textColor="#3F51B5"
-            android:backgroundTint="#E8EAF6" />
+            android:textColor="@android:color/white"
+            android:backgroundTint="#5C5F66" />
 
     </LinearLayout>
 

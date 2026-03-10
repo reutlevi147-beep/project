@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="88dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="20dp"
+    app:strokeColor="#E5E7EB"
+    app:strokeWidth="1dp"
+    android:backgroundTint="@android:color/white">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <!-- DELETE ICON -->
+        <ImageView
+            android:id="@+id/iconDelete"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_delete"
+            app:tint="#9CA3AF"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"/>
+
+        <!-- SETTINGS ICON -->
+        <ImageView
+            android:id="@+id/iconSettings"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_settings"
+            app:tint="#6366F1"
+            android:layout_toEndOf="@id/iconDelete"
+            android:layout_marginStart="12dp"
+            android:layout_centerVertical="true"/>
+
+        <!-- NAME -->
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="שם משתמש"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#111827"
+            android:layout_toStartOf="@id/avatarCircle"
+            android:layout_marginEnd="12dp"
+            android:layout_alignParentTop="true"/>
+
+        <!-- ROLE BADGE -->
+        <TextView
+            android:id="@+id/tvRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="הורה"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#F59E0B"
+            android:background="@drawable/bg_role_badge"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:layout_below="@id/tvName"
+            android:layout_toStartOf="@id/avatarCircle"
+            android:layout_marginTop="6dp"/>
+
+        <!-- AVATAR -->
+        <TextView
+            android:id="@+id/avatarCircle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="ד"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:background="@drawable/bg_avatar_circle"/>
+
+    </RelativeLayout>
+
+</com.google.android.material.card.MaterialCardView>

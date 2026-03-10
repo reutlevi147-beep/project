@@ -1,11 +1,13 @@
 package com.mycasa.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,22 +15,43 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
-public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHolder> {
+public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int TYPE_TASK = 0;
+    private static final int TYPE_DIVIDER = 1;
 
     private final Context context;
     private final List<Task> tasks;
 
-    // 🔹 Listener לשינוי סטטוס
+    private boolean allowEdit = true;
+    private boolean allowDelete = true;
+    private boolean allowToggle = true;
+
+    public void setAllowEdit(boolean value) { allowEdit = value; }
+    public void setAllowDelete(boolean value) { allowDelete = value; }
+    public void setAllowToggle(boolean value) { allowToggle = value; }
+
     public interface OnTaskCheckedChangeListener {
         void onTaskChecked(Task task, boolean completed);
     }
 
+    public interface OnTaskDeleteListener {
+        void onTaskDelete(Task task);
+    }
+
     private OnTaskCheckedChangeListener checkedListener;
+    private OnTaskDeleteListener deleteListener;
 
     public void setOnTaskCheckedChangeListener(OnTaskCheckedChangeListener l) {
         checkedListener = l;
+    }
+
+    public void setOnTaskDeleteListener(OnTaskDeleteListener l) {
+        deleteListener = l;
     }
 
     public TasksAdapter(Context context, List<Task> tasks) {
@@ -36,83 +59,96 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         this.tasks = tasks;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return tasks.get(position) == null ? TYPE_DIVIDER : TYPE_TASK;
+    }
+
     @NonNull
     @Override
-    public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
+        if (viewType == TYPE_DIVIDER) {
+            View v = LayoutInflater.from(context)
+                    .inflate(R.layout.item_tasks_divider, parent, false);
+            return new DividerHolder(v);
+        }
+
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.task_item, parent, false);
         return new TaskViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TaskViewHolder h, int position) {
+    public void onBindViewHolder(
+            @NonNull RecyclerView.ViewHolder holder,
+            int position) {
+
+        if (getItemViewType(position) == TYPE_DIVIDER) return;
+
+        TaskViewHolder h = (TaskViewHolder) holder;
         Task task = tasks.get(position);
 
-        // טקסטים
         h.tvTitle.setText(task.getTitle());
         h.tvCategory.setText(task.getCategory());
-        h.tvPriority.setText("");
-        h.tvPriority.setBackground(null);
-        h.tvPriority.setTextColor(Color.parseColor("#111827"));
-        h.tvPriority.setAlpha(1f);
 
-// ===== PRIORITY LOGIC =====
-        String priority = task.getPriority();
-
-        if ("high".equals(priority)) {
-            h.tvPriority.setText("גבוהה");
-            h.tvPriority.setBackgroundResource(R.drawable.bg_priority_high);
-            h.tvPriority.setTextColor(Color.parseColor("#DC2626"));
-
-        } else if ("medium".equals(priority)) {
-            h.tvPriority.setText("בינונית");
-            h.tvPriority.setBackgroundResource(R.drawable.bg_priority_medium);
-            h.tvPriority.setTextColor(Color.parseColor("#F59E0B"));
-
-        } else if ("low".equals(priority)) {
-            h.tvPriority.setText("נמוכה");
-            h.tvPriority.setBackgroundResource(R.drawable.bg_priority_low);
-            h.tvPriority.setTextColor(Color.parseColor("#16A34A"));
+        if (task.getDueDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            h.tvDate.setText(
+                    sdf.format(new Date(task.getDueDate())));
+        } else {
+            h.tvDate.setText("");
         }
 
-
-        // UI לפי סטטוס
+        // UI completed
         if (task.isCompleted()) {
             h.cardTask.setCardBackgroundColor(Color.parseColor("#F3F4F6"));
             h.tvTitle.setTextColor(Color.parseColor("#9CA3AF"));
-            h.tvDate.setTextColor(Color.parseColor("#9CA3AF"));
-            h.tvCategory.setAlpha(0.6f);
-            h.imgCheck.setAlpha(1f);
-
             h.tvTitle.setPaintFlags(
-                    h.tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
-            );
+                    h.tvTitle.getPaintFlags()
+                            | Paint.STRIKE_THRU_TEXT_FLAG);
         } else {
             h.cardTask.setCardBackgroundColor(Color.WHITE);
             h.tvTitle.setTextColor(Color.parseColor("#111827"));
-            h.tvDate.setTextColor(Color.parseColor("#6B7280"));
-            h.tvCategory.setAlpha(1f);
-            h.imgCheck.setAlpha(0.45f);
-
             h.tvTitle.setPaintFlags(
-                    h.tvTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG)
-            );
+                    h.tvTitle.getPaintFlags()
+                            & (~Paint.STRIKE_THRU_TEXT_FLAG));
         }
 
+        // Edit
+        if (allowEdit) {
+            h.itemView.setOnClickListener(v -> {
+                Intent i = new Intent(context, Add_Tasks.class);
+                i.putExtra("taskId", task.getId());
+                context.startActivity(i);
+            });
+        } else {
+            h.itemView.setOnClickListener(null);
+        }
 
-        // ✅ לחיצה על צ׳ק – גם UI וגם Firebase
-        h.imgCheck.setOnClickListener(v -> {
-            boolean newState = !task.isCompleted();
+        // Delete
+        if (h.btnDelete != null) {
+            h.btnDelete.setVisibility(
+                    allowDelete ? View.VISIBLE : View.GONE);
 
-            // שינוי מקומי
-            task.setCompleted(newState);
-            notifyItemChanged(h.getAdapterPosition());
+            h.btnDelete.setOnClickListener(v -> {
+                if (deleteListener != null)
+                    deleteListener.onTaskDelete(task);
+            });
+        }
 
-            // דיווח ל-Activity
-            if (checkedListener != null) {
-                checkedListener.onTaskChecked(task, newState);
-            }
-        });
+        // Toggle
+        if (allowToggle) {
+            h.imgCheck.setOnClickListener(v -> {
+                boolean newState = !task.isCompleted();
+                if (checkedListener != null)
+                    checkedListener.onTaskChecked(task, newState);
+            });
+        } else {
+            h.imgCheck.setOnClickListener(null);
+        }
     }
 
     @Override
@@ -120,31 +156,30 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         return tasks.size();
     }
 
-    // ---------- ViewHolder ----------
-    static class TaskViewHolder extends RecyclerView.ViewHolder {
+    static class TaskViewHolder
+            extends RecyclerView.ViewHolder {
 
         CardView cardTask;
         ImageView imgCheck;
-        TextView tvTitle, tvCategory, tvDate, tvPriority;
+        ImageButton btnDelete;
+        TextView tvTitle, tvCategory, tvDate;
 
         TaskViewHolder(@NonNull View itemView) {
             super(itemView);
             cardTask = itemView.findViewById(R.id.cardTask);
             imgCheck = itemView.findViewById(R.id.imgCheck);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvCategory = itemView.findViewById(R.id.tvCategory);
             tvDate = itemView.findViewById(R.id.tvDate);
-            tvPriority = itemView.findViewById(R.id.tvPriority);
         }
     }
 
-    private String getPriorityLabel(String priority) {
-        if (priority == null) return "";
-        switch (priority) {
-            case "high": return "גבוהה";
-            case "medium": return "בינונית";
-            case "low": return "נמוכה";
-            default: return "";
+    static class DividerHolder
+            extends RecyclerView.ViewHolder {
+
+        DividerHolder(@NonNull View itemView) {
+            super(itemView);
         }
     }
 }

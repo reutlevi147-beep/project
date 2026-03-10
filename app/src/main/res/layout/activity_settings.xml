@@ -2,8 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:background="#F5F6F8">
 
     <!-- ===== HEADER ===== -->
     <LinearLayout
@@ -14,7 +15,7 @@
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
         android:paddingTop="48dp"
-        android:background="#64748B">
+        android:background="#5C5F66">
 
         <TextView
             android:text="הגדרות"
@@ -66,6 +67,46 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"/>
+
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnManageGroup"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="24dp"
+            app:strokeColor="#E5E7EB"
+            app:strokeWidth="1dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:backgroundTint="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ניהול חברים מתקדם"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#111827"/>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/outline_manage_accounts_24"
+                    app:tint="#111827"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
 </LinearLayout>

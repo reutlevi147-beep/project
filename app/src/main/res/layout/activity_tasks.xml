@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,201 +8,242 @@
     android:layoutDirection="rtl"
     android:background="#F5F5F5">
 
-    <!-- HEADER -->
-    <LinearLayout
-        android:id="@+id/header"
+    <!-- ================= MAIN CONTENT ================= -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/mainContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingTop="48dp"
-        android:paddingBottom="24dp"
-        android:paddingHorizontal="20dp"
-        android:background="@drawable/bg_tasks_header">
+        android:layout_height="match_parent">
 
-        <!-- שורת אייקונים -->
+        <!-- HEADER -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_arrow_right"
-                app:tint="@android:color/white" />
-
-            <ImageButton
-                android:id="@+id/btnTasks"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_list"
-                app:tint="@android:color/white" />
-        </LinearLayout>
-
-        <!-- כותרת -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="המשימות שלי"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="16dp" />
-
-        <!-- סטטיסטיקה -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="16dp"
-            android:weightSum="2">
-
-            <include
-                android:id="@+id/statActive"
-                layout="@layout/item_task_stat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-
-            <include
-                android:id="@+id/statCompleted"
-                layout="@layout/item_task_stat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- CONTENT -->
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="260dp"
-        android:fillViewport="true">
-
-        <LinearLayout
+            android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:paddingTop="48dp"
+            android:paddingBottom="24dp"
+            android:paddingHorizontal="20dp"
+            android:background="@drawable/bg_tasks_header">
 
-            <!-- קטגוריות -->
-            <HorizontalScrollView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <LinearLayout
-                    android:id="@+id/categoriesContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_arrow_right"
+                    app:tint="@android:color/white" />
 
-                    <Button
-                        android:id="@+id/btnAll"
-                        style="@style/CategoryButtonSelected"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="הכל"
-                        android:layout_marginEnd="8dp"/>
+                <ImageButton
+                    android:id="@+id/btnTasks"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_list"
+                    app:tint="@android:color/white" />
+            </LinearLayout>
 
-                    <Button
-                        android:id="@+id/btnFamily"
-                        style="@style/CategoryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="משפחה"
-                        android:layout_marginEnd="8dp"/>
-
-                    <Button
-                        android:id="@+id/btnHome"
-                        style="@style/CategoryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="בית"
-                        android:layout_marginEnd="8dp"/>
-
-                    <Button
-                        android:id="@+id/btnWork"
-                        style="@style/CategoryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="עבודה"
-                        android:layout_marginEnd="8dp"/>
-
-                    <Button
-                        android:id="@+id/btnShopping"
-                        style="@style/CategoryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="קניות"
-                        android:layout_marginEnd="8dp"/>
-
-                    <Button
-                        android:id="@+id/btnPersonal"
-                        style="@style/CategoryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="אישי"
-                        android:layout_marginEnd="8dp"/>
-
-                    <Button
-                        android:id="@+id/btnHealth"
-                        style="@style/CategoryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="בריאות"
-                        android:layout_marginEnd="8dp"/>
-
-                    <Button
-                        android:id="@+id/btnOther"
-                        style="@style/CategoryButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="אחר"
-                        android:layout_marginEnd="8dp"/>
-
-                </LinearLayout>
-
-            </HorizontalScrollView>
-
-            <!-- כותרת -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="משימות פעילות"
-                android:textSize="18sp"
+                android:text="המשימות שלי"
+                android:textSize="28sp"
                 android:textStyle="bold"
-                android:textColor="#111"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"/>
+                android:textColor="@android:color/white"
+                android:layout_marginTop="16dp" />
 
-
-            <!-- רשימת משימות -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerTasks"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                tools:listitem="@layout/task_item"/>
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="16dp"
+                android:weightSum="2">
+
+                <include
+                    android:id="@+id/statActive"
+                    layout="@layout/item_task_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+
+                <include
+                    android:id="@+id/statCompleted"
+                    layout="@layout/item_task_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+            </LinearLayout>
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
 
-    <!-- FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:src="@drawable/ic_plus"
-        app:backgroundTint="@color/indigo"
-        app:tint="@android:color/white"/>
+        <!-- CONTENT -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="260dp"
+            android:fillViewport="true">
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/categoriesContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnAll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="הכל"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_selected"
+                            android:textColor="#374151"/>
+
+                        <Button
+                            android:id="@+id/btnFamily"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="משפחה"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_unselected"/>
+
+                        <Button
+                            android:id="@+id/btnHome"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="בית"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_unselected"/>
+
+                        <Button
+                            android:id="@+id/btnWork"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="עבודה"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_unselected"/>
+
+                        <Button
+                            android:id="@+id/btnShopping"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="קניות"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_unselected"/>
+
+                        <Button
+                            android:id="@+id/btnPersonal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="אישי"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_unselected"/>
+
+                        <Button
+                            android:id="@+id/btnHealth"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="בריאות"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_unselected"/>
+
+                        <Button
+                            android:id="@+id/btnOther"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="אחר"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_category_unselected"/>
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="משימות פעילות"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#111"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="12dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerTasks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/task_item"/>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- FAB -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAddTask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:src="@drawable/ic_plus"
+            app:backgroundTint="@color/indigo"
+            app:tint="@android:color/white"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- ================= LOCK OVERLAY ================= -->
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/lockOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_lock_white"
+                app:tint="@android:color/white"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="עמוד זה נעול"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="אין לך הרשאה לבצע פעולות במשימות"
+                android:textColor="#DDFFFFFF"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"/>
+
+        </LinearLayout>
+
+    </eightbitlab.com.blurview.BlurView>
+
+</FrameLayout>

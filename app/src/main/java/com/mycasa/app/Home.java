@@ -8,6 +8,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,8 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-
-public class Home extends AppCompatActivity {
+import com.mycasa.app.BaseActivity.PagePermission;
+import com.mycasa.app.BaseActivity.AppPage;
+public class Home extends BaseActivity {
     FirebaseFirestore db;
     String groupId;
 
@@ -46,6 +50,7 @@ public class Home extends AppCompatActivity {
     TextView tvEventTime;
     TextView tvIncome, tvExpense, tvBalance;
     TextView tvGrowth;
+    LinearLayout layoutFinanceSection;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -54,54 +59,113 @@ public class Home extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
+
         db = FirebaseFirestore.getInstance();
         layoutDailySummary = findViewById(R.id.layoutDailySummary);
         tvIncome = findViewById(R.id.tvIncome);
         tvExpense = findViewById(R.id.tvExpense);
         tvBalance = findViewById(R.id.tvBalance);
         tvGrowth = findViewById(R.id.tvGrowth);
+        layoutFinanceSection = findViewById(R.id.layoutFinanceSection);
         cardBalance = findViewById(R.id.cardBalance);
         cardIncome = findViewById(R.id.cardIncome);
         cardExpense = findViewById(R.id.cardExpense);
-        cardBalance = findViewById(R.id.cardBalance);
 
         SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
 
         String userId = prefs.getString("user_id", null);
         groupId = prefs.getString("group_id", null);
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(doc -> {
+
+                    String role = doc.getString("role");
+
+                    prefs.edit().putString("role", role).apply();
+                    AppSession.setUserRole(role);
+                });
+
+        String userRole = prefs.getString("role", null);
         String userName = prefs.getString("user_name", null);
         String familyName = prefs.getString("family_name", null);
 
+
+        AppSession.setUserId(userId);
+        AppSession.setGroupId(groupId);
+        AppSession.setUserRole(userRole);
+        resolvePermissionFromServer(
+                AppPage.FINANCE,
+                groupId,
+                userId,
+                permission -> {
+
+                    if (permission == PagePermission.LOCKED) {
+
+                        layoutFinanceSection.setVisibility(View.GONE);
+
+                    } else {
+
+                        layoutFinanceSection.setVisibility(View.VISIBLE);
+
+                    }
+
+                }
+        );
         // =====================
-        // Toasts – אחד אחד
-        // =====================
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        handler.postDelayed(() ->
-                Toast.makeText(this, "userId = " + userId, Toast.LENGTH_SHORT).show(), 0);
-
-        handler.postDelayed(() ->
-                Toast.makeText(this, "groupId = " + groupId, Toast.LENGTH_SHORT).show(), 2000);
-
-        handler.postDelayed(() ->
-                Toast.makeText(this, "userName = " + userName, Toast.LENGTH_SHORT).show(), 4000);
-
-        handler.postDelayed(() ->
-                Toast.makeText(this, "familyName = " + familyName, Toast.LENGTH_SHORT).show(), 6000);
-
-        // =====================
-        // שלום למשתמש
+        // שלום למשתמש (מעוצב)
         // =====================
         TextView tvHello = findViewById(R.id.tvHello);
 
         if (familyName != null && !familyName.isEmpty()) {
-            tvHello.setText("שלום, משפחת " + familyName);
+
+            String baseText = "שלום, משפחת ";
+            String familyText =   familyName;
+            String fullText = baseText + familyText;
+
+            SpannableString spannable = new SpannableString(fullText);
+
+            int start = baseText.length();
+            int end = fullText.length();
+
+            // הגדלת גודל השם
+            spannable.setSpan(
+                    new android.text.style.RelativeSizeSpan(1.3f),
+                    start,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+            // צבע שחור מלא
+            spannable.setSpan(
+                    new ForegroundColorSpan(android.graphics.Color.BLACK),
+                    start,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+            // הדגשה
+            spannable.setSpan(
+                    new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                    start,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+            tvHello.setText(spannable);
+
         } else if (userName != null && !userName.isEmpty()) {
             tvHello.setText("שלום, " + userName);
         } else {
             tvHello.setText("שלום");
         }
 
+        // =====================
+        // מעבר לפיננסים
+        // =====================
         View.OnClickListener goToFinance = v ->
                 startActivity(new Intent(Home.this, FinanceSetupActivity.class));
 
@@ -109,6 +173,9 @@ public class Home extends AppCompatActivity {
         cardExpense.setOnClickListener(goToFinance);
         cardBalance.setOnClickListener(goToFinance);
 
+        // =====================
+        // Daily summary
+        // =====================
         cardTasksSummary = findViewById(R.id.cardTasksSummary);
         cardShoppingSummary = findViewById(R.id.cardShoppingSummary);
         cardEventSummary = findViewById(R.id.cardEventSummary);
@@ -127,26 +194,20 @@ public class Home extends AppCompatActivity {
         cardEventSummary.setOnClickListener(v ->
                 startActivity(new Intent(this, CalendarDayActivity.class)));
 
-
-
         // =====================
         // Quick actions
         // =====================
         findViewById(R.id.quickShopping).setOnClickListener(v ->
-                startActivity(new Intent(this, ShoppingListActivity.class))
-        );
+                startActivity(new Intent(this, ShoppingListActivity.class)));
 
         findViewById(R.id.quickCalendar).setOnClickListener(v ->
-                startActivity(new Intent(this, CalendarDayActivity.class))
-        );
+                startActivity(new Intent(this, CalendarDayActivity.class)));
 
         findViewById(R.id.quickTasks).setOnClickListener(v ->
-                startActivity(new Intent(Home.this, TasksActivity.class))
-        );
-        findViewById(R.id.quickSettings).setOnClickListener(v ->
-                startActivity(new Intent(Home.this, SettingsActivity.class))
-        );
+                startActivity(new Intent(this, TasksActivity.class)));
 
+        findViewById(R.id.quickSettings).setOnClickListener(v ->
+                startActivity(new Intent(this, SettingsActivity.class)));
 
         // =====================
         // Bottom Navigation
@@ -155,6 +216,7 @@ public class Home extends AppCompatActivity {
         bottomNav.setSelectedItemId(R.id.nav_home);
 
         bottomNav.setOnItemSelectedListener(item -> {
+
             int id = item.getItemId();
 
             if (id == R.id.nav_home) return true;
@@ -174,11 +236,10 @@ public class Home extends AppCompatActivity {
                 return true;
             }
 
-
             return false;
         });
 
-    }
+}
 
     @Override
     protected void onResume() {
@@ -187,8 +248,10 @@ public class Home extends AppCompatActivity {
         loadTasksSummary();
         loadShoppingSummary();
         loadClosestEvent();
-        loadFinanceSummary();
 
+        if(layoutFinanceSection.getVisibility() == View.VISIBLE){
+            loadFinanceSummary();
+        }
     }
 
     private void loadFinanceSummary() {
