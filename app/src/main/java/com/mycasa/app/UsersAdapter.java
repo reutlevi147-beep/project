@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
-
+import com.bumptech.glide.Glide;
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> {
 
     private final Context context;
@@ -75,12 +75,26 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
 
         User user = users.get(position);
 
+        String imageUrl = user.getImageUrl();
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+
+            Glide.with(context)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .circleCrop()
+                    .into(holder.imgAvatar);
+
+
+        } else {
+
+            applyAvatarColor(holder.imgAvatar, user.getAvatarColor());
+        }
         holder.tvName.setText(user.getName());
         holder.tvRole.setText(user.getRole());
         holder.tvPhone.setText(user.getPhone());
         holder.tvEmail.setText(user.getEmail());
 
-        applyAvatarColor(holder.imgAvatar, user.getAvatarColor());
 
         // 👑 Badge להורה
         if ("parent".equals(user.getRole())) {
@@ -116,8 +130,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
             Intent intent = new Intent(context, EditUserActivity.class);
             intent.putExtra("USER_ID", user.getId());
             intent.putExtra("GROUP_ID", getGroupIdFromPrefs());
-            context.startActivity(intent);
-        });
+            ((android.app.Activity) context).startActivityForResult(intent, 500);        });
     }
 
     private String getGroupIdFromPrefs() {

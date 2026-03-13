@@ -8,7 +8,15 @@ public class User {
     private String phone;
     private String email;
     private String avatarColor;
+    private String imageUrl;
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
     public User() {
         // חובה ל-Firestore
     }

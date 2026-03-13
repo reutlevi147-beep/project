@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="com.mycasa.app">
 
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
 
     <application
         android:allowBackup="true"
@@ -13,24 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-        <activity
-            android:name=".ChildPermissionsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ManageMembersActivity"
-            android:exported="false" />
-        <activity
-            android:name=".AddGoalActivity"
-            android:exported="false" />
-        <activity
-            android:name=".FinanceFixedExpensesActivity"
-            android:exported="false" />
-        <activity
-            android:name=".FinanceSetupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Add_Transaction"
-            android:exported="false" /> <!-- FileProvider -->
+
+        <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -38,80 +24,51 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider> <!-- ===== LAUNCHER ===== -->
+                android:resource="@xml/file_paths"/>
+        </provider>
+
+        <!-- Receiver של ההתראות -->
+        <receiver android:name=".ReminderReceiver"/>
+
+        <!-- Launcher -->
         <activity
             android:name=".StartActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity> <!-- ===== MAIN SCREENS ===== -->
-        <activity
-            android:name=".Home"
-            android:exported="false" /> <!-- ✅ FINANCE (עמוד כלכלה) -->
-        <activity
-            android:name=".Finance"
-            android:exported="false" />
-        <activity
-            android:name=".ShoppingListActivity"
-            android:exported="false" />
-        <activity
-            android:name=".TasksActivity"
-            android:exported="false" />
-        <activity
-            android:name=".CalendarMonthActivity"
-            android:exported="false" />
-        <activity
-            android:name=".CalendarDayActivity"
-            android:exported="false" />
-        <activity
-            android:name=".AddCalendarEventActivity"
-            android:exported="false" /> <!-- ===== SHOPPING ===== -->
-        <activity
-            android:name=".Shopping"
-            android:exported="false" />
-        <activity
-            android:name=".Add_Shopping"
-            android:exported="false" />
-        <activity
-            android:name=".Suggested_list"
-            android:exported="false" /> <!-- ===== USERS / GROUP ===== -->
-        <activity
-            android:name=".CreateGroupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".JoinGroupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Add_Users"
-            android:exported="false" />
-        <activity
-            android:name=".EditUserActivity"
-            android:exported="false" /> <!-- ===== OTHER ===== -->
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Display_Calender_Tasks"
-            android:exported="false" />
-        <activity
-            android:name=".Display_Purpose"
-            android:exported="false" />
-        <activity
-            android:name=".Add_Tasks"
-            android:exported="false" />
-        <activity
-            android:name=".Add_Purpose"
-            android:exported="false" />
-        <activity
-            android:name=".Add_Money"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity2"
-            android:exported="false" />
+        </activity>
+
+        <!-- Main screens -->
+        <activity android:name=".Home"/>
+        <activity android:name=".Finance"/>
+        <activity android:name=".ShoppingListActivity"/>
+        <activity android:name=".TasksActivity"/>
+        <activity android:name=".CalendarMonthActivity"/>
+        <activity android:name=".CalendarDayActivity"/>
+        <activity android:name=".AddCalendarEventActivity"/>
+
+        <!-- Shopping -->
+        <activity android:name=".Shopping"/>
+        <activity android:name=".Add_Shopping"/>
+        <activity android:name=".Suggested_list"/>
+
+        <!-- Group -->
+        <activity android:name=".CreateGroupActivity"/>
+        <activity android:name=".JoinGroupActivity"/>
+        <activity android:name=".Add_Users"/>
+        <activity android:name=".EditUserActivity"/>
+
+        <!-- Other -->
+        <activity android:name=".SettingsActivity"/>
+        <activity android:name=".Display_Calender_Tasks"/>
+        <activity android:name=".Display_Purpose"/>
+        <activity android:name=".Add_Tasks"/>
+        <activity android:name=".Add_Purpose"/>
+        <activity android:name=".Add_Money"/>
+        <activity android:name=".MainActivity2"/>
+
     </application>
 
 </manifest>

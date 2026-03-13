@@ -90,6 +90,14 @@ public class SettingsActivity extends AppCompatActivity {
         return prefs.getString(key, null);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 200 && resultCode == RESULT_OK) {
+            loadUsers(); // טוען מחדש את המשתמשים
+        }
+    }
     // ===============================
     // Bind Views
     // ===============================

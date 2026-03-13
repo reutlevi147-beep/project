@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.bumptech.glide.Glide;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,9 +15,24 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FirebaseFirestore;
+import android.net.Uri;
+import android.content.Intent;
 
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import android.provider.MediaStore;
+import android.graphics.Bitmap;
+import java.io.ByteArrayOutputStream;
+import android.graphics.Bitmap;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class EditUserActivity extends AppCompatActivity {
 
@@ -29,7 +44,13 @@ public class EditUserActivity extends AppCompatActivity {
     private ImageView iconChildCheck, iconParentCheck;
 
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
+    private StorageReference storageRef;
 
+    private ImageView imgProfile;
+    private static final int REQUEST_GALLERY = 100;
+    private static final int REQUEST_CAMERA = 200;
+    private Uri imageUri;
     private String userId;
     private String groupId;
 
@@ -41,7 +62,8 @@ public class EditUserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit_user);
 
         db = FirebaseFirestore.getInstance();
-
+        storage = FirebaseStorage.getInstance();
+        storageRef = storage.getReference();
         // ===== Views =====
         etName = findViewById(R.id.etName);
         etPhone = findViewById(R.id.etPhone);
@@ -56,9 +78,8 @@ public class EditUserActivity extends AppCompatActivity {
 
         iconChildCheck = findViewById(R.id.iconChildCheck);
         iconParentCheck = findViewById(R.id.iconParentCheck);
-
-        // ===== קבלת נתונים מה Intent =====
-        userId = getIntent().getStringExtra("USER_ID");
+        imgProfile = findViewById(R.id.imgProfile);
+        imgProfile.setOnClickListener(v -> showImagePickerBottomSheet());        userId = getIntent().getStringExtra("USER_ID");
         groupId = getIntent().getStringExtra("GROUP_ID");
 
         if (userId == null || groupId == null) {
@@ -117,6 +138,145 @@ public class EditUserActivity extends AppCompatActivity {
             iconChildCheck.setVisibility(View.GONE);
         }
     }
+    private void openGallery() {
+
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, 100);
+    }
+
+    private void showImagePickerBottomSheet() {
+
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_image_picker, null);
+
+        dialog.setContentView(view);
+
+        View optionCamera = view.findViewById(R.id.optionCamera);
+        View optionGallery = view.findViewById(R.id.optionGallery);
+
+        optionCamera.setOnClickListener(v -> {
+            openCamera();
+            dialog.dismiss();
+        });
+
+        optionGallery.setOnClickListener(v -> {
+            openGallery();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+
+    private void openCamera() {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, 1);
+
+            return;
+        }
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_CAMERA);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && data != null) {
+
+            if (requestCode == REQUEST_GALLERY) {
+
+                imageUri = data.getData();
+                imgProfile.setImageURI(imageUri);
+                uploadImage();
+
+            } else if (requestCode == REQUEST_CAMERA && data != null && data.getExtras() != null) {
+
+                Bitmap photo = (Bitmap) data.getExtras().get("data");
+
+                if (photo != null) {
+                    imgProfile.setImageBitmap(photo);
+                    uploadCameraImage(photo);
+                }
+            }
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                Toast.makeText(this, "נדרשת הרשאת מצלמה", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void uploadImage() {
+
+        if (imageUri == null) return;
+
+        StorageReference ref =
+                storageRef.child("users/" + userId + "/profile.jpg");
+
+        ref.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+
+                    ref.getDownloadUrl().addOnSuccessListener(uri -> {
+
+                        String imageUrl = uri.toString();
+
+                        db.collection("groups")
+                                .document(groupId)
+                                .collection("users")
+                                .document(userId)
+                                .update("imageUrl", imageUrl);
+                    });
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "שגיאה בהעלאת תמונה", Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void uploadCameraImage(Bitmap bitmap) {
+
+        StorageReference ref =
+                storageRef.child("users/" + userId + "/profile.jpg");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+        byte[] data = baos.toByteArray();
+
+        ref.putBytes(data)
+                .addOnSuccessListener(taskSnapshot -> {
+
+                    ref.getDownloadUrl().addOnSuccessListener(uri -> {
+
+                        String imageUrl = uri.toString();
+
+                        db.collection("groups")
+                                .document(groupId)
+                                .collection("users")
+                                .document(userId)
+                                .update("imageUrl", imageUrl);
+                    });
+
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "שגיאה בהעלאת תמונה", Toast.LENGTH_SHORT).show()
+                );
+    }
+
 
     // ==========================
     // טעינת נתונים
@@ -140,7 +300,15 @@ public class EditUserActivity extends AppCompatActivity {
                         String phone = snapshot.getString("phone");
                         String email = snapshot.getString("email");
                         String role = snapshot.getString("role");
+                        String imageUrl = snapshot.getString("imageUrl");
 
+                        if (imageUrl != null && !imageUrl.isEmpty()) {
+
+                            Glide.with(this)
+                                    .load(imageUrl)
+                                    .circleCrop()
+                                    .into(imgProfile);
+                        }
                         etName.setText(name != null ? name : "");
                         etPhone.setText(phone != null ? phone : "");
                         etEmail.setText(email != null ? email : "");
@@ -195,6 +363,7 @@ public class EditUserActivity extends AppCompatActivity {
 
                     btnSave.setEnabled(true);
                     Toast.makeText(this, "עודכן בהצלחה", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
                     finish();
                 })
                 .addOnFailureListener(e -> {

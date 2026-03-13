@@ -79,7 +79,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_user"
-                    android:padding="8dp"
+                    android:scaleType="centerCrop"
                     android:background="@drawable/bg_circle_avatar"/>
             </FrameLayout>
 

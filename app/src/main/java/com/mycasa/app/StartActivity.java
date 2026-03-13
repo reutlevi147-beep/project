@@ -2,6 +2,8 @@ package com.mycasa.app;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 
@@ -15,7 +17,8 @@ public class StartActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setContentView(R.layout.activity_start);
+        AlarmScheduler.scheduleDailyReminder(this);
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         boolean onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, false);
 
@@ -27,7 +30,7 @@ public class StartActivity extends AppCompatActivity {
             return;
         }
 
-        setContentView(R.layout.activity_start);
+        ReminderScheduler.scheduleDailyReminder(this);
 
         Button btnCreateGroup = findViewById(R.id.btnCreateGroup);
         Button btnJoinGroup = findViewById(R.id.btnJoinGroup);
@@ -39,5 +42,19 @@ public class StartActivity extends AppCompatActivity {
         btnJoinGroup.setOnClickListener(v ->
                 startActivity(new Intent(StartActivity.this, JoinGroupActivity.class))
         );
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(
+                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                        1
+                );
+
+            }
+
+        }
     }
 }

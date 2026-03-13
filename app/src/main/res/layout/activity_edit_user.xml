@@ -217,10 +217,8 @@
         android:layout_height="110dp"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginTop="165dp"
-        android:src="@drawable/person_icon"
-        android:scaleType="centerInside"
+        android:scaleType="centerCrop"
         android:background="@drawable/bg_dot_gray"
-        android:padding="22dp"
         android:elevation="12dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
