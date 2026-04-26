@@ -148,7 +148,8 @@ public class Finance extends BaseActivity {
 
     }
 
-
+    // אתחול מסך פיננסים – בדיקת משתמש, טעינת נתוני קבוצה,
+// והפניה למסך הגדרות אם אין setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -225,7 +226,7 @@ public class Finance extends BaseActivity {
         }
     }
 
-
+    // הגדרת מסך הפיננסים לפי הרשאות המשתמש והפעלת כל רכיבי המסך
     private void initFinanceScreen() {
 
         resolvePermissionFromServer(
@@ -345,6 +346,7 @@ public class Finance extends BaseActivity {
         );
     }
 
+    // זיהוי החודש הראשון שבו קיימים נתונים בפיננסים
     private void detectFirstDataMonth() {
 
         db.collection("groups")
@@ -376,6 +378,8 @@ public class Finance extends BaseActivity {
                 });
     }
 
+
+    // חיבור כל רכיבי ה-UI (כפתורים, רשימות, גרפים) מה-XML לקוד
     // ================= Bind =================
     private void bindViews() {
 
@@ -463,6 +467,8 @@ public class Finance extends BaseActivity {
 
 
     }
+
+    // חיבור כל רכיבי ה-UI (כפתורים, רשימות, גרפים) מה-XML לקוד
     private void generateGoalAlerts(double monthBalance) {
 
         goalAlerts.clear();
@@ -539,7 +545,7 @@ public class Finance extends BaseActivity {
 
 
 
-
+    // אתחול החודש הנבחר כברירת מחדל (החודש הנוכחי)
     // ================= Month =================
     private void setupMonth() {
         selectedMonth = Calendar.getInstance();
@@ -547,6 +553,7 @@ public class Finance extends BaseActivity {
         updateMonthLabel();
     }
 
+    // מעבר בין חודשים עם בדיקה שלא חורגים מהטווח המותר
     private void changeMonth(int delta) {
 
         Calendar next = (Calendar) selectedMonth.clone();
@@ -573,13 +580,15 @@ public class Finance extends BaseActivity {
     }
 
 
-
+    // עדכון טקסט החודש המוצג במסך
     private void updateMonthLabel() {
         tvSelectedMonth.setText(
                 android.text.format.DateFormat.format("MMMM yyyy", selectedMonth)
         );
     }
 
+
+    // הגדרת פעולות לכל הכפתורים והאינטראקציות במסך
     // ================= Listeners =================
     private void setupListeners() {
 
@@ -603,12 +612,15 @@ public class Finance extends BaseActivity {
             loadSummaryLive();
         });
     }
-    // ================= Month Data =================
+
+
+    // טעינת כל נתוני החודש (סיכום וגרפים)
     private void loadMonthData() {
         loadSummaryLive();
         loadExpensesLive();
     }
 
+    // בניית רשימת קטגוריות והוצאות לפי סוג (קבועות/משתנות)
     private void loadCategoryList(boolean fixed) {
 
         if (groupId == null) return;
@@ -693,6 +705,7 @@ public class Finance extends BaseActivity {
                 });
     }
 
+    // החזרת צבע מתאים לקטגוריה לפי מיפוי מוגדר מראש
     private int resolveColorForCategory(String categoryId) {
         Integer color = CATEGORY_COLORS.get(categoryId);
         return color != null ? color : Color.parseColor("#CBD5E1");
@@ -700,8 +713,8 @@ public class Finance extends BaseActivity {
 
 
 
-    // ================= Summary =================
-        private void loadSummaryLive() {
+    // חישוב והצגת סיכום הכנסות, הוצאות ויתרה לחודש הנבחר
+    private void loadSummaryLive() {
 
             db.collection("groups")
                     .document(groupId)
@@ -759,7 +772,7 @@ public class Finance extends BaseActivity {
         }
 
 
-    // ================= Expenses Pie =================
+    // טעינת נתוני הוצאות והצגתם בגרף עוגה
     private void loadExpensesLive() {
 
         List<FlowCategory> cats = showingFixed
@@ -801,7 +814,7 @@ public class Finance extends BaseActivity {
 
 
 
-
+    // ציור גרף עוגה לפי נתוני הוצאות
     private void renderPie(Map<String, Double> totals) {
 
         boolean hasData = false;
@@ -875,7 +888,7 @@ public class Finance extends BaseActivity {
 
 
 
-
+    // טעינת נתונים שנתיים והכנתם לגרף עמודות
     private void loadYearBarChart() {
 
         final int year = selectedMonth.get(Calendar.YEAR);
@@ -919,7 +932,7 @@ public class Finance extends BaseActivity {
                 });
     }
 
-
+    // ציור גרף עמודות לפי הכנסות והוצאות לכל חודשי השנה
     private void renderYearBar(double[] income, double[] expense) {
 
         List<BarEntry> incomeEntries = new ArrayList<>();
@@ -1006,19 +1019,9 @@ public class Finance extends BaseActivity {
 
 
 
-    private String getMonthShortName(int month) {
-
-        String[] months = {
-                "ינו", "פבר", "מרץ", "אפר",
-                "מאי", "יונ", "יול", "אוג",
-                "ספט", "אוק", "נוב", "דצ"
-        };
-
-        return months[month];
-    }
 
 
-    // ================= Goals =================
+    // הגדרת רשימת מטרות חיסכון והאינטראקציות שלהן
     private void setupGoals() {
 
         Log.e("DELETE_DEBUG", "setupGoals CALLED");
@@ -1044,6 +1047,7 @@ public class Finance extends BaseActivity {
         rvGoals.setAdapter(goalsAdapter);
     }
 
+    // פתיחה וסגירה של אזור במסך בלחיצה על כותרת
     private void setupToggle(View header,
                              View content,
                              ImageView arrow) {
@@ -1068,7 +1072,7 @@ public class Finance extends BaseActivity {
 
 
 
-
+    // טעינת מטרות חיסכון מהשרת והצגתן במסך
     private void loadSavingsGoals() {
 
         db.collection("groups")
@@ -1132,6 +1136,7 @@ public class Finance extends BaseActivity {
                 });
     }
 
+    // מחיקת מטרה מהשרת ועדכון הנתונים במסך
     private void deleteGoal(String goalId) {
 
         Log.e("DELETE_DEBUG", "INSIDE deleteGoal with id = " + goalId);
@@ -1172,7 +1177,7 @@ public class Finance extends BaseActivity {
                 });
     }
 
-
+    // הצגת חלון אישור לפני מחיקת מטרה
     private void confirmDeleteGoal(SavingsGoal goal) {
 
         if (goal == null) return;
@@ -1189,7 +1194,7 @@ public class Finance extends BaseActivity {
     }
 
 
-
+    // הצגת חלון כאשר מטרה הושגה והצעת פעולות להמשך
     private void showGoalSuccessDialog(SavingsGoal goal) {
 
         new AlertDialog.Builder(this)
@@ -1213,7 +1218,7 @@ public class Finance extends BaseActivity {
                 .show();
     }
 
-
+    // סימון מטרה כהושגה כדי למנוע הצגה חוזרת של התראה
     private void markGoalSuccessHandled(SavingsGoal goal) {
 
         goal.setSuccessHandled(true);
@@ -1226,7 +1231,7 @@ public class Finance extends BaseActivity {
     }
 
 
-
+    // טעינת חודש התחלה מהגדרות פיננסים והגבלת ניווט אחורה
     private void loadStartMonth() {
 
         db.collection("groups")
@@ -1256,6 +1261,7 @@ public class Finance extends BaseActivity {
                 });
     }
 
+    // בדיקה האם צריך לבקש מהמשתמש החלטה בסיום תקופה
     private boolean shouldAskPeriodDecision(SavingsGoal g) {
 
         if (g.getGoalType() != SavingsGoal.GoalType.PERIOD) {
@@ -1291,6 +1297,7 @@ public class Finance extends BaseActivity {
         return false;
     }
 
+    // הצגת אפשרויות למשתמש בסיום תקופה של מטרה
     private void showPeriodDecisionDialog(SavingsGoal g) {
 
         String message;
@@ -1333,6 +1340,7 @@ public class Finance extends BaseActivity {
                 .show();
     }
 
+    // איפוס הסכום הנוכחי של מטרה
     private void resetGoalAmount(SavingsGoal g) {
 
         db.collection("groups")
@@ -1352,6 +1360,8 @@ public class Finance extends BaseActivity {
                     loadSavingsGoals(); // רענון
                 });
     }
+
+    // הצגת תפריט פעולות למטרה (הוספה, מחיקה, עדכון)
     private void showGoalActionSheet(SavingsGoal goal) {
 
         View view = getLayoutInflater()
@@ -1394,7 +1404,7 @@ public class Finance extends BaseActivity {
         dialog.show();
     }
 
-
+    // הוספת סכום למטרה ועדכון הנתונים בשרת
     private void addMoneyToGoal(SavingsGoal goal) {
 
         if (goal == null) return;
@@ -1445,23 +1455,7 @@ public class Finance extends BaseActivity {
     }
 
 
-    private int extractAmountFromAlert(SavingsGoal goal) {
-
-        // במקרה שלנו את מציגה משהו כמו "הוסף ₪2,500"
-        // אז פשוט נחשב לפי יתרה חכמה
-
-        double monthBalance = currentMonthlySurplus;
-
-        double remaining = goal.getRemainingAmount();
-
-        double suggested = Math.min(monthBalance * 0.25, remaining * 0.5);
-
-        return (int) Math.round(suggested);
-    }
-
-
-
-
+    // עדכון יעד של מטרה
     private void increaseGoalTarget(SavingsGoal goal) {
 
         EditText input = new EditText(this);
@@ -1511,7 +1505,7 @@ public class Finance extends BaseActivity {
     }
 
 
-
+    // שמירת החלטת משתמש בסיום תקופה
     private void savePeriodDecision(SavingsGoal g) {
 
         Date now = new Date();
@@ -1528,7 +1522,7 @@ public class Finance extends BaseActivity {
 
 
 
-    // ================= Utils =================
+    // שליפת תאריך רלוונטי לפריט פיננסי
     private Date resolveItemDate(QueryDocumentSnapshot doc) {
 
         Date txDate = doc.getDate("transactionDate");
@@ -1540,6 +1534,7 @@ public class Finance extends BaseActivity {
         return doc.getDate("createdAt");
     }
 
+    // חישוב סכום רלוונטי לחודש הנבחר לפי תדירות ותאריך
     private double amountForSelectedMonth(double amount, String freq, boolean oneTime, Date date) {
         if (oneTime) {
             if (date == null) return 0;
@@ -1548,6 +1543,7 @@ public class Finance extends BaseActivity {
         return adjustRecurring(amount, freq);
     }
 
+    // התאמת סכום לפי תדירות (שנתי, דו-חודשי וכו')
     private double adjustRecurring(double a, String f) {
         if (f == null) return a;
         if (f.contains("שנת")) return a / 12;
@@ -1555,6 +1551,7 @@ public class Finance extends BaseActivity {
         return a;
     }
 
+    // בדיקה האם תאריך שייך לחודש הנבחר
     private boolean isSameMonth(Date d) {
         Calendar c = Calendar.getInstance();
         c.setTime(d);
@@ -1562,16 +1559,19 @@ public class Finance extends BaseActivity {
                 && c.get(Calendar.MONTH) == selectedMonth.get(Calendar.MONTH);
     }
 
+    // קריאה בטוחה של תאריך מסוגים שונים
     private Date safeReadDeadline(Object o) {
         if (o instanceof Date) return (Date) o;
         if (o instanceof Timestamp) return ((Timestamp) o).toDate();
         return null;
     }
 
+    // עיצוב מספר להצגה עם פסיקים
     private String format(double v) {
         return String.format(Locale.US, "%,.0f", v);
     }
 
+    // בדיקה האם שני תאריכים הם באותו יום
     private boolean isSameDay(Date d1, Date d2) {
 
         Calendar c1 = Calendar.getInstance();
@@ -1585,7 +1585,7 @@ public class Finance extends BaseActivity {
     }
 
 
-
+    // בדיקה האם להציג התראת התקדמות למטרה ביום הנוכחי
     private boolean shouldShowProgressAlertToday(SavingsGoal g) {
 
         if (g.getDeadline() == null) return false;
@@ -1630,7 +1630,7 @@ public class Finance extends BaseActivity {
 
 
 
-
+    // הגדרת רשימת חיובים ממתינים לאישור
     private void setupPendingApprovals() {
 
         pendingAdapter = new PendingApprovalAdapter(pendingItems);
@@ -1646,6 +1646,7 @@ public class Finance extends BaseActivity {
     }
     private ListenerRegistration pendingListener;
 
+    // טעינת חיובים ממתינים מהשרת והצגתם במסך
     private void loadPendingApprovals() {
 
         if (groupId == null) return;

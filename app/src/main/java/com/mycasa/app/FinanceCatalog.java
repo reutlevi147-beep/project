@@ -6,9 +6,7 @@ import java.util.List;
 
 public class FinanceCatalog {
 
-    /* =====================================================
-     * הכנסות (כולל חד־פעמי)
-     * ===================================================== */
+    // החזרת רשימת קטגוריות הכנסות קבועות
     public static List<FlowCategory> getFixedIncomeCategories() {
         List<FlowCategory> list = new ArrayList<>();
 
@@ -20,9 +18,7 @@ public class FinanceCatalog {
         return list;
     }
 
-    /* =====================================================
-     * הוצאות קבועות
-     * ===================================================== */
+    // החזרת רשימת קטגוריות הוצאות קבועות
     public static List<FlowCategory> getFixedExpenseCategories() {
         List<FlowCategory> list = new ArrayList<>();
 
@@ -38,9 +34,7 @@ public class FinanceCatalog {
         return list;
     }
 
-    /* =====================================================
-     * הוצאות משתנות (כולל חד־פעמי)
-     * ===================================================== */
+    // החזרת רשימת קטגוריות הוצאות משתנות
     public static List<FlowCategory> getVariableExpenseCategories() {
         List<FlowCategory> list = new ArrayList<>();
 
@@ -56,9 +50,7 @@ public class FinanceCatalog {
         return list;
     }
 
-    /* =====================================================
-     * תתי־קטגוריות רגילות (לא חד־פעמי)
-     * ===================================================== */
+    // החזרת כל פריטי הפיננסים (תתי־קטגוריות) לפי קטגוריות
     public static List<FlowItem> getAllItems() {
         List<FlowItem> list = new ArrayList<>();
 
@@ -140,9 +132,7 @@ public class FinanceCatalog {
         return list;
     }
 
-    /* =====================================================
-     * IDs לשימוש במסך ההוספה (לא נוגעים)
-     * ===================================================== */
+    // החזרת מזהי קטגוריות הכנסות לשימוש במסכים שונים
     public static List<String> getIncomeCategoryIds() {
         return Arrays.asList(
                 "income_work",
@@ -150,6 +140,7 @@ public class FinanceCatalog {
         );
     }
 
+    // החזרת מזהי קטגוריות הוצאות לשימוש במסכים שונים
     public static List<String> getExpenseCategoryIds() {
         return Arrays.asList(
                 "expense_food",
@@ -161,7 +152,7 @@ public class FinanceCatalog {
         );
     }
 
-
+    // החזרת שם תצוגה לקטגוריה לפי מזהה
     public static String getCategoryTitle(String id) {
 
         switch (id) {
@@ -181,7 +172,7 @@ public class FinanceCatalog {
     }
 
 
-
+    // החזרת אייקון מתאים לקטגוריה לפי מזהה
     public static String getCategoryIcon(String id) {
 
         switch (id) {

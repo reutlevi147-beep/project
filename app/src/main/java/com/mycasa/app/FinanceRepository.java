@@ -16,9 +16,7 @@ import java.util.Map;
 
 public class FinanceRepository {
 
-    // ======================================
-    // טעינת פריטים לאישור (בלוק צהוב)
-    // ======================================
+    // שליפת פריטים שדורשים אישור מהשרת לפי קבוצה וסינון לפי תדירות
     public static void getPendingItems(
             String groupId,
             String period,
@@ -53,9 +51,7 @@ public class FinanceRepository {
                 });
     }
 
-    // ======================================
-    // בדיקה אם צריך להציג לאישור
-    // ======================================
+    // בדיקה האם פריט צריך להופיע לאישור לפי תאריך אישור אחרון ותדירות
     private static boolean shouldShowPending(
             FlowItem item,
             String period,
@@ -84,9 +80,7 @@ public class FinanceRepository {
         return cal.getTime().before(now);
     }
 
-    // ======================================
-    // עדכון אישור (לחיצה על "אישור")
-    // ======================================
+    // עדכון תאריך אישור של פריט לאחר שהמשתמש אישר אותו
     public static void updateApproval(String groupId, FlowItem item) {
         if (groupId == null || item.getId() == null) return;
 
@@ -98,6 +92,7 @@ public class FinanceRepository {
                 .update("lastApprovedAt", item.getLastApprovedAt());
     }
 
+    // יצירה או עדכון של פריט פיננסי בשרת כולל נתוני תזמון ואישור
     public static void saveOrUpdateFlowItem(
             String groupId,
             FlowItem item
@@ -132,12 +127,7 @@ public class FinanceRepository {
         });
     }
 
-
-
-    // ===========================
-    // ===========
-    // שמירת פריט (מהגדרות כלכלה)
-    // ======================================
+    // שמירה פשוטה של פריט פיננסי בשרת (ללא לוגיקת עדכון מתקדמת)
     public static void saveFlowItem(String groupId, FlowItem item) {
         if (groupId == null || item.getId() == null) return;
 

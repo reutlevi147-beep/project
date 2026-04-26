@@ -2,6 +2,11 @@ package com.mycasa.app;
 
 import java.util.Date;
 
+
+// מחלקת מודל המייצגת פריט פיננסי בודד (הכנסה או הוצאה),
+// כולל סכום, קטגוריה, תדירות ואישור. משמשת לאחסון ושליפת נתונים מ-Firebase
+// ולהצגה במסכים השונים במודול הפיננסים.
+
 public class FlowItem {
 
     private String id;

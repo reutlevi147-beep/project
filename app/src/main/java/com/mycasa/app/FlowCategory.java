@@ -1,5 +1,7 @@
 package com.mycasa.app;
 
+// מחלקת מודל המייצגת קטגוריה פיננסית (הכנסה או הוצאה),
+// כולל מזהה, שם ותכונת הרחבה לצורך הצגת תתי־קטגוריות (אקורדיון) ב-UI.
 public class FlowCategory {
 
     private String id;

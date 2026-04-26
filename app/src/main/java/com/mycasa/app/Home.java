@@ -241,6 +241,7 @@ public class Home extends BaseActivity {
 
 }
 
+    // טעינת נתונים מחדש בכל חזרה למסך (משימות, קניות, אירועים ופיננסים)
     @Override
     protected void onResume() {
         super.onResume();
@@ -254,6 +255,7 @@ public class Home extends BaseActivity {
         }
     }
 
+    // שליפת נתוני פיננסים מהשרת, חישוב הכנסות/הוצאות/יתרה והצגתם במסך
     private void loadFinanceSummary() {
 
         if (groupId == null) return;
@@ -273,13 +275,18 @@ public class Home extends BaseActivity {
                         if (amount == null) continue;
 
                         String categoryId = doc.getString("categoryId");
+                        String frequency = doc.getString("frequency");
+
                         if (categoryId == null) continue;
 
+                        // התאמת הסכום לפי תדירות
+                        double adjustedAmount = adjustAmountByFrequency(amount, frequency);
+
                         if (categoryId.startsWith("income_")) {
-                            income += amount;
+                            income += adjustedAmount;
                         }
                         else if (categoryId.startsWith("expense_")) {
-                            expense += amount;
+                            expense += adjustedAmount;
                         }
                     }
 
@@ -304,14 +311,7 @@ public class Home extends BaseActivity {
     }
 
 
-    private void updateBalanceColor(double balance) {
 
-        if (balance < 0) {
-            cardBalance.setBackgroundResource(R.drawable.bg_balance_negative);
-        } else {
-            cardBalance.setBackgroundResource(R.drawable.bg_balance_indigo);
-        }
-    }
 
 
     private double adjustAmountByFrequency(double amount, String frequency) {
@@ -335,11 +335,12 @@ public class Home extends BaseActivity {
         }
     }
 
-
+    // עיצוב מספרים לתצוגה עם פסיקים
     private String formatNumber(double value) {
         return String.format("%,.0f", value);
     }
 
+    // שליפת כמות המשימות הפתוחות והצגתן בסיכום היומי
     private void loadTasksSummary() {
 
         db.collection("groups")
@@ -361,6 +362,7 @@ public class Home extends BaseActivity {
 
 
 
+    // שליפת כמות הפריטים שלא נקנו ברשימת הקניות והצגתם
     private void loadShoppingSummary() {
 
         db.collection("groups")
@@ -381,7 +383,7 @@ public class Home extends BaseActivity {
                 });
     }
 
-
+    // מציאת האירוע הקרוב ביותר להיום והצגתו במסך הבית
     private void loadClosestEvent() {
 
         String today = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())

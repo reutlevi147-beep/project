@@ -3,6 +3,11 @@ package com.mycasa.app;
 import java.util.Date;
 import java.util.Map;
 
+
+// מחלקת מודל המייצגת סיכום פיננסי חודשי הכולל הכנסות, הוצאות, יתרה
+// ופירוט לפי קטגוריות. מיועדת לשמירה ושליפה של נתוני snapshot מ-Firebase,
+// אך כרגע אינה בשימוש בפרויקט.
+
 public class FinanceSnapshot {
 
     private String month; // למשל: 2026-01

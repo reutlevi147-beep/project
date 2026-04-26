@@ -14,6 +14,9 @@ public class StartActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_ONBOARDING_DONE = "onboarding_completed";
 
+
+    // הפעולה הראשית שמופעלת כשמסך הפתיחה נטען
+    // אחראית על בדיקת onboarding, ניווט למסכים, הגדרת כפתורים ובקשת הרשאות
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,7 +25,7 @@ public class StartActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         boolean onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, false);
 
-        // אם כבר סיימו את ההתחלה – מדלגים ישר לבית
+        // העמוד יופיע בפעם הראשונה, אחרי מעבר לעמוד home הוא לא יופיע יותר
         if (onboardingDone) {
             Intent intent = new Intent(this, Home.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -43,6 +43,7 @@
         <!-- Main screens -->
         <activity android:name=".Home"/>
         <activity android:name=".Finance"/>
+        <activity android:name=".FinanceSetupActivity"/>
         <activity android:name=".ShoppingListActivity"/>
         <activity android:name=".TasksActivity"/>
         <activity android:name=".CalendarMonthActivity"/>
