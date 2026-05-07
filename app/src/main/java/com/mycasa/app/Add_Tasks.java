@@ -65,6 +65,10 @@ public class Add_Tasks extends AppCompatActivity {
                 usersAdapter.selectAll()
         );
 
+        findViewById(R.id.btnCancel).setOnClickListener(v -> {
+            finish();
+        });
+
         // 👥 RecyclerView users
         recyclerUsers = findViewById(R.id.recyclerUsers);
         recyclerUsers.setLayoutManager(new GridLayoutManager(this, 2));
@@ -141,11 +145,19 @@ public class Add_Tasks extends AppCompatActivity {
         task.put("category", selectedCategory);
         task.put("assignedUserIds", selectedUserIds);
         task.put("createdAt", Timestamp.now());
-        task.put("isDone", false);
+        task.put("completed", false);
         task.put("groupId", groupId);
 
         if (selectedDateMillis != null) {
             task.put("dueDate", selectedDateMillis);
+        } else {
+            Calendar today = Calendar.getInstance();
+            today.set(Calendar.HOUR_OF_DAY, 0);
+            today.set(Calendar.MINUTE, 0);
+            today.set(Calendar.SECOND, 0);
+            today.set(Calendar.MILLISECOND, 0);
+
+            task.put("dueDate", today.getTimeInMillis());
         }
 
         db.collection("groups")

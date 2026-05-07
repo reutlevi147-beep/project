@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -59,7 +60,6 @@ public class TasksActivity extends BaseActivity {
         View statActive = findViewById(R.id.statActive);
         tvActiveCount = statActive.findViewById(R.id.tvValue);
         ((TextView) statActive.findViewById(R.id.tvLabel)).setText("פעילות");
-
         View statCompleted = findViewById(R.id.statCompleted);
         tvCompletedCount = statCompleted.findViewById(R.id.tvValue);
         ((TextView) statCompleted.findViewById(R.id.tvLabel)).setText("בוצעו");
@@ -67,6 +67,7 @@ public class TasksActivity extends BaseActivity {
         recyclerTasks.setLayoutManager(new LinearLayoutManager(this));
         adapter = new TasksAdapter(this, tasks);
         recyclerTasks.setAdapter(adapter);
+        adapter.setOnDeleteCompletedListener(() -> deleteCompletedTasks());
 
         setupCategoryButtons();
 
@@ -106,6 +107,13 @@ public class TasksActivity extends BaseActivity {
         blurView.setupWith(rootView)
                 .setFrameClearDrawable(getWindow().getDecorView().getBackground())
                 .setBlurRadius(25f);
+
+        ImageButton btnBack = findViewById(R.id.btnBack);
+
+        btnBack.setOnClickListener(v -> {
+            startActivity(new Intent(TasksActivity.this, Home.class));
+            finish(); // חשוב כדי לא לחזור שוב למשימות
+        });
 
         // ===== הרשאות =====
         resolvePermissionFromServer(
@@ -249,15 +257,58 @@ public class TasksActivity extends BaseActivity {
                 });
     }
 
+    private void deleteCompletedTasks() {
+
+        if (groupId == null) return;
+
+        FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(groupId)
+                .collection("home_tasks")
+                .whereEqualTo("completed", true)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        doc.getReference().delete();
+                    }
+                });
+    }
+
     // ===========================
     // SORT
     // ===========================
 
     private void sortTasks(List<Task> list) {
-        Collections.sort(list, (t1, t2) ->
-                priorityWeight(t1.getPriority()) -
-                        priorityWeight(t2.getPriority())
-        );
+        Collections.sort(list, (t1, t2) -> {
+
+            long today = System.currentTimeMillis();
+
+            boolean t1NoDate = t1.getDueDate() == null;
+            boolean t2NoDate = t2.getDueDate() == null;
+
+            boolean t1Expired = t1.getDueDate() != null && t1.getDueDate() < today;
+            boolean t2Expired = t2.getDueDate() != null && t2.getDueDate() < today;
+
+            int group1 = getSortGroup(t1NoDate, t1Expired);
+            int group2 = getSortGroup(t2NoDate, t2Expired);
+
+            if (group1 != group2) {
+                return group1 - group2;
+            }
+
+            if (t1.getDueDate() != null && t2.getDueDate() != null) {
+                int dateCompare = Long.compare(t1.getDueDate(), t2.getDueDate());
+                if (dateCompare != 0) return dateCompare;
+            }
+
+            return priorityWeight(t1.getPriority()) - priorityWeight(t2.getPriority());
+        });
+    }
+
+    private int getSortGroup(boolean noDate, boolean expired) {
+        if (noDate) return 0;     // בלי תאריך — הכי למעלה
+        if (expired) return 1;    // תאריך שעבר — אחר כך למעלה
+        return 2;                 // תאריכים עתידיים
     }
 
     private int priorityWeight(String priority) {

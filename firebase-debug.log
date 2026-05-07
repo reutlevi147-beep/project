@@ -1,0 +1,144 @@
+[debug] [2026-01-11T09:49:36.126Z] ----------------------------------------------------------------------
+[debug] [2026-01-11T09:49:36.130Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\reutl\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init functions
+[debug] [2026-01-11T09:49:36.130Z] CLI Version:   15.2.1
+[debug] [2026-01-11T09:49:36.130Z] Platform:      win32
+[debug] [2026-01-11T09:49:36.130Z] Node Version:  v24.12.0
+[debug] [2026-01-11T09:49:36.130Z] Time:          Sun Jan 11 2026 11:49:36 GMT+0200 (שעון ישראל (חורף))
+[debug] [2026-01-11T09:49:36.131Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\reutl\AndroidStudioProjects\MyApplication8
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-01-11T09:52:41.321Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-11T09:52:41.322Z] > authorizing via signed-in user (oritlevi1411@gmail.com)
+[debug] [2026-01-11T09:52:41.324Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:52:41.324Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:52:41.326Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=100
+[debug] [2026-01-11T09:52:42.123Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2026-01-11T09:52:42.124Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[info] 
+=== Functions Setup
+[debug] [2026-01-11T09:53:22.085Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-11T09:53:22.085Z] > authorizing via signed-in user (oritlevi1411@gmail.com)
+[debug] [2026-01-11T09:53:22.085Z] [iam] checking project databasehomemanager for permissions ["firebase.projects.get"]
+[debug] [2026-01-11T09:53:22.086Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:22.086Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:22.087Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions [none]
+[debug] [2026-01-11T09:53:22.087Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions x-goog-quota-user=projects/databasehomemanager
+[debug] [2026-01-11T09:53:22.087Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-01-11T09:53:23.708Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions 200
+[debug] [2026-01-11T09:53:23.708Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-01-11T09:53:23.709Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:23.710Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:23.710Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:23.710Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:23.710Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-11T09:53:23.710Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/databasehomemanager
+[debug] [2026-01-11T09:53:23.712Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/runtimeconfig.googleapis.com [none]
+[debug] [2026-01-11T09:53:23.712Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/databasehomemanager
+[debug] [2026-01-11T09:53:25.335Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/runtimeconfig.googleapis.com 200
+[debug] [2026-01-11T09:53:25.335Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2026-01-11T09:53:25.356Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-11T09:53:25.357Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-11T09:53:25.357Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:25.358Z] Checked if tokens are valid: true, expires at: 1768128444466
+[debug] [2026-01-11T09:53:25.358Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com:enable [none]
+[debug] [2026-01-11T09:53:25.358Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com:enable x-goog-quota-user=projects/databasehomemanager
+[debug] [2026-01-11T09:53:26.764Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com:enable 200
+[debug] [2026-01-11T09:53:26.764Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/databasehomemanager/services/cloudfunctions.googleapis.com:enable [omitted]
+[info] Let's create a new codebase for your functions.
+[info] A directory corresponding to the codebase will be created in your project
+[info] with sample code pre-configured.
+
+[info] See https://firebase.google.com/docs/functions/organize-functions for
+[info] more information on organizing your functions using codebases.
+
+[info] Functions can be deployed with firebase deploy.
+
+[debug] [2026-01-12T16:52:23.328Z] ----------------------------------------------------------------------
+[debug] [2026-01-12T16:52:23.339Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\reutl\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init functions
+[debug] [2026-01-12T16:52:23.339Z] CLI Version:   15.2.1
+[debug] [2026-01-12T16:52:23.339Z] Platform:      win32
+[debug] [2026-01-12T16:52:23.340Z] Node Version:  v24.12.0
+[debug] [2026-01-12T16:52:23.340Z] Time:          Mon Jan 12 2026 18:52:23 GMT+0200 (שעון ישראל (חורף))
+[debug] [2026-01-12T16:52:23.340Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-12T16:52:23.343Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\reutl\AndroidStudioProjects\MyApplication8
+
+[debug] [2026-01-12T16:52:27.657Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-01-12T16:52:27.657Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-01-12T16:52:34.106Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-12T16:52:34.106Z] > authorizing via signed-in user (oritlevi1411@gmail.com)
+[debug] [2026-01-12T16:52:34.107Z] Checked if tokens are valid: false, expires at: 1768128444466
+[debug] [2026-01-12T16:52:34.107Z] Checked if tokens are valid: false, expires at: 1768128444466
+[debug] [2026-01-12T16:52:34.107Z] > refreshing access token with scopes: []
+[debug] [2026-01-12T16:52:34.108Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-12T16:52:34.108Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-12T16:52:34.429Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-12T16:52:34.429Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-12T16:52:34.441Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/databasehomemanager [none]
+[debug] [2026-01-12T16:52:34.934Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/databasehomemanager 200
+[debug] [2026-01-12T16:52:34.935Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/databasehomemanager {"projectId":"databasehomemanager","projectNumber":"672333021678","displayName":"DataBaseHomeManager","name":"projects/databasehomemanager","resources":{"hostingSite":"databasehomemanager"},"state":"ACTIVE","etag":"1_0b33c48a-ab05-49cc-90a1-77cb663433b9"}
+[info] i  Using project databasehomemanager (DataBaseHomeManager) . 
+[info] 
+=== Functions Setup
+[debug] [2026-01-12T16:52:34.941Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-12T16:52:34.941Z] > authorizing via signed-in user (oritlevi1411@gmail.com)
+[debug] [2026-01-12T16:52:34.941Z] [iam] checking project databasehomemanager for permissions ["firebase.projects.get"]
+[debug] [2026-01-12T16:52:34.942Z] Checked if tokens are valid: true, expires at: 1768240353429
+[debug] [2026-01-12T16:52:34.942Z] Checked if tokens are valid: true, expires at: 1768240353429
+[debug] [2026-01-12T16:52:34.942Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions [none]
+[debug] [2026-01-12T16:52:34.942Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions x-goog-quota-user=projects/databasehomemanager
+[debug] [2026-01-12T16:52:34.942Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-01-12T16:52:35.998Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions 200
+[debug] [2026-01-12T16:52:35.998Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/databasehomemanager:testIamPermissions {"permissions":["firebase.projects.get"]}
+[info] Let's create a new codebase for your functions.
+[info] A directory corresponding to the codebase will be created in your project
+[info] with sample code pre-configured.
+
+[info] See https://firebase.google.com/docs/functions/organize-functions for
+[info] more information on organizing your functions using codebases.
+
+[info] Functions can be deployed with firebase deploy.
+
+[info] +  Wrote functions/requirements.txt 
+[info] +  Wrote functions/.gitignore 
+[info] +  Wrote functions/main.py 
+[debug] [2026-01-12T16:54:01.082Z] Running command with virtualenv: command="C:\Users\reutl\AndroidStudioProjects\MyApplication8\functions\venv\Scripts\activate.bat", args=["","&&","pip3","install","--upgrade","pip"]
+[debug] [2026-01-12T16:54:01.140Z] Error: spawn "C:\Users\reutl\AndroidStudioProjects\MyApplication8\functions\venv\Scripts\activate.bat" ENOENT
+    at notFoundError (C:\Users\reutl\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\lib\enoent.js:6:26)
+    at verifyENOENT (C:\Users\reutl\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\lib\enoent.js:40:16)
+    at cp.emit (C:\Users\reutl\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\lib\enoent.js:27:25)
+    at ChildProcess._handle.onexit (node:internal/child_process:294:12)
+[error] 
+[error] Error: An unexpected error has occurred.
