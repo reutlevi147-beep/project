@@ -90,6 +90,12 @@ public class Add_Shopping extends AppCompatActivity {
             }
         });
 
+        Button btnCancel = findViewById(R.id.btnCancel);
+
+        btnCancel.setOnClickListener(v -> {
+            finish();
+        });
+
         ImageButton btnConfirmName = findViewById(R.id.btnConfirmName);
         Button btnSave = findViewById(R.id.btnSave);
 

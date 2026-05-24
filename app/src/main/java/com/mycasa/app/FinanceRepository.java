@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class FinanceRepository {
 
@@ -125,6 +126,79 @@ public class FinanceRepository {
 
             ref.set(data, SetOptions.merge());
         });
+    }
+
+
+    public static void addApprovalHistory(
+            String groupId,
+            FlowItem item,
+            int approvedAmount,
+            Date approvedDate
+    ) {
+        if (groupId == null || item == null || item.getId() == null) return;
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(approvedDate);
+
+        Map<String, Object> approval = new HashMap<>();
+        approval.put("itemId", item.getId());
+        approval.put("title", item.getTitle());
+        approval.put("categoryId", item.getCategoryId());
+        approval.put("frequency", item.getFrequency());
+        approval.put("approvedAmount", approvedAmount);
+        approval.put("approvedAt", approvedDate);
+        approval.put("year", cal.get(Calendar.YEAR));
+        approval.put("month", cal.get(Calendar.MONTH)); // 0=ינואר
+
+        FirebaseFirestore.getInstance()
+                .collection("groups")
+                .document(groupId)
+                .collection("finance_flow_items")
+                .document(item.getId())
+                .collection("approvals")
+                .add(approval);
+    }
+
+    public static void seedApprovalHistoryLast3Months(
+            String groupId,
+            FlowItem item
+    ) {
+        if (groupId == null || item == null || item.getId() == null) return;
+
+        Calendar cal = Calendar.getInstance();
+        Random random = new Random();
+
+        double baseAmount = item.getAmount();
+
+        for (int i = 1; i <= 3; i++) {
+
+            Calendar temp = (Calendar) cal.clone();
+            temp.add(Calendar.MONTH, -i);
+
+            Date approvedDate = temp.getTime();
+
+            // 🎯 שינוי רנדומלי ±20%
+            double variation = 0.8 + (1.2 - 0.8) * random.nextDouble();
+            int newAmount = (int) Math.round(baseAmount * variation);
+
+            Map<String, Object> approval = new HashMap<>();
+            approval.put("itemId", item.getId());
+            approval.put("title", item.getTitle());
+            approval.put("categoryId", item.getCategoryId());
+            approval.put("frequency", item.getFrequency());
+            approval.put("approvedAmount", newAmount);
+            approval.put("approvedAt", approvedDate);
+            approval.put("year", temp.get(Calendar.YEAR));
+            approval.put("month", temp.get(Calendar.MONTH));
+
+            FirebaseFirestore.getInstance()
+                    .collection("groups")
+                    .document(groupId)
+                    .collection("finance_flow_items")
+                    .document(item.getId())
+                    .collection("approvals")
+                    .add(approval);
+        }
     }
 
     // שמירה פשוטה של פריט פיננסי בשרת (ללא לוגיקת עדכון מתקדמת)

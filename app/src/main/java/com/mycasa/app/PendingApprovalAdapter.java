@@ -10,8 +10,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PendingApprovalAdapter
         extends RecyclerView.Adapter<PendingApprovalAdapter.VH> {
@@ -76,11 +81,19 @@ public class PendingApprovalAdapter
             int newAmount = val.isEmpty() ? 0 : Integer.parseInt(val);
 
             // 1️⃣ עדכון מקומי
-            item.setAmount(newAmount);
-            item.setLastApprovedAt(new Date());
-            item.setApproved(true); // ✅ זה התיקון הקריטי
+            Date approvedDate = new Date();
 
-            // 2️⃣ שמירה ל־Firebase
+            item.setAmount(newAmount);
+            item.setLastApprovedAt(approvedDate);
+            item.setApproved(true);
+
+            FinanceRepository.addApprovalHistory(
+                    AppSession.getGroupId(),
+                    item,
+                    newAmount,
+                    approvedDate
+            );
+
             FinanceRepository.saveOrUpdateFlowItem(
                     AppSession.getGroupId(),
                     item
@@ -96,6 +109,8 @@ public class PendingApprovalAdapter
             }
         });
     }
+
+
 
     @Override
     public int getItemCount() {

@@ -66,9 +66,12 @@
         <activity android:name=".Display_Calender_Tasks"/>
         <activity android:name=".Display_Purpose"/>
         <activity android:name=".Add_Tasks"/>
-        <activity android:name=".Add_Purpose"/>
+        <activity android:name=".AddGoalActivity"/>
         <activity android:name=".Add_Money"/>
         <activity android:name=".MainActivity2"/>
+        <activity android:name=".ManageMembersActivity" />
+        <activity android:name=".ChildPermissionsActivity" />
+        <activity android:name=".Add_Transaction" />
 
     </application>
 

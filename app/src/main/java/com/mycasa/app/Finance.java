@@ -93,12 +93,14 @@ public class Finance extends BaseActivity {
 
     // Pending content wrapper
     private LinearLayout layoutPendingContent;
+    private final List<Calendar> availableMonths = new ArrayList<>();
 
     // Headers
     private View headerGoalAlertsTop;
     private View headerPending;
     private View headerExpenses;
     private View headerGoals;
+    private int availableMonthIndex = -1;
 
     // ===== Category titles =====
     private static final Map<String, String> CATEGORY_TITLES = new HashMap<>();
@@ -162,7 +164,7 @@ public class Finance extends BaseActivity {
 
         groupId = prefs.getString("group_id", null);
         String userId = prefs.getString("user_id", null);   // ✅ זה היה חסר
-        String role = prefs.getString("role", null);
+        String role = prefs.getString("user_role", null);
 
         AppSession.setUserId(userId);
         AppSession.setGroupId(groupId);
@@ -208,7 +210,9 @@ public class Finance extends BaseActivity {
                     .addOnSuccessListener(doc -> {
 
                         // אם אין הגדרות → פתיחת Setup
-                        if (!doc.exists() || doc.get("startMonth") == null) {
+                        Boolean setupCompleted = doc.getBoolean("setupCompleted");
+
+                        if (!doc.exists() || !Boolean.TRUE.equals(setupCompleted)) {
 
                             startActivity(new Intent(Finance.this, FinanceSetupActivity.class));
                             finish();
@@ -339,9 +343,9 @@ public class Finance extends BaseActivity {
                     }
 
                     loadStartMonth();
-                    loadMonthData();
-                    loadYearBarChart();
                     loadSavingsGoals();
+
+                    loadAvailableMonths();
                 }
         );
     }
@@ -579,6 +583,134 @@ public class Finance extends BaseActivity {
         }
     }
 
+    private void loadAvailableMonths() {
+
+        availableMonths.clear();
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("finance_flow_items")
+                .whereEqualTo("enabled", true)
+                .get()
+                .addOnSuccessListener(itemsSnapshot -> {
+
+                    if (itemsSnapshot.isEmpty()) return;
+
+                    Set<String> added = new HashSet<>();
+                    final int totalItems = itemsSnapshot.size();
+                    final int[] finished = {0};
+
+                    for (QueryDocumentSnapshot itemDoc : itemsSnapshot) {
+
+                        db.collection("groups")
+                                .document(groupId)
+                                .collection("finance_flow_items")
+                                .document(itemDoc.getId())
+                                .collection("approvals")
+                                .get()
+                                .addOnSuccessListener(approvalsSnapshot -> {
+
+                                    for (QueryDocumentSnapshot doc : approvalsSnapshot) {
+
+                                        Long yearLong = doc.getLong("year");
+                                        Long monthLong = doc.getLong("month");
+
+                                        if (yearLong == null || monthLong == null) continue;
+
+                                        int year = yearLong.intValue();
+                                        int month = monthLong.intValue();
+
+                                        String key = year + "_" + month;
+                                        if (added.contains(key)) continue;
+
+                                        added.add(key);
+
+                                        Calendar cal = Calendar.getInstance();
+                                        cal.clear();
+                                        cal.set(Calendar.YEAR, year);
+                                        cal.set(Calendar.MONTH, month);
+                                        cal.set(Calendar.DAY_OF_MONTH, 1);
+
+                                        availableMonths.add(cal);
+
+                                        Log.e("MONTH_DEBUG", "added month = " + month + " year = " + year);
+                                    }
+
+                                    finished[0]++;
+
+                                    if (finished[0] == totalItems) {
+                                        Collections.sort(availableMonths, (a, b) -> a.compareTo(b));
+
+                                        Log.e("MONTH_DEBUG", "availableMonths size = " + availableMonths.size());
+
+                                        if (!availableMonths.isEmpty()) {
+                                            availableMonthIndex = availableMonths.size() - 1;
+                                            selectedMonth = (Calendar) availableMonths.get(availableMonthIndex).clone();
+
+                                            updateMonthLabel();
+                                            loadMonthData();
+                                            loadYearBarChart();
+                                        }
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    finished[0]++;
+
+                                    if (finished[0] == totalItems) {
+                                        Collections.sort(availableMonths, (a, b) -> a.compareTo(b));
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private int getCurrentMonthIndex() {
+        for (int i = 0; i < availableMonths.size(); i++) {
+            if (sameMonth(availableMonths.get(i), selectedMonth)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void goToPreviousAvailableMonth() {
+        Log.e("MONTH_DEBUG", "prev clicked, index = " + availableMonthIndex +
+                " size = " + availableMonths.size());
+
+        if (availableMonthIndex > 0) {
+
+            availableMonthIndex--;
+
+            selectedMonth = (Calendar) availableMonths.get(availableMonthIndex).clone();
+
+            updateMonthLabel();
+            loadMonthData();
+            loadYearBarChart();
+        }
+    }
+
+    private void goToNextAvailableMonth() {
+        Log.e("MONTH_DEBUG", "next clicked, index = " + availableMonthIndex +
+                " size = " + availableMonths.size());
+
+        if (availableMonthIndex < availableMonths.size() - 1) {
+
+            availableMonthIndex++;
+
+            selectedMonth = (Calendar) availableMonths.get(availableMonthIndex).clone();
+
+            updateMonthLabel();
+            loadMonthData();
+            loadYearBarChart();
+        }
+    }
+
+    private boolean sameMonth(Calendar a, Calendar b) {
+        return a.get(Calendar.YEAR) == b.get(Calendar.YEAR)
+                && a.get(Calendar.MONTH) == b.get(Calendar.MONTH);
+    }
+
+
 
     // עדכון טקסט החודש המוצג במסך
     private void updateMonthLabel() {
@@ -600,25 +732,24 @@ public class Finance extends BaseActivity {
         btnAddGoal.setOnClickListener(v ->
                 startActivity(new Intent(this, AddGoalActivity.class)));
 
-        btnPrevMonth.setOnClickListener(v -> changeMonth(-1));
-        btnNextMonth.setOnClickListener(v -> changeMonth(1));
+        btnPrevMonth.setOnClickListener(v -> goToPreviousAvailableMonth());
+        btnNextMonth.setOnClickListener(v -> goToNextAvailableMonth());
 
         toggleExpenseType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) return;
             showingFixed = checkedId == R.id.btnFixed;
 
             loadCategoryList(showingFixed);
-            loadExpensesLive();
-            loadSummaryLive();
+            loadMonthData();
         });
     }
 
 
     // טעינת כל נתוני החודש (סיכום וגרפים)
     private void loadMonthData() {
-        loadSummaryLive();
-        loadExpensesLive();
+        loadApprovedMonthData();
     }
+
 
     // בניית רשימת קטגוריות והוצאות לפי סוג (קבועות/משתנות)
     private void loadCategoryList(boolean fixed) {
@@ -739,6 +870,7 @@ public class Finance extends BaseActivity {
                             String freq = doc.getString("frequency");
 
                             double v = amountForSelectedMonth(amount, freq, oneTime, date);
+
 
                             if (cat.startsWith("income_")) {
 
@@ -901,36 +1033,212 @@ public class Finance extends BaseActivity {
                 .collection("finance_flow_items")
                 .whereEqualTo("enabled", true)
                 .get()
-                .addOnSuccessListener(snapshot -> {
+                .addOnSuccessListener(itemsSnapshot -> {
 
-                    for (QueryDocumentSnapshot doc : snapshot) {
-
-                        Double amount = doc.getDouble("amount");
-                        if (amount == null) continue;
-
-                        String cat = doc.getString("categoryId");
-                        if (cat == null) continue;
-
-                        Date date = resolveItemDate(doc);
-                        if (date == null) continue;
-
-                        Calendar c = Calendar.getInstance();
-                        c.setTime(date);
-
-                        if (c.get(Calendar.YEAR) != year) continue;
-
-                        int monthIndex = c.get(Calendar.MONTH); // 0-11
-
-                        if (cat.startsWith("income_")) {
-                            income[monthIndex] += amount;
-                        } else if (cat.startsWith("expense_")) {
-                            expense[monthIndex] += amount;
-                        }
+                    if (itemsSnapshot.isEmpty()) {
+                        renderYearBar(income, expense);
+                        return;
                     }
 
-                    renderYearBar(income, expense);
+                    final int totalItems = itemsSnapshot.size();
+                    final int[] finished = {0};
+
+                    for (QueryDocumentSnapshot itemDoc : itemsSnapshot) {
+
+                        String itemId = itemDoc.getId();
+
+                        // קודם נטפל בפעולות חד פעמיות
+                        boolean oneTime = Boolean.TRUE.equals(itemDoc.getBoolean("isOneTime"));
+
+                        if (oneTime) {
+                            Double amount = itemDoc.getDouble("amount");
+                            String cat = itemDoc.getString("categoryId");
+                            Date date = itemDoc.getDate("transactionDate");
+
+                            if (amount != null && cat != null && date != null) {
+                                Calendar c = Calendar.getInstance();
+                                c.setTime(date);
+
+                                if (c.get(Calendar.YEAR) == year) {
+                                    int monthIndex = c.get(Calendar.MONTH);
+
+                                    if (cat.startsWith("income_")) {
+                                        income[monthIndex] += amount;
+                                    } else if (cat.startsWith("expense_")) {
+                                        expense[monthIndex] += amount;
+                                    }
+                                }
+                            }
+                        }
+
+                        // עכשיו נטען היסטוריית אישורים
+                        db.collection("groups")
+                                .document(groupId)
+                                .collection("finance_flow_items")
+                                .document(itemId)
+                                .collection("approvals")
+                                .whereEqualTo("year", year)
+                                .get()
+                                .addOnSuccessListener(approvalsSnapshot -> {
+
+                                    for (QueryDocumentSnapshot approvalDoc : approvalsSnapshot) {
+
+                                        String cat = approvalDoc.getString("categoryId");
+                                        Long monthLong = approvalDoc.getLong("month");
+                                        Number amountNum = (Number) approvalDoc.get("approvedAmount");
+
+                                        if (cat == null || monthLong == null || amountNum == null) {
+                                            continue;
+                                        }
+
+                                        int monthIndex = monthLong.intValue();
+                                        double amount = amountNum.doubleValue();
+
+                                        if (monthIndex < 0 || monthIndex > 11) continue;
+
+                                        if (cat.startsWith("income_")) {
+                                            income[monthIndex] += amount;
+                                        } else if (cat.startsWith("expense_")) {
+                                            expense[monthIndex] += amount;
+                                        }
+                                    }
+
+                                    finished[0]++;
+
+                                    if (finished[0] == totalItems) {
+                                        renderYearBar(income, expense);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    finished[0]++;
+
+                                    if (finished[0] == totalItems) {
+                                        renderYearBar(income, expense);
+                                    }
+                                });
+                    }
                 });
     }
+
+    private void loadApprovedMonthData() {
+        final int year = selectedMonth.get(Calendar.YEAR);
+        final int month = selectedMonth.get(Calendar.MONTH);
+
+        final double[] income = {0};
+        final double[] expense = {0};
+        final Map<String, Double> categoryTotals = new LinkedHashMap<>();
+
+        List<FlowCategory> cats = showingFixed
+                ? FinanceCatalog.getFixedExpenseCategories()
+                : FinanceCatalog.getVariableExpenseCategories();
+
+        for (FlowCategory c : cats) {
+            categoryTotals.put(c.getId(), 0.0);
+        }
+
+        db.collection("groups")
+                .document(groupId)
+                .collection("finance_flow_items")
+                .whereEqualTo("enabled", true)
+                .get()
+                .addOnSuccessListener(itemsSnapshot -> {
+
+                    if (itemsSnapshot.isEmpty()) {
+                        updateMonthUI(income[0], expense[0], categoryTotals);
+                        return;
+                    }
+
+                    final int totalItems = itemsSnapshot.size();
+                    final int[] finished = {0};
+
+                    for (QueryDocumentSnapshot itemDoc : itemsSnapshot) {
+
+                        String itemId = itemDoc.getId();
+
+                        db.collection("groups")
+                                .document(groupId)
+                                .collection("finance_flow_items")
+                                .document(itemId)
+                                .collection("approvals")
+                                .whereEqualTo("year", year)
+                                .whereEqualTo("month", month)
+                                .get()
+                                .addOnSuccessListener(approvalsSnapshot -> {
+
+                                    for (QueryDocumentSnapshot approvalDoc : approvalsSnapshot) {
+
+                                        String cat = approvalDoc.getString("categoryId");
+                                        Number amountNum = (Number) approvalDoc.get("approvedAmount");
+
+                                        if (cat == null || amountNum == null) continue;
+
+                                        double amount = amountNum.doubleValue();
+
+                                        if (cat.startsWith("income")) {
+
+                                            income[0] += amount;
+
+                                        } else if (cat.startsWith("expense")) {
+
+                                            expense[0] += amount;
+
+                                            boolean shouldShow = false;
+
+                                            if (showingFixed) {
+                                                for (FlowCategory c : FinanceCatalog.getFixedExpenseCategories()) {
+                                                    if (c.getId().equals(cat)) {
+                                                        shouldShow = true;
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                for (FlowCategory c : FinanceCatalog.getVariableExpenseCategories()) {
+                                                    if (c.getId().equals(cat)) {
+                                                        shouldShow = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+
+                                            if (shouldShow) {
+                                                categoryTotals.put(
+                                                        cat,
+                                                        categoryTotals.getOrDefault(cat, 0.0) + amount
+                                                );
+                                            }
+                                        }
+                                    }
+
+                                    finished[0]++;
+                                    if (finished[0] == totalItems) {
+                                        updateMonthUI(income[0], expense[0], categoryTotals);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    finished[0]++;
+                                    if (finished[0] == totalItems) {
+                                        updateMonthUI(income[0], expense[0], categoryTotals);
+                                    }
+                                });
+                    }
+                });
+    }
+    private void updateMonthUI(
+            double income,
+            double expense,
+            Map<String, Double> categoryTotals
+    ) {
+        tvIncomeMonth.setText("₪" + format(income));
+        tvExpenseMonth.setText("₪" + format(expense));
+        tvBalanceMonth.setText("₪" + format(income - expense));
+
+        currentMonthlySurplus = income - expense;
+        generateGoalAlerts(currentMonthlySurplus);
+
+        renderPie(categoryTotals);
+    }
+
+
 
     // ציור גרף עמודות לפי הכנסות והוצאות לכל חודשי השנה
     private void renderYearBar(double[] income, double[] expense) {
@@ -1252,12 +1560,6 @@ public class Finance extends BaseActivity {
 
                     startMonth = c;
 
-                    // אם נפלנו לפני startMonth – קופצים אליו
-                    if (selectedMonth.before(startMonth)) {
-                        selectedMonth = (Calendar) startMonth.clone();
-                        updateMonthLabel();
-                        loadMonthData();
-                    }
                 });
     }
 
@@ -1651,7 +1953,6 @@ public class Finance extends BaseActivity {
 
         if (groupId == null) return;
 
-        // אם כבר יש מאזין – מבטלים
         if (pendingListener != null) {
             pendingListener.remove();
         }
@@ -1668,34 +1969,43 @@ public class Finance extends BaseActivity {
 
                     for (QueryDocumentSnapshot doc : snapshot) {
 
-                        Timestamp lastApprovedAt = doc.getTimestamp("lastApprovedAt");
-                        if (lastApprovedAt != null) continue;
-
-                        String freq = doc.getString("frequency");
-                        if (freq == null || !freq.contains("חודשי")) continue;
-
                         String categoryId = doc.getString("categoryId");
                         if (categoryId == null) continue;
 
-                        if (!categoryId.startsWith("expense_")) continue;
+
+                        // מציגים לאישור גם הכנסות וגם הוצאות
+
+                        if (!categoryId.startsWith("expense_") &&
+                                !categoryId.startsWith("income_")) {
+                            continue;
+                        }
+
+                        String freq = doc.getString("frequency");
+                        if (freq == null) continue;
+
+                        Timestamp lastApprovedAt = doc.getTimestamp("lastApprovedAt");
+
+                        // בודק אם צריך אישור לפי התדירות
+                        if (!shouldShowForApproval(freq, lastApprovedAt)) continue;
 
                         String title = doc.getString("title");
                         if (title == null) title = "ללא כותרת";
 
                         Number num = (Number) doc.get("amount");
                         int amount = (num != null)
-                                ? (int) Math.round(num.doubleValue())
+                                ? (int) Math.round(adjustRecurring(num.doubleValue(), freq))
                                 : 0;
 
                         FlowItem item = new FlowItem(doc.getId(), categoryId, title);
                         item.setAmount(amount);
                         item.setFrequency(freq);
-                        item.setLastApprovedAt(null);
+                        item.setLastApprovedAt(
+                                lastApprovedAt != null ? lastApprovedAt.toDate() : null
+                        );
 
                         pendingItems.add(item);
                     }
 
-                    // עדכון כותרת
                     if (tvPendingTitle != null) {
                         tvPendingTitle.setText(
                                 "יש לך חיובים לאישור (" + pendingItems.size() + ")"
@@ -1708,13 +2018,10 @@ public class Finance extends BaseActivity {
                                 currentPermission == PagePermission.FULL_ACCESS) {
 
                             cardPending.setVisibility(
-                                    pendingItems.size() > 0
-                                            ? View.VISIBLE
-                                            : View.GONE
+                                    pendingItems.size() > 0 ? View.VISIBLE : View.GONE
                             );
 
                         } else {
-
                             cardPending.setVisibility(View.GONE);
                         }
                     }
@@ -1723,7 +2030,30 @@ public class Finance extends BaseActivity {
                 });
     }
 
+    private boolean shouldShowForApproval(String frequency, Timestamp lastApprovedAt) {
 
+        // אם אף פעם לא אושר - להציג לאישור
+        if (lastApprovedAt == null) return true;
 
+        Calendar last = Calendar.getInstance();
+        last.setTime(lastApprovedAt.toDate());
+
+        Calendar now = Calendar.getInstance();
+
+        int monthsDiff =
+                (now.get(Calendar.YEAR) - last.get(Calendar.YEAR)) * 12
+                        + (now.get(Calendar.MONTH) - last.get(Calendar.MONTH));
+
+        if (frequency.contains("שנת")) {
+            return monthsDiff >= 12;
+        }
+
+        if (frequency.contains("דו")) {
+            return monthsDiff >= 2;
+        }
+
+        // ברירת מחדל - חודשי
+        return monthsDiff >= 1;
+    }
 
 }

@@ -181,6 +181,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
             return;
         }
 
+
         boolean isAllUsers = selectedUserIds.isEmpty();
         String assignedToLabel = buildAssignedToLabel(isAllUsers);
 
@@ -198,12 +199,22 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         data.put("isAllUsers", isAllUsers);
         data.put("repeatType", selectedRepeatType);
 
-        FirebaseFirestore.getInstance()
-                .collection("groups")
-                .document(groupId)
-                .collection("calendar_events")
-                .add(data)
-                .addOnSuccessListener(v -> finish());
+        if (editingEventId != null) {
+            FirebaseFirestore.getInstance()
+                    .collection("groups")
+                    .document(groupId)
+                    .collection("calendar_events")
+                    .document(editingEventId)
+                    .update(data)
+                    .addOnSuccessListener(v -> finish());
+        } else {
+            FirebaseFirestore.getInstance()
+                    .collection("groups")
+                    .document(groupId)
+                    .collection("calendar_events")
+                    .add(data)
+                    .addOnSuccessListener(v -> finish());
+        }
     }
 
     // ================= LOAD EVENT FOR EDIT =================

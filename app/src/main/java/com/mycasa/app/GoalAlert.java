@@ -9,7 +9,7 @@ public class GoalAlert {
         SUCCESS
     }
 
-    private SavingsGoal goal;   // 🔥 חשוב
+    private SavingsGoal goal;
     private String title;
     private String message;
     private String actionText;

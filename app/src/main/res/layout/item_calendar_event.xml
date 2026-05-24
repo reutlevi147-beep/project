@@ -10,12 +10,23 @@
     android:layoutDirection="rtl"
     android:elevation="2dp">
 
+    <!-- מחיקה -->
+    <ImageButton
+        android:id="@+id/btnDeleteEvent"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_delete"
+        android:contentDescription="מחיקה" />
+
     <!-- תוכן -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp">
 
         <TextView
             android:id="@+id/tvEventTitle"
@@ -43,13 +54,11 @@
 
     </LinearLayout>
 
-    <!-- מחיקה -->
-    <ImageButton
-        android:id="@+id/btnDeleteEvent"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_delete"
-        android:contentDescription="מחיקה" />
+    <!-- פס צבע לפי צבע האירוע -->
+    <View
+        android:id="@+id/viewEventColor"
+        android:layout_width="6dp"
+        android:layout_height="match_parent"
+        android:background="#6366F1" />
 
 </LinearLayout>

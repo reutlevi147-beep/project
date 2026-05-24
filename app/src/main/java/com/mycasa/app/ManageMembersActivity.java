@@ -172,22 +172,7 @@ public class ManageMembersActivity extends AppCompatActivity {
             // ======================
             holder.iconDelete.setOnClickListener(v -> {
                 showDeleteDialog(member);
-                if (!"parent".equals(currentUserRole)) return;
 
-                db.collection("groups")
-                        .document(groupId)
-                        .collection("users")
-                        .document(member.userId)
-                        .delete()
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(
-                                    ManageMembersActivity.this,
-                                    "המשתמש נמחק",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            loadMembers();
-                        });
             });
 
             // ======================

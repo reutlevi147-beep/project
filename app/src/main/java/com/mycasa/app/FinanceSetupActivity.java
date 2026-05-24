@@ -129,9 +129,13 @@ public class FinanceSetupActivity extends BaseActivity {
             c.set(Calendar.DAY_OF_MONTH, 1);
 
             Map<String, Object> settingsData = new HashMap<>();
-            settingsData.put("startMonth",
-                    new com.google.firebase.Timestamp(c.getTime()));
 
+            settingsData.put(
+                    "startMonth",
+                    new com.google.firebase.Timestamp(c.getTime())
+            );
+
+            settingsData.put("setupCompleted", true);
             db.collection("groups")
                     .document(groupId)
                     .collection("finance_settings")

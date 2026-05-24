@@ -91,6 +91,32 @@ public class CalendarEventsAdapter
             holder.tvAssignedTo.setText("מיועד ל־" + assignedToLabel);
         }
 
+        String color = doc.getString("color");
+
+        int finalColor;
+
+        switch (color) {
+            case "teal":
+                finalColor = Color.parseColor("#14B8A6");
+                break;
+            case "amber":
+                finalColor = Color.parseColor("#F59E0B");
+                break;
+            case "rose":
+                finalColor = Color.parseColor("#F43F5E");
+                break;
+            case "slate":
+                finalColor = Color.parseColor("#64748B");
+                break;
+            case "emerald":
+                finalColor = Color.parseColor("#10B981");
+                break;
+            default:
+                finalColor = Color.parseColor("#6366F1"); // indigo
+                break;
+        }
+
+        holder.viewEventColor.setBackgroundColor(finalColor);
         // =====================
         // עריכה (לחיצה על האירוע)
         // =====================
@@ -195,6 +221,7 @@ public class CalendarEventsAdapter
     static class EventViewHolder extends RecyclerView.ViewHolder {
 
         LinearLayout container;
+        View viewEventColor;
         TextView tvTitle, tvTime, tvAssignedTo;
         ImageButton btnDelete;
 
@@ -205,6 +232,7 @@ public class CalendarEventsAdapter
             tvTime = itemView.findViewById(R.id.tvEventTime);
             tvAssignedTo = itemView.findViewById(R.id.tvAssignedTo);
             btnDelete = itemView.findViewById(R.id.btnDeleteEvent);
+            viewEventColor = itemView.findViewById(R.id.viewEventColor);
         }
     }
 }
