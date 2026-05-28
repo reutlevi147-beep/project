@@ -46,29 +46,22 @@
         <activity android:name=".FinanceSetupActivity"/>
         <activity android:name=".ShoppingListActivity"/>
         <activity android:name=".TasksActivity"/>
-        <activity android:name=".CalendarMonthActivity"/>
         <activity android:name=".CalendarDayActivity"/>
         <activity android:name=".AddCalendarEventActivity"/>
 
-        <!-- Shopping -->
-        <activity android:name=".Shopping"/>
+
         <activity android:name=".Add_Shopping"/>
-        <activity android:name=".Suggested_list"/>
+
 
         <!-- Group -->
         <activity android:name=".CreateGroupActivity"/>
         <activity android:name=".JoinGroupActivity"/>
-        <activity android:name=".Add_Users"/>
         <activity android:name=".EditUserActivity"/>
 
         <!-- Other -->
         <activity android:name=".SettingsActivity"/>
-        <activity android:name=".Display_Calender_Tasks"/>
-        <activity android:name=".Display_Purpose"/>
         <activity android:name=".Add_Tasks"/>
         <activity android:name=".AddGoalActivity"/>
-        <activity android:name=".Add_Money"/>
-        <activity android:name=".MainActivity2"/>
         <activity android:name=".ManageMembersActivity" />
         <activity android:name=".ChildPermissionsActivity" />
         <activity android:name=".Add_Transaction" />
