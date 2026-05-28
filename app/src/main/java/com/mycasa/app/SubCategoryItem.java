@@ -2,6 +2,8 @@ package com.mycasa.app;
 
 public class SubCategoryItem {
 
+    // מחלקת מודל המייצגת תת־קטגוריה עם סכום משויך
+
     public String id;
     public String title;
     public double amount;

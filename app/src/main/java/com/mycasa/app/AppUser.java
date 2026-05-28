@@ -4,6 +4,8 @@ import com.google.firebase.Timestamp;
 
 public class AppUser {
 
+// מחלקת מודל המייצגת משתמש באפליקציה ושומרת את פרטיו עבור Firestore
+
     private String documentId;
     private String name;
     private String phoneNumber;

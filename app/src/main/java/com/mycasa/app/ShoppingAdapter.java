@@ -28,6 +28,7 @@ public class ShoppingAdapter extends RecyclerView.Adapter<ShoppingAdapter.ViewHo
         }
     }
 
+    // יצירת ViewHolder עבור פריט קנייה ברשימה
     @NonNull
     @Override
     public ShoppingAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -36,17 +37,19 @@ public class ShoppingAdapter extends RecyclerView.Adapter<ShoppingAdapter.ViewHo
         return new ViewHolder(view);
     }
 
+    // הצגת נתוני פריט הקנייה ברשימה
     @Override
     public void onBindViewHolder(@NonNull ShoppingAdapter.ViewHolder holder, int position) {
         ShoppingItem item = items.get(position);;
     }
 
+    // החזרת כמות פריטי הקנייה ברשימה
     @Override
     public int getItemCount() {
         return items.size();
     }
 
-
+    // החזרת אייקון מתאים לפי קטגוריית הקנייה
     private String getCategoryIcon(String categoryId) {
         if (categoryId == null) return "🛒";
 

@@ -21,15 +21,14 @@ import java.util.Map;
 public class PendingApprovalAdapter
         extends RecyclerView.Adapter<PendingApprovalAdapter.VH> {
 
-    // =========================
-    // Listener לעדכון ה־Activity
-    // =========================
+
     public interface OnPendingChangedListener {
         void onPendingChanged(int remainingCount);
     }
 
     private OnPendingChangedListener listener;
 
+    // הגדרת מאזין לעדכון כמות הפריטים שממתינים לאישור
     public void setOnPendingChangedListener(OnPendingChangedListener listener) {
         this.listener = listener;
     }
@@ -43,6 +42,7 @@ public class PendingApprovalAdapter
         this.items = items;
     }
 
+    // יצירת ViewHolder עבור פריט שממתין לאישור
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -51,6 +51,7 @@ public class PendingApprovalAdapter
         return new VH(v);
     }
 
+    // הצגת פריט ממתין לאישור וטיפול בפעולת האישור
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         FlowItem item = items.get(position);
@@ -110,8 +111,7 @@ public class PendingApprovalAdapter
         });
     }
 
-
-
+    // החזרת כמות הפריטים שממתינים לאישור
     @Override
     public int getItemCount() {
         return items != null ? items.size() : 0;

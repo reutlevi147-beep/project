@@ -34,12 +34,13 @@ public class CalendarMonthAdapter
         this.listener = listener;
     }
 
-    // שינוי יום נבחר
+    // עדכון היום הנבחר בלוח השנה
     public void setSelectedDay(int day) {
         this.selectedDay = day;
         notifyDataSetChanged();
     }
 
+    // יצירת ViewHolder עבור יום בלוח השנה
     @NonNull
     @Override
     public DayViewHolder onCreateViewHolder(
@@ -51,6 +52,7 @@ public class CalendarMonthAdapter
         return new DayViewHolder(view);
     }
 
+    // הצגת יום בלוח ועדכון העיצוב לפי מצב היום
     @Override
     public void onBindViewHolder(
             @NonNull DayViewHolder holder,
@@ -91,6 +93,7 @@ public class CalendarMonthAdapter
         });
     }
 
+    // החזרת כמות התאים בלוח החודשי
     @Override
     public int getItemCount() {
         return days.size();

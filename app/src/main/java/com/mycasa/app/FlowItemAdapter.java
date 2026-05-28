@@ -28,6 +28,7 @@ public class FlowItemAdapter
 
     private OnItemChangedListener listener;
 
+    // הגדרת מאזין לעדכון שינויים בפריטים פיננסיים
     public void setOnItemChangedListener(OnItemChangedListener listener) {
         this.listener = listener;
     }
@@ -42,6 +43,7 @@ public class FlowItemAdapter
         this.items = items;
     }
 
+    // יצירת ViewHolder עבור פריט פיננסי ברשימה
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -50,6 +52,7 @@ public class FlowItemAdapter
         return new VH(v);
     }
 
+    // הצגת נתוני הפריט וניהול מצב עריכה ושמירה
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
 
@@ -167,6 +170,7 @@ public class FlowItemAdapter
 
     }
 
+    // החזרת כמות הפריטים ברשימה
     @Override
     public int getItemCount() {
         return items != null ? items.size() : 0;

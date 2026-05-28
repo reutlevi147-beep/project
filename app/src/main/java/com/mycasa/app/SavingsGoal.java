@@ -138,10 +138,7 @@ public class SavingsGoal {
 
     public Date getDeadline() { return deadline; }
 
-    // ================================
-    // Core Logic
-    // ================================
-
+    // חישוב מצב יעד החיסכון לפי סכום, סוג ודדליין
     public GoalStatus getStatus() {
 
         Date now = new Date();
@@ -188,11 +185,12 @@ public class SavingsGoal {
         this.lastPeriodDecision = lastPeriodDecision;
     }
 
-
+    // חישוב הסכום שנותר להשלמת היעד
     public int getRemainingAmount() {
         return Math.max(targetAmount - currentAmount, 0);
     }
 
+    // חישוב מספר החודשים שנותרו עד הדדליין
     public int getMonthsLeft() {
 
         if (deadline == null) return -1;
@@ -208,6 +206,7 @@ public class SavingsGoal {
         return Math.max(months, 0);
     }
 
+    // חישוב הסכום החודשי הנדרש לעמידה ביעד
     public double getRequiredPerMonth() {
 
         int monthsLeft = getMonthsLeft();
@@ -216,12 +215,10 @@ public class SavingsGoal {
         return (double) getRemainingAmount() / monthsLeft;
     }
 
-    // ================================
-    // Smart Logic
-    // ================================
 
     private SmartStatus smartStatus = SmartStatus.ON_TRACK;
 
+    // הערכת מצב ההתקדמות של היעד לפי קצב החיסכון בפועל
     public SmartStatus getSmartStatus(double actualMonthlyAverage) {
 
         double required = getRequiredPerMonth();
@@ -245,6 +242,7 @@ public class SavingsGoal {
         return smartStatus;
     }
 
+    // חישוב אחוז ההתקדמות הכספית של היעד
     public double getMoneyProgress() {
 
         if (targetAmount <= 0) return 0;
@@ -262,7 +260,7 @@ public class SavingsGoal {
         return Math.max(diff, 0);
     }
 
-
+    // חישוב אחוז הזמן שעבר מתוך תקופת היעד
     public double getTimeProgress() {
 
         if (createdAt == null || deadline == null) return 0;

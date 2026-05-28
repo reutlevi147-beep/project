@@ -60,6 +60,7 @@ public class ShoppingListAdapter
         }
     }
 
+    // יצירת ViewHolder עבור פריט קנייה ברשימה
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(
@@ -70,6 +71,7 @@ public class ShoppingListAdapter
         return new ViewHolder(v);
     }
 
+    // הצגת נתוני פריט קנייה וניהול פעולות סימון וכמות
     @Override
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
 
@@ -150,14 +152,13 @@ public class ShoppingListAdapter
     }
 
 
-
+    // החזרת כמות פריטי הקנייה ברשימה
     @Override
     public int getItemCount() {
         return items.size();
     }
 
-    // ===== אייקוני קטגוריות =====
-    // ===== אייקוני קטגוריות =====
+    // החזרת אייקון מתאים לפי קטגוריית הקנייה
     private String getCategoryIcon(String id) {
         if (id == null) return "🛒";
 

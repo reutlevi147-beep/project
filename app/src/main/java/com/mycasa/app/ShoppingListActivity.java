@@ -51,6 +51,8 @@ public class ShoppingListActivity extends BaseActivity {
     private FirebaseFirestore db;
     private ListenerRegistration shoppingListener;
     private static final String KEY_USER_ID = "user_id";
+
+    // אתחול מסך רשימת הקניות והגדרת רכיבי התצוגה וההרשאות
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,20 +152,16 @@ public class ShoppingListActivity extends BaseActivity {
                 }
         );
 
-        // ===== DATA LISTENER =====
+
         startShoppingListener();
     }
-    // =========================
-    // groupId
-    // =========================
+    // שליפת מזהה הקבוצה מהזיכרון המקומי
     private String getGroupId() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getString(KEY_GROUP_ID, null);
     }
 
-    // =========================
-    // Firestore Listener
-    // =========================
+    // האזנה בזמן אמת לשינויים ברשימת הקניות מ־Firestore
     private void startShoppingListener() {
 
         String groupId = getGroupId();
@@ -202,9 +200,7 @@ public class ShoppingListActivity extends BaseActivity {
                         });
     }
 
-    // =========================
-    // Build rows + COUNTS ✅
-    // =========================
+    // בניית רשימת התצוגה וחישוב מוני הקניות והפריטים שנרכשו
     private void rebuildRows() {
 
         rows.clear();
@@ -254,9 +250,7 @@ public class ShoppingListActivity extends BaseActivity {
         adapter.notifyDataSetChanged();
     }
 
-    // =========================
-    // Updates
-    // =========================
+    // עדכון כמות פריט קנייה במסד הנתונים
     private void updateQuantity(ShoppingItem item, int q) {
         if(currentPermission == PagePermission.VIEW_ONLY) return;
         String groupId = getGroupId();
@@ -269,6 +263,7 @@ public class ShoppingListActivity extends BaseActivity {
                 .set(Map.of("quantity", q), SetOptions.merge());
     }
 
+    // עדכון מצב הרכישה של פריט קנייה
     private void updatePurchased(ShoppingItem item, boolean checked) {
         if(currentPermission == PagePermission.VIEW_ONLY) return;
         String groupId = getGroupId();
@@ -285,9 +280,7 @@ public class ShoppingListActivity extends BaseActivity {
         }
     }
 
-    // =========================
-    // Shopping stats
-    // =========================
+    // עדכון סטטיסטיקת רכישות עבור פריט שנקנה
     private void incrementShoppingStat(String name) {
 
         String groupId = getGroupId();
@@ -319,6 +312,7 @@ public class ShoppingListActivity extends BaseActivity {
         });
     }
 
+    // מחיקת כל הפריטים שסומנו כנקנו
     private void clearPurchasedItems() {
         if(currentPermission != PagePermission.FULL_ACCESS) return;
         String groupId = getGroupId();
@@ -341,6 +335,7 @@ public class ShoppingListActivity extends BaseActivity {
         batch.commit();
     }
 
+    // החזרת שם תצוגה לקטגוריית קניות לפי מזהה
     private String getCategoryTitle(String id) {
         if (id == null) return "אחר";
 
@@ -358,6 +353,7 @@ public class ShoppingListActivity extends BaseActivity {
         }
     }
 
+    // סגירת מאזין הנתונים בעת יציאה מהמסך
     @Override
     protected void onDestroy() {
         super.onDestroy();

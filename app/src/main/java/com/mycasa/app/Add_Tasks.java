@@ -44,6 +44,7 @@ public class Add_Tasks extends AppCompatActivity {
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_GROUP_ID = "group_id";
 
+    // אתחול מסך הוספת משימה והגדרת רכיבי המסך
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,8 +81,7 @@ public class Add_Tasks extends AppCompatActivity {
         etDate.setOnClickListener(v -> showDatePicker());
     }
 
-    // ================= USERS =================
-
+    // טעינת משתמשי הקבוצה ממסד הנתונים
     private void loadUsersFromFirestore() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
@@ -118,8 +118,7 @@ public class Add_Tasks extends AppCompatActivity {
                 );
     }
 
-    // ================= TASK =================
-
+    // יצירת משימה חדשה ושמירתה במסד הנתונים
     private void saveTaskToFirestore() {
         String title = etTitle.getText().toString().trim();
 
@@ -173,8 +172,7 @@ public class Add_Tasks extends AppCompatActivity {
                 );
     }
 
-    // ================= PRIORITY =================
-
+    // הגדרת בחירת רמת העדיפות של המשימה
     private void setupPrioritySelection() {
         View high = findViewById(R.id.circleHigh);
         View medium = findViewById(R.id.circleMedium);
@@ -188,6 +186,7 @@ public class Add_Tasks extends AppCompatActivity {
                 .setOnClickListener(v -> selectPriority("low", low, high, medium));
     }
 
+    // סימון עדיפות נבחרת ועדכון התצוגה
     private void selectPriority(String value, View selected, View o1, View o2) {
         selected.setBackgroundResource(R.drawable.bg_selectable_circle_selected);
         o1.setBackgroundResource(R.drawable.bg_selectable_circle);
@@ -195,8 +194,8 @@ public class Add_Tasks extends AppCompatActivity {
         selectedPriority = value;
     }
 
-    // ================= CATEGORY =================
 
+    // הגדרת קטגוריות המשימה
     private void setupCategorySelection() {
         setupCategoryClick(R.id.cardCatHome, "בית");
         setupCategoryClick(R.id.cardCatWork, "עבודה");
@@ -206,6 +205,7 @@ public class Add_Tasks extends AppCompatActivity {
         setupCategoryClick(R.id.cardCatOther, "אחר");
     }
 
+    // טיפול בבחירת קטגוריה ועדכון העיצוב
     private void setupCategoryClick(int viewId, String category) {
         View card = findViewById(viewId);
 
@@ -220,8 +220,7 @@ public class Add_Tasks extends AppCompatActivity {
         });
     }
 
-    // ================= DATE =================
-
+    // הצגת חלון לבחירת תאריך יעד למשימה
     private void showDatePicker() {
         final Calendar calendar = Calendar.getInstance();
 

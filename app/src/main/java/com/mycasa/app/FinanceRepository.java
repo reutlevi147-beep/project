@@ -114,7 +114,7 @@ public class FinanceRepository {
         data.put("frequency", item.getFrequency());
         data.put("enabled", item.getAmount() > 0);
 
-// ⭐️ חשובים
+//  חשובים
         data.put("lastApprovedAt", item.getLastApprovedAt());
         data.put("updatedAt", FieldValue.serverTimestamp());
 

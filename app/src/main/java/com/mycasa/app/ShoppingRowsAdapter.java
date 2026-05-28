@@ -27,12 +27,13 @@ public class ShoppingRowsAdapter
         this.rows = rows;
     }
 
-    // ===== Listeners =====
+    // הגדרת מאזין לשינוי כמות של פריט קנייה
     public void setOnQuantityChangeListener(
             ShoppingListAdapter.OnQuantityChangeListener l) {
         quantityListener = l;
     }
 
+    // הגדרת מאזין לשינוי מצב הרכישה של פריט
     public void setOnItemCheckedChange(
             ShoppingListAdapter.OnItemCheckedChangeListener l) {
         checkedListener = l;
@@ -47,6 +48,7 @@ public class ShoppingRowsAdapter
         return rows.get(position).getType();
     }
 
+    // יצירת ViewHolder מתאים לפי סוג השורה
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(
@@ -71,19 +73,20 @@ public class ShoppingRowsAdapter
         }
     }
 
+    // הצגת נתוני השורה וניהול פעולות המשתמש
     @Override
     public void onBindViewHolder(
             @NonNull RecyclerView.ViewHolder holder, int position) {
 
         ShoppingListRow row = rows.get(position);
 
-        // ===== כותרת קטגוריה =====
+        //  כותרת קטגוריה
         if (holder instanceof HeaderVH) {
             ((HeaderVH) holder).title.setText(row.getTitle());
             return;
         }
 
-        // ===== נקנו + נקה הכל =====
+        //  נקנו + נקה הכל
         if (holder instanceof ClearPurchasedVH) {
             ((ClearPurchasedVH) holder).btnClear.setOnClickListener(v -> {
                 if (clearPurchasedListener != null) {
@@ -93,7 +96,7 @@ public class ShoppingRowsAdapter
             return;
         }
 
-        // ===== פריט =====
+        //  פריט
         ItemVH h = (ItemVH) holder;
         ShoppingItem item = row.getItem();
 

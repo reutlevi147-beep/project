@@ -9,6 +9,7 @@ import java.util.Calendar;
 
 public class AlarmScheduler {
 
+    // הגדרת התראה יומית להפעלת ReminderReceiver לצורך בדיקות והתראות באפליקציה
     public static void scheduleDailyReminder(Context context) {
 
         AlarmManager alarmManager =

@@ -28,6 +28,7 @@ public class JoinGroupActivity extends AppCompatActivity {
     private LinearLayout layoutFamilyRole;
     private RadioGroup rgFamilyRole;
 
+    // אתחול מסך הצטרפות לקבוצה והגדרת רכיבי הטופס
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,10 +55,12 @@ public class JoinGroupActivity extends AppCompatActivity {
         });
     }
 
+    // ניקוי מספר הטלפון מתווים מיותרים
     private String cleanPhone() {
         return etPhone.getText().toString().replaceAll("[^0-9]", "").trim();
     }
 
+    // בדיקת תקינות נתוני הטופס לפני הצטרפות לקבוצה
     private boolean validateForm() {
         etName.setError(null);
         etPhone.setError(null);
@@ -89,6 +92,7 @@ public class JoinGroupActivity extends AppCompatActivity {
         return true;
     }
 
+    // בדיקת קיום קבוצה והוספת המשתמש לקבוצה במערכת
     private void joinGroup() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String groupCode = etGroupCode.getText().toString().trim().toUpperCase();
@@ -171,7 +175,7 @@ public class JoinGroupActivity extends AppCompatActivity {
                 );
     }
 
-
+    // שמירת נתוני המשתמש והקבוצה בזיכרון המקומי
     private void saveUserLocally(String userId, String groupId,
                                  String joinCode, String userName,
                                  String familyName)
@@ -190,7 +194,7 @@ public class JoinGroupActivity extends AppCompatActivity {
 
     }
 
-
+    // סימון סיום תהליך ההתחברות הראשוני
     private void markOnboardingCompleted() {
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                 .edit()

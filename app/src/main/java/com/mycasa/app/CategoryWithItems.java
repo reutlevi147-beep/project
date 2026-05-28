@@ -4,6 +4,8 @@ import java.util.List;
 
 public class CategoryWithItems {
 
+    // מחלקת מודל המייצגת קטגוריה המכילה תתי־פריטים וסכום כולל
+
     public String categoryId;
     public String title;
     public int color;

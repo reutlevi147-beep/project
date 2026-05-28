@@ -37,6 +37,7 @@ public class AddGoalActivity extends AppCompatActivity {
     // Firebase
     private FirebaseFirestore db;
 
+    // אתחול מסך יצירת יעד חיסכון או תקציב
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,9 +68,7 @@ public class AddGoalActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> saveGoalToFirebase());
     }
 
-    // =========================
-    // Select Goal Mode (UX)
-    // =========================
+    // הגדרת מצב ברירת מחדל כמטרת חיסכון
     private void selectGoalMode(String mode) {
         goalMode = mode;
 
@@ -90,9 +89,7 @@ public class AddGoalActivity extends AppCompatActivity {
         }
     }
 
-    // =========================
-    // Date Picker
-    // =========================
+    // הצגת DatePicker לבחירת תאריך יעד
     private void openDatePicker() {
 
         Calendar cal = Calendar.getInstance();
@@ -118,9 +115,7 @@ public class AddGoalActivity extends AppCompatActivity {
     }
 
 
-    // =========================
-    // Save to Firebase
-    // =========================
+    // בדיקת תקינות הנתונים ושמירת המטרה ב־Firestore
     private void saveGoalToFirebase() {
 
         String title = etTitle.getText().toString().trim();

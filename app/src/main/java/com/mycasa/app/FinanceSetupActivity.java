@@ -41,6 +41,7 @@ public class FinanceSetupActivity extends BaseActivity {
     private FirebaseFirestore db;
     private String groupId;
 
+    // אתחול מסך הגדרות פיננסיות והגדרת קטגוריות ורכיבי התצוגה
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -154,9 +155,7 @@ public class FinanceSetupActivity extends BaseActivity {
         });
     }
 
-    // =====================
-    // Totals calculation (חודשי אמיתי)
-    // =====================
+    // חישוב ועדכון סיכומי ההכנסות, ההוצאות והמאזן
     private void updateTotals() {
 
         double totalIncome = 0;
@@ -187,9 +186,7 @@ public class FinanceSetupActivity extends BaseActivity {
         txtBalance.setText("₪" + (int) (totalIncome - totalExpense));
     }
 
-    // =====================
-    // Add new income row
-    // =====================
+    // הוספת שורת הכנסה חדשה למסך
     private void addNewIncomeItem() {
 
         FlowItem newItem = new FlowItem(
@@ -204,9 +201,7 @@ public class FinanceSetupActivity extends BaseActivity {
         incomeAdapter.notifyDataSetChanged();
     }
 
-    // =====================
-    // Load existing amounts (מקור אמת אחד בלבד)
-    // =====================
+    // טעינת נתונים פיננסיים קיימים ממסד הנתונים
     private void loadExistingAmounts() {
         if (groupId == null) return;
         db.collection("groups")

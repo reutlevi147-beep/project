@@ -56,6 +56,7 @@ public class EditUserActivity extends AppCompatActivity {
 
     private String selectedRole = "child";
 
+    // אתחול מסך עריכת משתמש והגדרת רכיבי המסך
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,9 +101,7 @@ public class EditUserActivity extends AppCompatActivity {
         loadUserData();
     }
 
-    // ==========================
-    // בחירת תפקיד
-    // ==========================
+    // עדכון תפקיד המשתמש ועיצוב הבחירה במסך
     private void selectRole(String role) {
 
         selectedRole = role;
@@ -138,6 +137,8 @@ public class EditUserActivity extends AppCompatActivity {
             iconChildCheck.setVisibility(View.GONE);
         }
     }
+
+    // פתיחת גלריית התמונות לבחירת תמונת פרופיל
     private void openGallery() {
 
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -145,6 +146,7 @@ public class EditUserActivity extends AppCompatActivity {
         startActivityForResult(intent, 100);
     }
 
+    // הצגת חלון בחירה בין מצלמה לגלריה
     private void showImagePickerBottomSheet() {
 
         BottomSheetDialog dialog = new BottomSheetDialog(this);
@@ -168,7 +170,7 @@ public class EditUserActivity extends AppCompatActivity {
         dialog.show();
     }
 
-
+    // פתיחת מצלמת המכשיר לצילום תמונת פרופיל
     private void openCamera() {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -184,6 +186,7 @@ public class EditUserActivity extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_CAMERA);
     }
 
+    // טיפול בתמונה שנבחרה מהגלריה או צולמה במצלמה
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -208,7 +211,7 @@ public class EditUserActivity extends AppCompatActivity {
         }
     }
 
-
+    // טיפול בתוצאת בקשת הרשאת מצלמה
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -222,6 +225,7 @@ public class EditUserActivity extends AppCompatActivity {
         }
     }
 
+    // העלאת תמונת פרופיל מהגלריה ל־Firebase Storage
     private void uploadImage() {
 
         if (imageUri == null) return;
@@ -248,6 +252,7 @@ public class EditUserActivity extends AppCompatActivity {
                 );
     }
 
+    // העלאת תמונת פרופיל שצולמה במצלמה ל־Firebase Storage
     private void uploadCameraImage(Bitmap bitmap) {
 
         StorageReference ref =
@@ -278,9 +283,7 @@ public class EditUserActivity extends AppCompatActivity {
     }
 
 
-    // ==========================
-    // טעינת נתונים
-    // ==========================
+    // טעינת נתוני המשתמש ממסד הנתונים
     private void loadUserData() {
 
         btnSave.setEnabled(false);
@@ -326,9 +329,7 @@ public class EditUserActivity extends AppCompatActivity {
                 });
     }
 
-    // ==========================
-    // שמירה
-    // ==========================
+    // שמירת נתוני המשתמש המעודכנים ב־Firestore
     private void saveUserData() {
 
         String name = etName.getText() != null ? etName.getText().toString().trim() : "";

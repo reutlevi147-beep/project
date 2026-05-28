@@ -28,10 +28,12 @@ public class GoalAlertAdapter extends RecyclerView.Adapter<GoalAlertAdapter.VH> 
         this.items = items;
     }
 
+    // הגדרת מאזין לפעולה מתוך כרטיס ההתראה
     public void setOnAlertActionListener(OnAlertActionListener listener) {
         this.listener = listener;
     }
 
+    // יצירת ViewHolder עבור כרטיס התראה
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -42,6 +44,7 @@ public class GoalAlertAdapter extends RecyclerView.Adapter<GoalAlertAdapter.VH> 
         return new VH(v);
     }
 
+    // הצגת נתוני ההתראה ועדכון העיצוב לפי מצב ההתקדמות
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
 
@@ -58,9 +61,7 @@ public class GoalAlertAdapter extends RecyclerView.Adapter<GoalAlertAdapter.VH> 
             );
         }
 
-        // =====================================
-        // 🎯 SMART COLOR SYSTEM
-        // =====================================
+
 
         if (goal != null && goal.getDeadline() != null) {
 
@@ -123,7 +124,7 @@ public class GoalAlertAdapter extends RecyclerView.Adapter<GoalAlertAdapter.VH> 
         }
     }
 
-
+    // החזרת כמות ההתראות ברשימה
     @Override
     public int getItemCount() {
         return items != null ? items.size() : 0;

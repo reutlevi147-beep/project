@@ -53,6 +53,8 @@ public class Add_Shopping extends AppCompatActivity {
 
     private FirebaseFirestore db;
 
+
+    // אתחול מסך הוספת מוצר לרשימת הקניות
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +78,7 @@ public class Add_Shopping extends AppCompatActivity {
 
         tvQuantity.setText(String.valueOf(quantity));
 
+        // ניהול כמות המוצר באמצעות כפתורי פלוס ומינוס
         btnPlus.setOnClickListener(v -> {
             if (quantity < 100) {
                 quantity++;
@@ -99,7 +102,7 @@ public class Add_Shopping extends AppCompatActivity {
         ImageButton btnConfirmName = findViewById(R.id.btnConfirmName);
         Button btnSave = findViewById(R.id.btnSave);
 
-        // קטגוריות
+        // יצירת רשימת קטגוריות לבחירת סוג המוצר
         recyclerCategories = findViewById(R.id.recyclerCategories);
         recyclerCategories.setLayoutManager(new GridLayoutManager(this, 2));
 
@@ -146,13 +149,13 @@ public class Add_Shopping extends AppCompatActivity {
         btnSave.setOnClickListener(v -> saveItem());
     }
 
+    // שליפת מזהה הקבוצה מהזיכרון המקומי
     private String getGroupId() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getString(KEY_GROUP_ID, null);
     }
 
-    // ================= SAVE =================
-
+    // בדיקה האם המוצר קיים והוספתו למסד הנתונים
     private void saveItem() {
         String groupId = getGroupId();
         if (groupId == null) {
@@ -194,6 +197,7 @@ public class Add_Shopping extends AppCompatActivity {
                 });
     }
 
+    // יצירת מוצר חדש ושמירתו ב־Firestore
     private void addNewItem(String groupId, String name, int quantity) {
         Map<String, Object> item = new HashMap<>();
         item.put("name", name);
@@ -211,6 +215,7 @@ public class Add_Shopping extends AppCompatActivity {
                 .addOnSuccessListener(d -> finish());
     }
 
+    // הצגת הודעה במקרה שהמוצר כבר קיים ברשימה
     private void showDuplicateDialog(
             String groupId,
             String docId,
@@ -234,6 +239,7 @@ public class Add_Shopping extends AppCompatActivity {
                 .show();
     }
 
+    // ניסיון לזהות קטגוריה לפי נתוני עבר או לפי שם המוצר
     private void detectCategorySmart(String name) {
         String groupId = getGroupId();
         if (groupId == null) return;
@@ -264,6 +270,7 @@ public class Add_Shopping extends AppCompatActivity {
                 });
     }
 
+    // שליפת מוצרים נפוצים להצגה כהצעות מהירות
     private void loadSuggestedItems() {
         String groupId = getGroupId();
         if (groupId == null) return;
@@ -287,6 +294,7 @@ public class Add_Shopping extends AppCompatActivity {
                 });
     }
 
+    // הצגת רשימת מוצרים מוצעים למשתמש
     private void showSuggestions(List<DocumentSnapshot> suggestions) {
 
         if (suggestions == null || suggestions.isEmpty()) {
@@ -317,6 +325,7 @@ public class Add_Shopping extends AppCompatActivity {
         recyclerSuggestions.setAdapter(suggestedItemsAdapter);
     }
 
+    // זיהוי קטגוריה לפי מילים נפוצות בשם המוצר
     private String detectCategoryLocal(String name) {
         name = name.toLowerCase();
 

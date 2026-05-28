@@ -21,6 +21,7 @@ public class CategoryExpenseAdapter
         this.items = items;
     }
 
+    // יצירת ViewHolder עבור פריט הוצאה לפי קטגוריה
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -29,6 +30,7 @@ public class CategoryExpenseAdapter
         return new VH(v);
     }
 
+    // הצגת נתוני הקטגוריה והסכום ברשימה
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         CategoryExpenseItem item = items.get(position);
@@ -40,6 +42,7 @@ public class CategoryExpenseAdapter
 
     }
 
+    // החזרת כמות הקטגוריות ברשימה
     @Override
     public int getItemCount() {
         return items.size();

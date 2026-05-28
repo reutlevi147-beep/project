@@ -30,6 +30,7 @@ public class SuggestedItemsAdapter
         this.listener = listener;
     }
 
+    // יצירת ViewHolder עבור פריט מוצע ברשימה
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(
@@ -41,6 +42,7 @@ public class SuggestedItemsAdapter
         return new ViewHolder(view);
     }
 
+    // הצגת נתוני פריט מוצע וטיפול בלחיצה עליו
     @Override
     public void onBindViewHolder(
             @NonNull ViewHolder holder,
@@ -58,6 +60,7 @@ public class SuggestedItemsAdapter
         });
     }
 
+    // הצגת נתוני פריט מוצע וטיפול בלחיצה עליו
     @Override
     public int getItemCount() {
         return items.size();

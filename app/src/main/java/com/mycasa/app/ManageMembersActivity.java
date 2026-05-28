@@ -35,6 +35,7 @@ public class ManageMembersActivity extends AppCompatActivity {
     private final List<Member> membersList = new ArrayList<>();
     private MembersAdapter adapter;
 
+    // אתחול מסך ניהול חברי הקבוצה והגדרת רשימת המשתמשים
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,9 +66,7 @@ public class ManageMembersActivity extends AppCompatActivity {
         loadCurrentUserRole();
     }
 
-    // =========================
-    // טוען role של המשתמש המחובר
-    // =========================
+    // טעינת תפקיד המשתמש המחובר מהשרת
     private void loadCurrentUserRole() {
 
         db.collection("groups")
@@ -84,9 +83,7 @@ public class ManageMembersActivity extends AppCompatActivity {
                 });
     }
 
-    // =========================
-    // טוען את כל חברי הקבוצה
-    // =========================
+    // טעינת כל חברי הקבוצה ממסד הנתונים
     private void loadMembers() {
 
         db.collection("groups")
@@ -110,9 +107,7 @@ public class ManageMembersActivity extends AppCompatActivity {
                 });
     }
 
-    // =========================
-    // Adapter
-    // =========================
+
     private class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberViewHolder> {
 
         @NonNull
@@ -125,6 +120,7 @@ public class ManageMembersActivity extends AppCompatActivity {
             return new MemberViewHolder(view);
         }
 
+        // הצגת נתוני חבר קבוצה והגדרת פעולות מחיקה והרשאות
         @Override
         public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
 
@@ -192,6 +188,7 @@ public class ManageMembersActivity extends AppCompatActivity {
             });
         }
 
+        // החזרת כמות חברי הקבוצה ברשימה
         @Override
         public int getItemCount() {
             return membersList.size();
@@ -214,9 +211,7 @@ public class ManageMembersActivity extends AppCompatActivity {
         }
     }
 
-    // =========================
-    // Model קטן
-    // =========================
+
     private static class Member {
 
         String userId;
@@ -230,6 +225,7 @@ public class ManageMembersActivity extends AppCompatActivity {
         }
     }
 
+    // הצגת חלון אישור למחיקת חבר קבוצה
     private void showDeleteDialog(Member member) {
 
         Dialog dialog = new Dialog(this);

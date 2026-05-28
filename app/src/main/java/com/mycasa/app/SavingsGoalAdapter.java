@@ -26,10 +26,12 @@ public class SavingsGoalAdapter
         this.goals = goals;
     }
 
+    // הגדרת מאזין לפעולות על יעד חיסכון
     public void setOnGoalActionListener(OnGoalActionListener listener) {
         this.listener = listener;
     }
 
+    // יצירת ViewHolder עבור יעד חיסכון ברשימה
     @NonNull
     @Override
     public GoalViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -38,6 +40,7 @@ public class SavingsGoalAdapter
         return new GoalViewHolder(view);
     }
 
+    // הצגת נתוני יעד החיסכון ועדכון מצב ההתקדמות שלו
     @Override
     public void onBindViewHolder(@NonNull GoalViewHolder holder, int position) {
 
@@ -75,7 +78,7 @@ public class SavingsGoalAdapter
     }
 
 
-
+    // החזרת כמות יעדי החיסכון ברשימה
     @Override
     public int getItemCount() {
         return goals.size();
@@ -100,6 +103,7 @@ public class SavingsGoalAdapter
         }
     }
 
+    // החזרת טקסט מצב היעד לפי סטטוס ההתקדמות
     private String getStatusText(SavingsGoal goal) {
         switch (goal.getStatus()) {
             case SUCCESS: return "הושג ✔";
@@ -109,6 +113,7 @@ public class SavingsGoalAdapter
         }
     }
 
+    // קביעת צבע ההתקדמות לפי קצב החיסכון והדדליין
     private int getProgressColor(SavingsGoal goal) {
 
         double moneyProgress = goal.getMoneyProgress(); // 0.0 → 1.0

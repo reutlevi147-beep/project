@@ -58,6 +58,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
         }
     }
 
+    // יצירת ViewHolder עבור כרטיס משתמש ברשימה
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(
@@ -70,6 +71,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
         return new ViewHolder(view);
     }
 
+    // הצגת נתוני המשתמש ועדכון עיצוב והרשאות במסך
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
@@ -133,12 +135,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
             ((android.app.Activity) context).startActivityForResult(intent, 500);        });
     }
 
+    // שליפת מזהה הקבוצה מהזיכרון המקומי
     private String getGroupIdFromPrefs() {
         SharedPreferences prefs =
                 context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
         return prefs.getString("group_id", null);
     }
 
+    // הגדרת צבע ברירת מחדל לתמונת המשתמש
     private void applyAvatarColor(ImageView imgAvatar, String color) {
 
         imgAvatar.setImageResource(R.drawable.ic_user);

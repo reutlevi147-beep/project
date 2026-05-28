@@ -49,6 +49,7 @@ public class TasksActivity extends BaseActivity {
     private View lockOverlay;
     private PagePermission currentPermission = PagePermission.VIEW_ONLY;
 
+    // אתחול מסך המשימות והגדרת רכיבי התצוגה וההרשאות
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,7 +125,7 @@ public class TasksActivity extends BaseActivity {
 
                     currentPermission = permission;
 
-                    // 🔒 אין הרשאת צפייה
+                    //  אין הרשאת צפייה
                     if (permission == PagePermission.LOCKED || permission == null) {
 
                         lockOverlay.setVisibility(View.VISIBLE);
@@ -192,10 +193,7 @@ public class TasksActivity extends BaseActivity {
         listenToTasks();
     }
 
-    // ===========================
-    // FIRESTORE
-    // ===========================
-
+    // האזנה בזמן אמת למשימות וטעינתן מהשרת
     private void listenToTasks() {
 
         if (groupId == null) return;
@@ -257,6 +255,7 @@ public class TasksActivity extends BaseActivity {
                 });
     }
 
+    // מחיקת כל המשימות שסומנו כהושלמו
     private void deleteCompletedTasks() {
 
         if (groupId == null) return;
@@ -274,10 +273,7 @@ public class TasksActivity extends BaseActivity {
                 });
     }
 
-    // ===========================
-    // SORT
-    // ===========================
-
+    // מיון המשימות לפי תאריך יעד ועדיפות
     private void sortTasks(List<Task> list) {
         Collections.sort(list, (t1, t2) -> {
 
@@ -305,12 +301,14 @@ public class TasksActivity extends BaseActivity {
         });
     }
 
+    // קביעת קבוצת המיון של המשימה לפי מצב התאריך
     private int getSortGroup(boolean noDate, boolean expired) {
         if (noDate) return 0;     // בלי תאריך — הכי למעלה
         if (expired) return 1;    // תאריך שעבר — אחר כך למעלה
         return 2;                 // תאריכים עתידיים
     }
 
+    // החזרת משקל מספרי לפי רמת העדיפות של המשימה
     private int priorityWeight(String priority) {
         if ("high".equals(priority)) return 0;
         if ("medium".equals(priority)) return 1;
@@ -318,10 +316,7 @@ public class TasksActivity extends BaseActivity {
         return 3;
     }
 
-    // ===========================
-    // CATEGORIES
-    // ===========================
-
+    // הגדרת כפתורי סינון הקטגוריות במסך
     private void setupCategoryButtons() {
 
         btnAll = findViewById(R.id.btnAll);
@@ -355,6 +350,7 @@ public class TasksActivity extends BaseActivity {
         btnOther.setOnClickListener(listener);
     }
 
+    // איפוס עיצוב כפתורי הקטגוריות
     private void resetCategoryButtons() {
 
         Button[] buttons = {
@@ -368,6 +364,7 @@ public class TasksActivity extends BaseActivity {
         }
     }
 
+    // סגירת מאזין הנתונים בעת יציאה מהמסך
     @Override
     protected void onDestroy() {
         super.onDestroy();

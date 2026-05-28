@@ -39,9 +39,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         void onResult(PagePermission permission);
     }
 
-    // =====================================================
-    // 🔥 שליפת הרשאות
-    // =====================================================
+    // שליפת הרשאות המשתמש מהשרת לפי עמוד האפליקציה
     protected void resolvePermissionFromServer(
             AppPage page,
             String groupId,
@@ -123,14 +121,13 @@ public abstract class BaseActivity extends AppCompatActivity {
                 });
     }
 
+    // בדיקה האם ערך ההרשאה הוא true
     private boolean getBoolean(Map<String, Object> map, String key) {
         Object value = map.get(key);
         return value instanceof Boolean && (Boolean) value;
     }
 
-    // =====================================================
-    // 🔒 Lock מלא (אם צריך)
-    // =====================================================
+    // נעילת המסך עבור משתמש מסוג ילד לפי ההרשאות
     protected void applyFullLockIfChild(
             String groupId,
             String userId,

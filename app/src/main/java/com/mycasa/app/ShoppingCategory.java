@@ -4,6 +4,8 @@ public class ShoppingCategory {
     private final String name;
     private final String icon;
 
+    // מחלקת מודל המייצגת קטגוריית קניות עם מזהה, שם ואייקון
+
     public ShoppingCategory(String id, String name, String icon) {
         this.id = id;
         this.name = name;

@@ -2,6 +2,7 @@ package com.mycasa.app;
 
 public class GoalAlert {
 
+    // מחלקת מודל המייצגת התראה או המלצה עבור יעד חיסכון
     public enum AlertType {
         URGENT,
         WARNING,

@@ -28,11 +28,13 @@ public class CalendarEventsAdapter
     private boolean allowEdit = true;
     private boolean allowDelete = true;
 
+    // עדכון הרשאת עריכת אירועים
     public void setAllowEdit(boolean value) {
         allowEdit = value;
         notifyDataSetChanged();
     }
 
+    // עדכון הרשאת מחיקת אירועים
     public void setAllowDelete(boolean value) {
         allowDelete = value;
         notifyDataSetChanged();
@@ -42,6 +44,8 @@ public class CalendarEventsAdapter
         this.events = events;
     }
 
+
+    // יצירת ViewHolder עבור אירוע ברשימה
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(
@@ -53,6 +57,7 @@ public class CalendarEventsAdapter
         return new EventViewHolder(view);
     }
 
+    // הצגת נתוני האירוע ועדכון פעולות עריכה ומחיקה
     @Override
     public void onBindViewHolder(
             @NonNull EventViewHolder holder,
@@ -182,6 +187,7 @@ public class CalendarEventsAdapter
         }
     }
 
+    // טיפול באפשרויות מחיקה של אירוע חוזר
     private void handleDeleteChoice(
             int which,
             DocumentSnapshot doc,
@@ -213,6 +219,7 @@ public class CalendarEventsAdapter
         }
     }
 
+    // החזרת כמות האירועים ברשימה
     @Override
     public int getItemCount() {
         return events.size();

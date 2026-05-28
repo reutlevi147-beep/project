@@ -30,6 +30,7 @@ public class CreateGroupActivity extends AppCompatActivity {
     private RadioGroup rgGroupType, rgFamilyRole;
     private LinearLayout layoutFamilyRole;
 
+    // אתחול מסך יצירת קבוצה והגדרת רכיבי הטופס
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,10 +74,12 @@ public class CreateGroupActivity extends AppCompatActivity {
         });
     }
 
+    // ניקוי מספר הטלפון מתווים מיותרים
     private String cleanPhone() {
         return etPhone.getText().toString().replaceAll("[^0-9]", "").trim();
     }
 
+    // בדיקת תקינות נתוני הטופס לפני יצירת קבוצה
     private boolean validateForm() {
         boolean valid = true;
 
@@ -120,6 +123,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         return valid;
     }
 
+    // בדיקה האם קוד הקבוצה כבר קיים לפני יצירה
     private void checkGroupCodeAndCreate() {
         String groupCode = etGroupCode.getText().toString().trim().toUpperCase();
 
@@ -136,6 +140,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                 });
     }
 
+    // יצירת קבוצה חדשה ומשתמש ראשי במסד הנתונים
     private void createGroup(String groupCode) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -188,6 +193,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                 });
     }
 
+    // שמירת נתוני המשתמש בזיכרון המקומי של האפליקציה
     private void saveUserLocally(String userId, String role,
                                  String groupCode, String userName) {
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
@@ -201,6 +207,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                 .apply();
     }
 
+    // סימון סיום תהליך ההתחברות הראשוני
     private void markOnboardingCompleted() {
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                 .edit()
@@ -208,16 +215,14 @@ public class CreateGroupActivity extends AppCompatActivity {
                 .apply();
     }
 
+    // מעבר למסך הבית של האפליקציה
     private void goToHome() {
         Intent intent = new Intent(this, Home.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 
-    // =========================
-    // 🔹 קוד מוצע אוטומטי
-    // =========================
-
+    // יצירת קוד קבוצה אקראי
     private String generateGroupCode() {
         String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         StringBuilder code = new StringBuilder();
@@ -229,6 +234,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         return code.toString();
     }
 
+    // יצירת קוד קבוצה פנוי שאינו קיים במערכת
     private void generateAvailableGroupCode(Consumer<String> callback) {
         String code = generateGroupCode();
 

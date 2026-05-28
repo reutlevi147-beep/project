@@ -47,6 +47,7 @@ public class CategoryChipsAdapter
         this.listener = listener;
     }
 
+    // יצירת ViewHolder עבור קטגוריה ברשימה
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(
@@ -58,6 +59,7 @@ public class CategoryChipsAdapter
         return new ViewHolder(view);
     }
 
+    // הצגת נתוני הקטגוריה ועדכון מצב הבחירה שלה
     @Override
     public void onBindViewHolder(
             @NonNull ViewHolder holder,
@@ -96,6 +98,7 @@ public class CategoryChipsAdapter
         });
     }
 
+    // החזרת כמות הקטגוריות ברשימה
     @Override
     public int getItemCount() {
         return categoryIds.size();

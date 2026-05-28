@@ -36,7 +36,7 @@ public class FixedExpenseDrillAdapter
 
 
 
-
+    // בניית רשימת השורות להצגה לפי מצב פתיחה וסגירה של קטגוריות
     private void buildRows() {
         rows.clear();
         for (CategoryWithItems cat : categories) {
@@ -47,7 +47,7 @@ public class FixedExpenseDrillAdapter
         }
     }
 
-
+    // קביעת סוג השורה: קטגוריה ראשית או תת־קטגוריה
     @Override
     public int getItemViewType(int position) {
         return rows.get(position) instanceof CategoryWithItems
@@ -55,6 +55,7 @@ public class FixedExpenseDrillAdapter
                 : TYPE_CHILD;
     }
 
+    // יצירת ViewHolder מתאים לפי סוג השורה
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(
@@ -73,6 +74,7 @@ public class FixedExpenseDrillAdapter
         }
     }
 
+    // הצגת נתוני השורה לפי סוג הפריט
     @Override
     public void onBindViewHolder(
             @NonNull RecyclerView.ViewHolder holder, int position) {
@@ -88,7 +90,7 @@ public class FixedExpenseDrillAdapter
         }
     }
 
-
+    // הצגת קטגוריה ראשית וטיפול בפתיחה וסגירה שלה
     private void bindParent(ParentVH h, CategoryWithItems cat) {
 
         h.tvTitle.setText(cat.title);
@@ -106,13 +108,14 @@ public class FixedExpenseDrillAdapter
         });
     }
 
-
+    // הצגת תת־קטגוריה וסכום ההוצאה שלה
     private void bindChild(ChildVH h, SubCategoryItem item) {
         h.tvTitle.setText(item.title);
         h.tvAmount.setText("₪" +
                 String.format(Locale.US, "%,.0f", item.amount));
     }
 
+    // החזרת כמות השורות המוצגות ברשימה
     @Override
     public int getItemCount() {
         android.util.Log.d("ADAPTER_ROWS", "rows.size=" + rows.size());

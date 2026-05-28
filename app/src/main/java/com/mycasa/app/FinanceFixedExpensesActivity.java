@@ -22,6 +22,7 @@ public class FinanceFixedExpensesActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String groupId;
 
+    // אתחול מסך הצגת הוצאות קבועות והגדרת רשימת הקטגוריות
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,9 +37,7 @@ public class FinanceFixedExpensesActivity extends AppCompatActivity {
         loadFixedExpensesWithDrillDown();
     }
 
-    // ===============================
-    // Drill-down: הוצאות קבועות
-    // ===============================
+    // טעינת הוצאות קבועות וחלוקתן לפי קטגוריות ותתי־קטגוריות
     private void loadFixedExpensesWithDrillDown() {
 
         if (groupId == null) return;
@@ -117,9 +116,7 @@ public class FinanceFixedExpensesActivity extends AppCompatActivity {
                 );
     }
 
-    // ===============================
-    // צבעים קבועים
-    // ===============================
+    // החזרת צבע מתאים לקטגוריית הוצאה קבועה
     private int resolveColorForFixedCategory(String categoryId) {
 
         switch (categoryId) {
@@ -144,6 +141,7 @@ public class FinanceFixedExpensesActivity extends AppCompatActivity {
         }
     }
 
+    // התאמת סכום ההוצאה לפי תדירות התשלום
     private double adjustAmountByFrequency(double amount, String frequency) {
 
         if (frequency == null) return amount;

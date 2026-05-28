@@ -15,7 +15,6 @@ public class StartActivity extends AppCompatActivity {
     private static final String KEY_ONBOARDING_DONE = "onboarding_completed";
 
 
-    // הפעולה הראשית שמופעלת כשמסך הפתיחה נטען
     // אחראית על בדיקת onboarding, ניווט למסכים, הגדרת כפתורים ובקשת הרשאות
     @Override
     protected void onCreate(Bundle savedInstanceState) {

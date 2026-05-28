@@ -56,6 +56,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
     private final List<String> selectedUserIds = new ArrayList<>();
     private List<String> pendingSelectedUserIds = null;
 
+    // אתחול מסך יצירה ועריכה של אירוע ביומן
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -149,8 +150,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         }
     }
 
-    // ================= USERS =================
-
+    // טעינת משתמשי הקבוצה ממסד הנתונים
     private void loadUsersFromFirebase() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
@@ -170,8 +170,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                 });
     }
 
-    // ================= SAVE EVENT =================
-
+    // יצירת אירוע חדש או עדכון אירוע קיים במסד הנתונים
     private void saveEventToFirestore() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
@@ -217,8 +216,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         }
     }
 
-    // ================= LOAD EVENT FOR EDIT =================
-
+    // טעינת נתוני אירוע קיים לצורך עריכה
     private void loadEventForEdit() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
@@ -261,8 +259,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                 });
     }
 
-    // ================= HELPERS =================
-
+    // יצירת טקסט המציג למי משויך האירוע
     private String buildAssignedToLabel(boolean isAllUsers) {
         if (isAllUsers) return "לכולם";
 
@@ -284,6 +281,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         return names.get(0) + ", " + names.get(1) + " ועוד " + (names.size() - 2);
     }
 
+    // בדיקת תקינות השדות לפני שמירה
     private boolean validateForm() {
         if (TextUtils.isEmpty(etEventTitle.getText())) {
             etEventTitle.setError("יש להזין כותרת");
@@ -300,6 +298,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         return true;
     }
 
+    // המרת סוג התזכורת למספר דקות
     private int getReminderMinutes() {
         switch (spReminder.getText().toString()) {
             case "5 דקות לפני": return 5;
@@ -311,8 +310,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         }
     }
 
-    // ================= PICKERS =================
-
+    // בחירת שעת התחלה לאירוע
     private void showStartDatePicker() {
         new DatePickerDialog(this, (v, y, m, d) -> {
             startCalendar.set(y, m, d);
@@ -324,6 +322,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                 startCalendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
+    // הצגת חלון לבחירת תאריך סיום
     private void showEndDatePicker() {
         DatePickerDialog dialog = new DatePickerDialog(
                 this,
@@ -337,6 +336,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    // בחירת שעת התחלה לאירוע
     private void showStartTimePicker() {
         endTimeManuallyChanged = false;
         new TimePickerDialog(this, (v, h, m) -> {
@@ -356,7 +356,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                 true).show();
     }
 
-
+    // בחירת שעת סיום לאירוע
     private void showEndTimePicker() {
         new TimePickerDialog(this, (v, h, m) -> {
 
@@ -373,6 +373,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                 true).show();
     }
 
+    // חישוב אוטומטי של שעת סיום לפי משך ברירת מחדל
     private void updateEndTimeAutomatically() {
         endCalendar.setTime(startCalendar.getTime());
         endCalendar.add(Calendar.MINUTE, DEFAULT_EVENT_DURATION_MINUTES);
@@ -383,6 +384,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         etEndTime.setText(String.format("%02d:%02d", h, m));
     }
 
+    // סימון צבע האירוע שנבחר
     private void selectColor(FrameLayout selectedFrame, String colorId) {
         selectedColor = colorId;
         frameIndigo.setBackgroundResource(R.drawable.bg_color_unselected);
@@ -394,6 +396,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
         selectedFrame.setBackgroundResource(R.drawable.bg_color_selected);
     }
 
+    // הצגת טקסט התזכורת לפי מספר הדקות
     private void setReminderFromMinutes(int minutes) {
         switch (minutes) {
             case 5: spReminder.setText("5 דקות לפני", false); break;

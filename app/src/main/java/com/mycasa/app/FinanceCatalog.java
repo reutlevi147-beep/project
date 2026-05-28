@@ -172,7 +172,7 @@ public class FinanceCatalog {
     }
 
 
-    // החזרת אייקון מתאים לקטגוריה לפי מזהה
+    //  החזרת אייקון מתאים לקטגוריה לפי מזהה
     public static String getCategoryIcon(String id) {
 
         switch (id) {

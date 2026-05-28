@@ -9,6 +9,7 @@ public class Task {
     private Long dueDate;   // חייב להיות Long ל-Firestore
     private boolean completed;
 
+    // מחלקת מודל המייצגת משימה עם קטגוריה, עדיפות ותאריך יעד
     public Task() {}
 
     public Task(String title,

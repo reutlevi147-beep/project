@@ -2,6 +2,8 @@ package com.mycasa.app;
 
 public class User {
 
+    // מחלקת מודל המייצגת משתמש במערכת עם פרטי זיהוי והרשאות
+
     private String id;
     private String name;
     private String role;

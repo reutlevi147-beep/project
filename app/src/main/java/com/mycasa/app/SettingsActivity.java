@@ -49,6 +49,7 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String KEY_GROUP_ID = "group_id";
     private static final String KEY_USER_ID = "user_id";
 
+    // אתחול מסך ההגדרות והגדרת רכיבי התצוגה והרשימה
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,14 +83,13 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 
-    // ===============================
-    // SharedPrefs helper
-    // ===============================
+    // שליפת ערך מהזיכרון המקומי לפי מפתח
     private String getFromPrefs(String key) {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getString(key, null);
     }
 
+    // רענון נתונים לאחר חזרה ממסך אחר
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -98,9 +98,8 @@ public class SettingsActivity extends AppCompatActivity {
             loadUsers(); // טוען מחדש את המשתמשים
         }
     }
-    // ===============================
-    // Bind Views
-    // ===============================
+
+    // חיבור רכיבי המסך למשתנים בקוד
     private void bindViews() {
         btnBack = findViewById(R.id.btnBack);
         btnToggleGroupCode = findViewById(R.id.btnToggleGroupCode);
@@ -109,9 +108,7 @@ public class SettingsActivity extends AppCompatActivity {
         btnManageGroup = findViewById(R.id.btnManageGroup);
     }
 
-    // ===============================
-    // Listeners
-    // ===============================
+    // הגדרת פעולות לחיצה עבור רכיבי המסך
     private void setupListeners() {
 
         if (btnBack != null) {
@@ -135,9 +132,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    // ===============================
-    // Recycler
-    // ===============================
+    // הגדרת RecyclerView ורשימת המשתמשים
     private void setupRecycler() {
         if (recyclerUsers == null) return;
 
@@ -146,9 +141,7 @@ public class SettingsActivity extends AppCompatActivity {
         recyclerUsers.setAdapter(usersAdapter);
     }
 
-    // ===============================
-    // Load users
-    // ===============================
+    // טעינת משתמשי הקבוצה ממסד הנתונים
     private void loadUsers() {
 
         db.collection("groups")
@@ -183,9 +176,7 @@ public class SettingsActivity extends AppCompatActivity {
                 });
     }
 
-    // ===============================
-    // Check role (NO FirebaseAuth)
-    // ===============================
+    // בדיקת תפקיד המשתמש לצורך הצגת אפשרויות ניהול
     private void checkUserRole() {
 
         if (groupId == null || userId == null) {
@@ -217,9 +208,8 @@ public class SettingsActivity extends AppCompatActivity {
                     btnManageGroup.setVisibility(View.GONE);
                 });
     }
-    // ===============================
-    // Toggle group code
-    // ===============================
+
+    // הצגה או הסתרה של קוד הקבוצה במסך
     private void toggleGroupCode() {
 
         if (isGroupCodeVisible) {
@@ -233,9 +223,7 @@ public class SettingsActivity extends AppCompatActivity {
         isGroupCodeVisible = !isGroupCodeVisible;
     }
 
-    // ===============================
-    // Copy group code
-    // ===============================
+    // העתקת קוד הקבוצה ללוח ההעתקה אם הוא מוצג
     private void copyGroupCodeIfVisible() {
 
         if (!isGroupCodeVisible) return;
@@ -253,6 +241,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    // רענון נתוני המשתמשים וההרשאות בעת חזרה למסך
     @Override
     protected void onResume() {
         super.onResume();

@@ -78,6 +78,7 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return tasks.get(position) == null ? TYPE_DIVIDER : TYPE_TASK;
     }
 
+    // יצירת ViewHolder מתאים לפי סוג השורה
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(
@@ -95,6 +96,7 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return new TaskViewHolder(view);
     }
 
+    // הצגת נתוני משימה וניהול פעולות המשתמש
     @Override
     public void onBindViewHolder(
             @NonNull RecyclerView.ViewHolder holder,
@@ -194,6 +196,7 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
+    // עדכון תג עדיפות המשימה לפי רמת החשיבות
     private void setPriorityBadge(TaskViewHolder h, Task task) {
         String priority = task.getPriority();
 
@@ -221,6 +224,7 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         h.tvCategory.setText(task.getCategory());
     }
 
+    // עדכון אייקון הסימון לפי מצב המשימה
     private void setCheckIcon(TaskViewHolder h, boolean completed) {
         if (completed) {
             // משימה שבוצעה = וי ירוק

@@ -1,6 +1,8 @@
 package com.mycasa.app;
 public class CategoryExpenseItem {
 
+    // מחלקת מודל המייצגת נתוני הוצאה לפי קטגוריה
+
     public String categoryId;
     public String title;
     public double amount;

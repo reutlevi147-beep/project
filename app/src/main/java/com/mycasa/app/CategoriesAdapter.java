@@ -30,6 +30,7 @@ public class CategoriesAdapter
         this.listener = listener;
     }
 
+    // יצירת ViewHolder עבור קטגוריה ברשימה
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -38,6 +39,7 @@ public class CategoriesAdapter
         return new ViewHolder(v);
     }
 
+    // הצגת נתוני הקטגוריה ועדכון מצב הבחירה שלה
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ShoppingCategory cat = categories.get(position);
@@ -71,6 +73,7 @@ public class CategoriesAdapter
         });
     }
 
+    // החזרת כמות הקטגוריות ברשימה
     @Override
     public int getItemCount() {
         return categories.size();
@@ -86,7 +89,7 @@ public class CategoriesAdapter
         }
     }
 
-    // ✅ מאפשר סימון אוטומטי (מה־✔️ / AI)
+    // סימון קטגוריה נבחרת באופן אוטומטי
     public void setSelectedCategory(String categoryId) {
         this.selectedCategoryId = categoryId;
         notifyDataSetChanged();

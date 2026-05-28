@@ -27,6 +27,7 @@ public class TransactionCategoryAdapter
         this.listener = listener;
     }
 
+    // יצירת ViewHolder עבור קטגוריית עסקה
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -35,6 +36,7 @@ public class TransactionCategoryAdapter
         return new VH(v);
     }
 
+    // הצגת נתוני הקטגוריה וסימון הקטגוריה שנבחרה
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
 

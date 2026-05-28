@@ -52,6 +52,7 @@ public class CalendarDayActivity extends BaseActivity {
     private final SimpleDateFormat dbFormat =
             new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
+    // אתחול מסך היומן והגדרת רכיבי התצוגה וההרשאות
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -203,27 +204,28 @@ public class CalendarDayActivity extends BaseActivity {
 
         );
 
-        // =============================
+
         // טעינה ראשונית
-        // =============================
         updateMonthTitle();
         buildMonthCalendar();
         loadEventsForSelectedDate();
     }
 
+    // רענון רשימת האירועים בעת חזרה למסך
     @Override
     protected void onResume() {
         super.onResume();
         loadEventsForSelectedDate();
     }
 
-
+    // עדכון כותרת החודש המוצג במסך
     private void updateMonthTitle() {
         SimpleDateFormat monthFormat =
                 new SimpleDateFormat("MMMM yyyy", new Locale("he"));
         tvMonthTitle.setText(monthFormat.format(selectedCalendar.getTime()));
     }
 
+    // בניית תצוגת ימי החודש בלוח השנה
     private void buildMonthCalendar() {
         monthDays.clear();
 
@@ -239,6 +241,7 @@ public class CalendarDayActivity extends BaseActivity {
         monthAdapter.notifyDataSetChanged();
     }
 
+    // טעינת האירועים עבור התאריך שנבחר
     private void loadEventsForSelectedDate() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String groupId = prefs.getString(KEY_GROUP_ID, null);
@@ -280,6 +283,7 @@ public class CalendarDayActivity extends BaseActivity {
                 });
     }
 
+    // בדיקה האם שני תאריכים מייצגים את אותו היום
     private boolean sameDay(Calendar c1, Calendar c2) {
         return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
                 && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR);

@@ -14,6 +14,7 @@ public class NotificationHelper {
 
     private static final String CHANNEL_ID = "mycasa_reminders";
 
+    // יצירת והצגת התראה למשתמש עם מעבר למסך מתאים בלחיצה
     public static void showNotification(
             Context context,
             String title,

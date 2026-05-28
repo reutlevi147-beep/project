@@ -16,6 +16,7 @@ import java.util.Locale;
 
 public class ReminderReceiver extends BroadcastReceiver {
 
+    // הפעלת בדיקות תזכורות עבור אירועים, משימות ומטרות חיסכון
     @Override
     public void onReceive(Context context, Intent intent) {
 
@@ -25,12 +26,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     }
 
-    // =========================================
-    // אירועים
-    // שעה לפני האירוע
-    // רק למי שמיועד
-    // =========================================
-
+    // בדיקת אירועים קרובים ושליחת התראות למשתמשים הרלוונטיים
     private void checkEvents(Context context) {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -110,10 +106,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     }
 
-    // =========================================
-    // משימות + קניות
-    // =========================================
-
+    // בדיקת משימות וקניות שממתינות לטיפול
     private void checkTasksAndShopping(Context context){
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -169,11 +162,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     }
 
-    // =========================================
-    // קניות
-    // רק להורים
-    // =========================================
-
+    // בדיקת פריטי קניות ישנים ושליחת תזכורת להורים
     private void checkShoppingPart(
             Context context,
             FirebaseFirestore db,
@@ -254,11 +243,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     }
 
-    // =========================================
-    // מטרות חיסכון
-    // רק להורים
-    // =========================================
-
+    // בדיקת מטרות חיסכון מתקרבות ושליחת התראות
     private void checkSavingsGoals(Context context){
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -327,10 +312,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     }
 
-    // =========================================
-    // מניעת שליחה כפולה של התראות
-    // =========================================
-
+    // בדיקה האם התראה כבר נשלחה בעבר
     private boolean wasNotificationSent(Context context, String key){
 
         SharedPreferences prefs =
@@ -340,6 +322,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     }
 
+    // סימון התראה כהתראה שנשלחה למניעת כפילויות
     private void markNotificationSent(Context context, String key){
 
         SharedPreferences prefs =

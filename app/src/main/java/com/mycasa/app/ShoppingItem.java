@@ -4,6 +4,8 @@ import com.google.firebase.firestore.Exclude;
 
 public class ShoppingItem {
 
+    // מחלקת מודל המייצגת פריט קנייה עם שם, קטגוריה, כמות ומצב רכישה
+
     @Exclude
     private String documentId;   // לא נשמר ב-Firestore
 

@@ -53,6 +53,7 @@ public class Home extends BaseActivity {
     LinearLayout layoutFinanceSection;
 
     @SuppressLint("MissingInflatedId")
+    // אתחול מסך הבית והגדרת רכיבי התצוגה והניווט
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -310,10 +311,7 @@ public class Home extends BaseActivity {
                 });
     }
 
-
-
-
-
+    // התאמת סכום לפי תדירות התשלום
     private double adjustAmountByFrequency(double amount, String frequency) {
 
         if (frequency == null) return amount;
@@ -359,8 +357,6 @@ public class Home extends BaseActivity {
                     }
                 });
     }
-
-
 
     // שליפת כמות הפריטים שלא נקנו ברשימת הקניות והצגתם
     private void loadShoppingSummary() {

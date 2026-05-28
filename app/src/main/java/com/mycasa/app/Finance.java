@@ -198,9 +198,8 @@ public class Finance extends BaseActivity {
             return;
         }
 
-        // ======================================
+
         // בדיקת Setup רק להורה
-        // ======================================
         if ("parent".equalsIgnoreCase(AppSession.getUserRole())) {
             db.collection("groups")
                     .document(groupId)
@@ -384,7 +383,7 @@ public class Finance extends BaseActivity {
 
 
     // חיבור כל רכיבי ה-UI (כפתורים, רשימות, גרפים) מה-XML לקוד
-    // ================= Bind =================
+
     private void bindViews() {
 
         btnBack = findViewById(R.id.btnBack);

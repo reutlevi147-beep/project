@@ -26,7 +26,7 @@ import java.util.Map;
 public class Add_Transaction extends AppCompatActivity {
 
     // ===== UI =====
-    private EditText etAmount, etTitle, etDate, etNotes;
+    private EditText etAmount, etTitle, etDate;
     private MaterialButton btnSave, btnCancel;
     private MaterialButtonToggleGroup toggleType;
     private RecyclerView rvCategories;
@@ -40,6 +40,7 @@ public class Add_Transaction extends AppCompatActivity {
     private FirebaseFirestore db;
     private String groupId;
 
+    // אתחול מסך הוספת הכנסה או הוצאה
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +53,6 @@ public class Add_Transaction extends AppCompatActivity {
         etAmount = findViewById(R.id.etAmount);
         etTitle = findViewById(R.id.etTitle);
         etDate = findViewById(R.id.etDate);
-        etNotes = findViewById(R.id.etNotes);
 
         btnSave = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
@@ -91,9 +91,7 @@ public class Add_Transaction extends AppCompatActivity {
         btnSave.setOnClickListener(v -> saveTransaction());
     }
 
-    // =========================
-    // Categories
-    // =========================
+    // טעינת קטגוריות בהתאם לסוג העסקה שנבחר
     private void loadCategories() {
 
         List<String> categories = isIncome
@@ -112,9 +110,7 @@ public class Add_Transaction extends AppCompatActivity {
     }
 
 
-    // =========================
-    // Date Picker
-    // =========================
+    // הצגת DatePicker לבחירת תאריך
     private void openDatePicker() {
 
         Calendar cal = Calendar.getInstance();
@@ -134,15 +130,14 @@ public class Add_Transaction extends AppCompatActivity {
         ).show();
     }
 
+    // המרת תאריך לפורמט תצוגה
     private String formatDate(Date date) {
         return android.text.format.DateFormat
                 .format("dd/MM/yyyy", date)
                 .toString();
     }
 
-    // =========================
-    // Save
-    // =========================
+    // בדיקת תקינות הנתונים ושמירת העסקה במסד הנתונים// בדיקת תקינות הנתונים ושמירת העסקה במסד הנתונים// בדיקת תקינות הנתונים ושמירת העסקה במסד הנתונים
     private void saveTransaction() {
 
         if (groupId == null) {
@@ -152,7 +147,6 @@ public class Add_Transaction extends AppCompatActivity {
 
         String amountStr = etAmount.getText().toString().trim();
         String title = etTitle.getText().toString().trim();
-        String notes = etNotes.getText().toString().trim();
 
         if (TextUtils.isEmpty(amountStr)) {
             etAmount.setError("חובה להזין סכום");
@@ -186,9 +180,7 @@ public class Add_Transaction extends AppCompatActivity {
         data.put("transactionDate", selectedDate);
         data.put("createdAt", FieldValue.serverTimestamp());
 
-        if (!TextUtils.isEmpty(notes)) {
-            data.put("notes", notes);
-        }
+
 
         db.collection("groups")
                 .document(groupId)

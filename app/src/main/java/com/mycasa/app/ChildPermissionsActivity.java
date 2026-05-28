@@ -34,6 +34,7 @@ public class ChildPermissionsActivity extends AppCompatActivity {
 
     private MaterialButton btnSave;
 
+    // אתחול מסך הרשאות לילד והגדרת רכיבי המסך והקטעים השונים
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,9 +109,7 @@ public class ChildPermissionsActivity extends AppCompatActivity {
         loadPermissions();
     }
 
-    // =========================
-    // Load from Firestore
-    // =========================
+    // טעינת הרשאות המשתמש מ־Firestore
     private void loadPermissions() {
         db.collection("groups")
                 .document(groupId)
@@ -141,9 +140,7 @@ public class ChildPermissionsActivity extends AppCompatActivity {
                 });
     }
 
-    // =========================
-    // Save to Firestore
-    // =========================
+    // שמירת ההרשאות שנבחרו במסד הנתונים
     private void savePermissions() {
 
         Map<String, Object> permissions = new HashMap<>();
@@ -212,6 +209,7 @@ public class ChildPermissionsActivity extends AppCompatActivity {
             setMainChecked(false, false);
         }
 
+        // הגדרת נתוני התצוגה והעיצוב של אזור הרשאות
         void applyMeta(String title,
                        String desc,
                        int iconRes,
@@ -233,12 +231,14 @@ public class ChildPermissionsActivity extends AppCompatActivity {
             this.offStroke = "#E5E7EB";
         }
 
+        // עדכון צבעי העיצוב של אזור ההרשאות
         void setTheme(String bg, String stroke, String iconBgOptional) {
             // optional helper if you want override
             this.onBg = bg;
             this.onStroke = stroke;
         }
 
+        // ניהול פעולת הסוויץ׳ הראשי והפעלת ההרשאות הפנימיות
         void attachMainLogic() {
             swMain.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 setEnabledInner(isChecked);
@@ -259,6 +259,7 @@ public class ChildPermissionsActivity extends AppCompatActivity {
             setEnabledInner(swMain.isChecked());
         }
 
+        // עדכון מצב הסוויץ׳ הראשי של אזור ההרשאות
         void setMainChecked(boolean checked, boolean triggerListener) {
             if (triggerListener) {
                 swMain.setChecked(checked);
@@ -270,6 +271,7 @@ public class ChildPermissionsActivity extends AppCompatActivity {
             }
         }
 
+        // הפעלה או נעילה של הרשאות המשנה
         private void setEnabledInner(boolean enabled) {
             swView.setEnabled(enabled);
             swAdd.setEnabled(enabled);
@@ -277,12 +279,14 @@ public class ChildPermissionsActivity extends AppCompatActivity {
             swDelete.setEnabled(enabled);
         }
 
+        // עדכון עיצוב הכרטיס לפי מצב ההרשאה
         private void applyCardState(boolean enabled) {
             // background tint
             card.setCardBackgroundColor(Color.parseColor(enabled ? onBg : "#F3F4F6"));
             card.setStrokeColor(Color.parseColor(enabled ? onStroke : "#E5E7EB"));
         }
 
+        // המרת ההרשאות למבנה Map לשמירה ב־Firestore
         Map<String, Boolean> toMap() {
             Map<String, Boolean> m = new HashMap<>();
             boolean mainOn = swMain.isChecked();
@@ -296,6 +300,7 @@ public class ChildPermissionsActivity extends AppCompatActivity {
             return m;
         }
 
+        // טעינת הרשאות קיימות מהשרת ועדכון התצוגה
         void applyFromFirestore(Map<String, Object> permissions, String key) {
             Object sectionObj = permissions.get(key);
             if (!(sectionObj instanceof Map)) {

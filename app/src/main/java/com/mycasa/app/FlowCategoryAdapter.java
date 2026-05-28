@@ -24,6 +24,7 @@ public class FlowCategoryAdapter
 
     private OnItemChangedListener listener;
 
+    // הגדרת מאזין לעדכון שינויים בפריטי הקטגוריה
     public void setOnItemChangedListener(OnItemChangedListener listener) {
         this.listener = listener;
     }
@@ -37,6 +38,7 @@ public class FlowCategoryAdapter
     private final LayoutInflater inflater;
     private OnAddIncomeClickListener addIncomeListener;
 
+    // הגדרת מאזין להוספת שורת הכנסה חדשה
     public void setOnAddIncomeClickListener(OnAddIncomeClickListener l) {
         this.addIncomeListener = l;
     }
@@ -52,6 +54,7 @@ public class FlowCategoryAdapter
         this.inflater = LayoutInflater.from(context);
     }
 
+    // יצירת ViewHolder עבור קטגוריה פיננסית
     @NonNull
     @Override
     public CategoryVH onCreateViewHolder(
@@ -65,6 +68,7 @@ public class FlowCategoryAdapter
         return new CategoryVH(v);
     }
 
+    // הצגת נתוני הקטגוריה וטעינת הפריטים המשויכים אליה
     @Override
     public void onBindViewHolder(
             @NonNull CategoryVH holder, int position) {
@@ -120,14 +124,13 @@ public class FlowCategoryAdapter
         });
     }
 
+    // החזרת כמות הקטגוריות ברשימה
     @Override
     public int getItemCount() {
         return categories != null ? categories.size() : 0;
     }
 
-    // =========================
-    // ViewHolder
-    // =========================
+
     static class CategoryVH extends RecyclerView.ViewHolder {
 
         View header;
@@ -157,6 +160,7 @@ public class FlowCategoryAdapter
             btnAddIncome = itemView.findViewById(R.id.btnAddIncome);
         }
 
+        // הצגה או הסתרה של כפתור הוספת הכנסה
         void showAddIncome(boolean show) {
             if (addIncomeRow != null) {
                 addIncomeRow.setVisibility(show ? View.VISIBLE : View.GONE);

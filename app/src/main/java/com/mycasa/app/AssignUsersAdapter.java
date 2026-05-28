@@ -30,6 +30,7 @@ public class AssignUsersAdapter
         }
     }
 
+    // יצירת ViewHolder עבור פריט משתמש ברשימה
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(
@@ -41,6 +42,7 @@ public class AssignUsersAdapter
         return new ViewHolder(v);
     }
 
+    // הצגת נתוני המשתמש ועדכון מצב הבחירה שלו
     @Override
     public void onBindViewHolder(
             @NonNull ViewHolder holder,
@@ -70,11 +72,13 @@ public class AssignUsersAdapter
         });
     }
 
+    // החזרת כמות המשתמשים ברשימה
     @Override
     public int getItemCount() {
         return users.size();
     }
 
+    // טעינת רשימת משתמשים חדשה ל־Adapter
     public void setUsers(List<DocumentSnapshot> newUsers) {
         users.clear();
         users.addAll(newUsers);
@@ -82,6 +86,7 @@ public class AssignUsersAdapter
         notifyDataSetChanged();
     }
 
+    // החזרת מזהי המשתמשים שנבחרו
     public List<String> getSelectedUserIds() {
         List<String> ids = new ArrayList<>();
         for (Integer pos : selectedPositions) {
@@ -90,6 +95,7 @@ public class AssignUsersAdapter
         return ids;
     }
 
+    // סימון משתמשים שנבחרו לפי רשימת מזהים
     public void setSelectedUserIds(List<String> userIds) {
         selectedPositions.clear();
         for (int i = 0; i < users.size(); i++) {
@@ -100,11 +106,12 @@ public class AssignUsersAdapter
         notifyDataSetChanged();
     }
 
+    // החזרת רשימת כל המשתמשים
     public List<DocumentSnapshot> getUsers() {
         return users;
     }
 
-    // ===== בחירת כל המשתמשים =====
+    // סימון כל המשתמשים ברשימה
     public void selectAll() {
         selectedPositions.clear();
 

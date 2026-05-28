@@ -2,6 +2,7 @@ package com.mycasa.app;
 
 public class AppSession {
 
+    // מחלקה לניהול ושמירת נתוני המשתמש והקבוצה הפעילים באפליקציה
     private static String groupId;
     private static String userId;
     private static String userRole;
